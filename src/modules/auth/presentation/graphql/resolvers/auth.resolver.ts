@@ -1,0 +1,189 @@
+import { Resolver, Mutation, Args, Context } from "@nestjs/graphql";
+import { Request, Response } from "express";
+import { Public } from "@/common/decorators/public.decorator";
+import { CurrentUser } from "@/common/decorators/current-user.decorator";
+import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
+import { buildDataResponse } from "@/common/responses/helpers/response.helper";
+import { buildSuccessResponse } from "@/common/responses/helpers/response.helper";
+import { AllowFirstAccess } from "@/modules/auth/presentation/decorators/allow-first-access.decorator";
+import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { REFRESH_TOKEN_COOKIE_NAME } from "@/config/cookie.config";
+import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { ChangePasswordInputDto } from "@/modules/auth/presentation/graphql/dtos/password/change-password-input.dto";
+import { LoginInputDto } from "@/modules/auth/presentation/graphql/dtos/login/login-input.dto";
+import { LogoutResponseDto } from "@/modules/auth/presentation/graphql/dtos/logout/logout-response.dto";
+import { RequestPasswordRecoveryInputDto } from "@/modules/auth/presentation/graphql/dtos/password-recovery/request-password-recovery-input.dto";
+import { ResetPasswordWithRecoveryInputDto } from "@/modules/auth/presentation/graphql/dtos/password-recovery/reset-password-with-recovery-input.dto";
+import { AuthSessionResponseDto } from "@/modules/auth/presentation/graphql/dtos/session/auth-session-response.dto";
+import { VerifyPasswordRecoveryCodeInputDto } from "@/modules/auth/presentation/graphql/dtos/password-recovery/verify-password-recovery-code-input.dto";
+import { VerifyPasswordRecoveryCodeMutationResponseDto } from "@/modules/auth/presentation/graphql/dtos/password-recovery/verify-password-recovery-code-mutation-response.dto";
+import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
+import { AuthCookieService } from "@/modules/auth/application/use-cases/auth-cookie.use-case";
+import { ChangePasswordService } from "@/modules/auth/application/use-cases/change-password.use-case";
+import { LoginService } from "@/modules/auth/application/use-cases/login.use-case";
+import { LogoutService } from "@/modules/auth/application/use-cases/logout.use-case";
+import { RequestPasswordRecoveryService } from "@/modules/auth/application/use-cases/password-recovery/request-password-recovery.use-case";
+import { ResetPasswordWithRecoveryService } from "@/modules/auth/application/use-cases/password-recovery/reset-password-with-recovery.use-case";
+import { VerifyPasswordRecoveryCodeService } from "@/modules/auth/application/use-cases/password-recovery/verify-password-recovery-code.use-case";
+import { RefreshAuthSessionService } from "@/modules/auth/application/use-cases/refresh-auth-session.use-case";
+
+interface GraphqlContext {
+  req: Request;
+  res: Response;
+}
+
+interface RequestInfo {
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+@Resolver()
+export class AuthResolver {
+  constructor(
+    private readonly loginUseCase: LoginService,
+    private readonly refreshAuthSessionUseCase: RefreshAuthSessionService,
+    private readonly logoutUseCase: LogoutService,
+    private readonly changePasswordUseCase: ChangePasswordService,
+    private readonly requestPasswordRecoveryUseCase: RequestPasswordRecoveryService,
+    private readonly verifyPasswordRecoveryCodeUseCase: VerifyPasswordRecoveryCodeService,
+    private readonly resetPasswordWithRecoveryUseCase: ResetPasswordWithRecoveryService,
+    private readonly authCookieUseCase: AuthCookieService,
+  ) {}
+
+  @Public()
+  @Mutation(() => AuthSessionResponseDto, { name: "login" })
+  async login(
+    @Args("input") input: LoginInputDto,
+    @Context() context: GraphqlContext,
+  ): Promise<AuthSessionResponseDto> {
+    const { accessToken, refreshToken, response } =
+      await this.loginUseCase.execute(
+        input,
+        this.extractRequestInfo(context.req),
+      );
+
+    this.authCookieUseCase.setAuthCookies(
+      context.res,
+      accessToken,
+      refreshToken,
+    );
+
+    return response;
+  }
+
+  @Public()
+  @Mutation(() => AuthSessionResponseDto, { name: "refreshAuthSession" })
+  async refreshAuthSession(
+    @Context() context: GraphqlContext,
+  ): Promise<AuthSessionResponseDto> {
+    const refreshToken = context.req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] as
+      | string
+      | undefined;
+
+    const {
+      accessToken,
+      refreshToken: nextRefreshToken,
+      response,
+    } = await this.refreshAuthSessionUseCase.execute(refreshToken ?? "");
+
+    this.authCookieUseCase.setAuthCookies(
+      context.res,
+      accessToken,
+      nextRefreshToken,
+    );
+
+    return response;
+  }
+
+  @Mutation(() => LogoutResponseDto, { name: "logout" })
+  @AllowFirstAccess()
+  @RequirePermissions(AuthPermission.LOGOUT)
+  async logout(@Context() context: GraphqlContext): Promise<LogoutResponseDto> {
+    const refreshToken = context.req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] as
+      | string
+      | undefined;
+
+    await this.logoutUseCase.execute(refreshToken);
+    this.authCookieUseCase.clearAuthCookies(context.res);
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.logout,
+    ) as LogoutResponseDto;
+  }
+
+  @Mutation(() => LogoutResponseDto, { name: "changeMyPassword" })
+  @AllowFirstAccess()
+  @RequirePermissions(AuthPermission.CHANGE_OWN_PASSWORD)
+  async changeMyPassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: ChangePasswordInputDto,
+  ): Promise<LogoutResponseDto> {
+    await this.changePasswordUseCase.execute(user.idUsers, input);
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordChanged,
+    ) as LogoutResponseDto;
+  }
+
+  @Public()
+  @Mutation(() => LogoutResponseDto, { name: "requestPasswordRecovery" })
+  async requestPasswordRecovery(
+    @Args("input") input: RequestPasswordRecoveryInputDto,
+  ): Promise<LogoutResponseDto> {
+    await this.requestPasswordRecoveryUseCase.execute(input.email);
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordRecoveryRequested,
+    ) as LogoutResponseDto;
+  }
+
+  @Public()
+  @Mutation(() => VerifyPasswordRecoveryCodeMutationResponseDto, {
+    name: "verifyPasswordRecoveryCode",
+  })
+  async verifyPasswordRecoveryCode(
+    @Args("input") input: VerifyPasswordRecoveryCodeInputDto,
+  ) {
+    const result = await this.verifyPasswordRecoveryCodeUseCase.execute(
+      input.email,
+      input.code,
+    );
+
+    return buildDataResponse(
+      result,
+      RESPONSE_MESSAGES.auth.passwordRecoveryCodeValidated,
+    );
+  }
+
+  @Public()
+  @Mutation(() => LogoutResponseDto, { name: "resetPasswordWithRecovery" })
+  async resetPasswordWithRecovery(
+    @Args("input") input: ResetPasswordWithRecoveryInputDto,
+  ): Promise<LogoutResponseDto> {
+    await this.resetPasswordWithRecoveryUseCase.execute(
+      input.recoveryToken,
+      input.newPassword,
+    );
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordRecovered,
+    ) as LogoutResponseDto;
+  }
+
+  private extractRequestInfo(request: Request): RequestInfo {
+    const forwardedFor = request.headers["x-forwarded-for"];
+    const ipAddress = Array.isArray(forwardedFor)
+      ? forwardedFor[0]
+      : (forwardedFor?.split(",")[0]?.trim() ?? request.socket.remoteAddress);
+
+    return {
+      ipAddress,
+      userAgent: request.headers["user-agent"] ?? undefined,
+    };
+  }
+}
+
+
+
+
+

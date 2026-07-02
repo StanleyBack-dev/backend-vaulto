@@ -1,0 +1,47 @@
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
+
+@Entity("tb_debt_installments")
+export class DebtInstallmentEntity {
+  @PrimaryGeneratedColumn("uuid", { name: "idtb_debt_installments" })
+  idDebtInstallment!: string;
+
+  @Column({ name: "idtb_debts" })
+  idDebt!: string;
+
+  @Column({ name: "installment_number", type: "int" })
+  installmentNumber!: number;
+
+  @Column({ name: "amount_due", type: "numeric", precision: 12, scale: 2 })
+  amountDue!: string;
+
+  @Column({
+    name: "amount_paid",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    default: 0,
+  })
+  amountPaid!: string;
+
+  @Column({ name: "due_date", type: "date" })
+  dueDate!: Date;
+
+  @Column({ name: "paid_at", type: "timestamp", nullable: true })
+  paidAt?: Date;
+
+  @Column({ type: "enum", enum: DebtStatus, default: DebtStatus.OPEN })
+  status!: DebtStatus;
+
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  updatedAt!: Date;
+}
