@@ -42,6 +42,3 @@ export class VerifyPasswordRecoveryCodeService {
     return this.passwordRecoveryCodesUseCase.markVerified(activeCode);
   }
 }
-
-
-

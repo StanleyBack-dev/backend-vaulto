@@ -15,9 +15,12 @@ describe("CreateDebtUseCase", () => {
         idDebt: "debt-1",
         idUsers: "user-1",
         idAccount: "account-1",
+        idCategory: "category-1",
         title: "Cartao de credito",
+        category: "Cartao",
         debtType: DebtType.FIXED,
         totalAmount: 1200,
+        dueDate: new Date("2026-07-01"),
         startDate: new Date("2026-07-01"),
         hasInstallments: true,
         installmentCount: 12,
@@ -33,17 +36,26 @@ describe("CreateDebtUseCase", () => {
     const useCase = new CreateDebtUseCase(
       authorizationService as never,
       {
-        findByIdAndUser: jest.fn().mockResolvedValue({ idAccount: "account-1" }),
+        listByUser: jest
+          .fn()
+          .mockResolvedValue([{ idAccount: "account-1", isActive: true }]),
       } as never,
       debtRepository as never,
+      {
+        findById: jest.fn().mockResolvedValue({
+          idCategory: "category-1",
+          status: true,
+          name: "Cartao",
+        }),
+      } as never,
     );
 
     const result = await useCase.execute("user-1", {
-      idAccount: "account-1",
       title: "Cartao de credito",
+      idCategory: "category-1",
       debtType: DebtType.FIXED,
       totalAmount: 1200,
-      startDate: new Date("2026-07-01"),
+      dueDate: new Date("2026-07-01"),
       hasInstallments: true,
       installmentCount: 12,
     });
@@ -71,18 +83,27 @@ describe("CreateDebtUseCase", () => {
     const useCase = new CreateDebtUseCase(
       authorizationService as never,
       {
-        findByIdAndUser: jest.fn(),
+        listByUser: jest
+          .fn()
+          .mockResolvedValue([{ idAccount: "account-1", isActive: true }]),
       } as never,
       debtRepository as never,
+      {
+        findById: jest.fn().mockResolvedValue({
+          idCategory: "category-1",
+          status: true,
+          name: "Geral",
+        }),
+      } as never,
     );
 
     await expect(
       useCase.execute("user-1", {
-        idAccount: "account-1",
         title: "Conta variavel",
+        idCategory: "category-1",
         debtType: DebtType.VARIABLE,
         totalAmount: 300,
-        startDate: new Date("2026-07-01"),
+        dueDate: new Date("2026-07-01"),
         hasInstallments: false,
       }),
     ).rejects.toBeInstanceOf(ForbiddenException);
@@ -90,4 +111,3 @@ describe("CreateDebtUseCase", () => {
     expect(debtRepository.create).not.toHaveBeenCalled();
   });
 });
-

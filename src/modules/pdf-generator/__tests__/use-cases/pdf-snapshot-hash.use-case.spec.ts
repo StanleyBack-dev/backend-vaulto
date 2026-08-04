@@ -12,5 +12,3 @@ describe("PdfSnapshotHashService", () => {
     expect(hash1).toHaveLength(64);
   });
 });
-
-

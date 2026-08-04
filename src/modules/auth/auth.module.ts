@@ -28,6 +28,7 @@ import { ProvisionAuthCredentialsService } from "./application/use-cases/provisi
 import { RefreshAuthSessionService } from "./application/use-cases/refresh-auth-session.use-case";
 import { AuthBootstrapService } from "./application/use-cases/auth-bootstrap.use-case";
 import { VerifyPasswordRecoveryCodeService } from "./application/use-cases/password-recovery/verify-password-recovery-code.use-case";
+import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
 
 @Module({
   imports: [
@@ -84,9 +85,3 @@ import { VerifyPasswordRecoveryCodeService } from "./application/use-cases/passw
   ],
 })
 export class AuthModule {}
-
-
-
-
-
-

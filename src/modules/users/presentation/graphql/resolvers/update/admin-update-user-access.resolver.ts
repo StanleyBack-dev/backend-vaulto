@@ -11,23 +11,24 @@ import { AdminUpdateUserAccessMutationResponseDto } from "@/modules/users/presen
 
 @Resolver(() => AdminUpdateUserAccessMutationResponseDto)
 export class AdminUpdateUserAccessResolver {
-	constructor(
-		private readonly adminUpdateUserAccessUseCase: AdminUpdateUserAccessUseCase,
-	) {}
+  constructor(
+    private readonly adminUpdateUserAccessUseCase: AdminUpdateUserAccessUseCase,
+  ) {}
 
-	@Mutation(() => AdminUpdateUserAccessMutationResponseDto)
-	@RequirePermissions(AuthPermission.MANAGE_USERS)
-	async adminUpdateUserAccess(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: AdminUpdateUserAccessInputDto,
-	) {
-		const updatedUser = await this.adminUpdateUserAccessUseCase.execute(
-			user.idUsers,
-			input,
-		);
+  @Mutation(() => AdminUpdateUserAccessMutationResponseDto)
+  @RequirePermissions(AuthPermission.MANAGE_USERS)
+  async adminUpdateUserAccess(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: AdminUpdateUserAccessInputDto,
+  ) {
+    const updatedUser = await this.adminUpdateUserAccessUseCase.execute(
+      user.idUsers,
+      input,
+    );
 
-		return buildDataResponse(updatedUser, RESPONSE_MESSAGES.users.accessUpdated);
-	}
+    return buildDataResponse(
+      updatedUser,
+      RESPONSE_MESSAGES.users.accessUpdated,
+    );
+  }
 }
-
-

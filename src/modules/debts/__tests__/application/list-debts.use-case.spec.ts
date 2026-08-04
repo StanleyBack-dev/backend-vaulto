@@ -15,10 +15,14 @@ describe("ListDebtsUseCase", () => {
           {
             idDebt: "debt-1",
             idUsers: "user-1",
+            idAccount: "account-1",
+            idCategory: "category-1",
             title: "Cartao",
+            category: "Cartao",
             description: "Fatura principal",
             debtType: DebtType.FIXED,
             totalAmount: 999.9,
+            dueDate: new Date("2026-07-01"),
             startDate: new Date("2026-07-01"),
             hasInstallments: true,
             installmentCount: 10,
@@ -53,4 +57,3 @@ describe("ListDebtsUseCase", () => {
     });
   });
 });
-

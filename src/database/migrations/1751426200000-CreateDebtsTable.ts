@@ -1,4 +1,4 @@
-import type { MigrationInterface, QueryRunner} from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 import { Table } from "typeorm";
 
 export class CreateDebtsTable1751426200000 implements MigrationInterface {

@@ -24,6 +24,3 @@ export class AuthUserDto {
   @Field({ nullable: true })
   urlAvatar?: string;
 }
-
-
-

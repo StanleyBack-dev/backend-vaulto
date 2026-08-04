@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { UserPageAccessEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/user-page-access.entity";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { CategoriesModule } from "@/modules/categories/categories.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 import { UserExistsValidator } from "@/modules/users/application/validators/user-exists.validator";
@@ -29,6 +30,7 @@ import "@/modules/users/presentation/graphql/enums/users-graphql.enums";
       UserPageAccessEntity,
     ]),
     AuthModule,
+    CategoriesModule,
     MailModule,
   ],
   providers: [
@@ -55,4 +57,3 @@ import "@/modules/users/presentation/graphql/enums/users-graphql.enums";
   ],
 })
 export class UsersModule {}
-

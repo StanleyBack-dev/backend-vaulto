@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
+import { toDateOnlyString } from "@/common/utils/date.util";
 import {
   type CreateDebtInstallmentPayload,
   type CreateDebtPayload,
@@ -11,14 +12,15 @@ import {
   type DebtRepositoryPort,
   type DebtView,
   type ListDebtsFilters,
-  type RegisterDebtPaymentPayload,
+  type UpdateDebtDetailsPayload,
   type UpdateDebtStatusPayload,
 } from "@/modules/debts/application/ports/debt-repository.port";
-import { AccountEntity } from "@/modules/accounts/infrastructure/persistence/typeorm/entities/account.entity";
+import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
+import { CreditCardEntity } from "@/modules/credit-cards/infrastructure/persistence/typeorm/entities/credit-card.entity";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
 import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt.entity";
-import { DebtPaymentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-payment.entity";
+import { DebtPaymentEntity } from "@/modules/payments/infrastructure/persistence/typeorm/entities/debt-payment.entity";
 
 @Injectable()
 export class DebtTypeormRepository implements DebtRepositoryPort {
@@ -30,6 +32,10 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
     private readonly installmentRepository: Repository<DebtInstallmentEntity>,
     @InjectRepository(DebtPaymentEntity)
     private readonly paymentRepository: Repository<DebtPaymentEntity>,
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
+    @InjectRepository(CreditCardEntity)
+    private readonly creditCardRepository: Repository<CreditCardEntity>,
   ) {}
 
   async create(
@@ -38,10 +44,23 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
   ): Promise<DebtView> {
     return this.dataSource.transaction(async (manager) => {
       const debtRepository = manager.getRepository(DebtEntity);
-      const installmentRepository = manager.getRepository(DebtInstallmentEntity);
+      const installmentRepository = manager.getRepository(
+        DebtInstallmentEntity,
+      );
 
       const created = debtRepository.create({
-        ...payload,
+        idUsers: payload.idUsers,
+        idCategory: payload.idCategory,
+        idCreditCard: payload.idCreditCard,
+        title: payload.title,
+        description: payload.description,
+        debtType: payload.debtType,
+        startDate: payload.startDate,
+        hasInstallments: payload.hasInstallments,
+        installmentCount: payload.installmentCount,
+        status: payload.status,
+        dueDate: payload.dueDate,
+        acquiredAt: payload.acquiredAt,
         totalAmount: payload.totalAmount.toFixed(2),
       });
 
@@ -59,8 +78,18 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
         }),
       );
 
-      const savedInstallments = await installmentRepository.save(installmentEntities);
-      return this.mapToView(saved, savedInstallments, []);
+      const savedInstallments =
+        await installmentRepository.save(installmentEntities);
+      const category = await manager.getRepository(CategoryEntity).findOne({
+        where: { idCategory: saved.idCategory },
+      });
+      return this.mapToView(
+        saved,
+        savedInstallments,
+        [],
+        category?.name ?? "",
+        payload.creditCard,
+      );
     });
   }
 
@@ -83,121 +112,18 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
       order: { paidAt: "DESC" },
     });
 
-    return this.mapToView(debt, installments, payments);
-  }
-
-  async registerPayment(
-    idUsers: string,
-    payload: RegisterDebtPaymentPayload,
-  ): Promise<DebtView> {
-    if (!Number.isFinite(payload.amountPaid) || payload.amountPaid <= 0) {
-      throw AppException.from(APP_ERRORS.debts.invalidPaymentAmount, undefined);
-    }
-
-    return this.dataSource.transaction(async (manager) => {
-      const debtRepository = manager.getRepository(DebtEntity);
-      const installmentRepository = manager.getRepository(DebtInstallmentEntity);
-      const accountRepository = manager.getRepository(AccountEntity);
-
-      const debt = await debtRepository.findOne({
-        where: { idDebt: payload.idDebt, idUsers },
-      });
-
-      if (!debt) {
-        throw AppException.from(APP_ERRORS.debts.notFound, undefined);
-      }
-
-      const account = await accountRepository.findOne({
-        where: {
-          idUsers,
-          idAccount: debt.idAccount,
-          isActive: true,
-        },
-      });
-
-      if (!account) {
-        throw AppException.from(APP_ERRORS.accounts.notFound, undefined);
-      }
-
-      if (Number(account.currentBalance) < payload.amountPaid) {
-        throw AppException.from(APP_ERRORS.accounts.insufficientBalance, undefined);
-      }
-
-      const installments = await installmentRepository.find({
-        where: { idDebt: debt.idDebt },
-        order: { installmentNumber: "ASC" },
-      });
-
-      if (!installments.length) {
-        throw AppException.from(APP_ERRORS.debts.installmentsNotFound, undefined);
-      }
-
-      const totalOutstanding = installments.reduce((acc, installment) => {
-        const amountDue = Number(installment.amountDue);
-        const amountPaid = Number(installment.amountPaid);
-        return acc + Math.max(amountDue - amountPaid, 0);
-      }, 0);
-
-      if (payload.amountPaid - totalOutstanding > 0.001) {
-        throw AppException.from(APP_ERRORS.debts.paymentExceedsOutstanding, undefined);
-      }
-
-      let remaining = Number(payload.amountPaid.toFixed(2));
-      const paidAt = payload.paidAt ?? new Date();
-
-      const payment = manager.getRepository(DebtPaymentEntity).create({
-        idDebt: debt.idDebt,
-        idUsers,
-        amountPaid: payload.amountPaid.toFixed(2),
-        paidAt,
-      });
-      await manager.getRepository(DebtPaymentEntity).save(payment);
-
-      account.currentBalance = (Number(account.currentBalance) - payload.amountPaid).toFixed(
-        2,
-      );
-      await accountRepository.save(account);
-
-      for (const installment of installments) {
-        if (remaining <= 0) {
-          break;
-        }
-
-        const amountDue = Number(installment.amountDue);
-        const alreadyPaid = Number(installment.amountPaid);
-        const outstanding = Number(Math.max(amountDue - alreadyPaid, 0).toFixed(2));
-
-        if (outstanding <= 0) {
-          continue;
-        }
-
-        const paymentToApply = Math.min(outstanding, remaining);
-        const nextPaid = Number((alreadyPaid + paymentToApply).toFixed(2));
-        remaining = Number((remaining - paymentToApply).toFixed(2));
-
-        installment.amountPaid = nextPaid.toFixed(2);
-        installment.status =
-          nextPaid >= amountDue ? DebtStatus.PAID : DebtStatus.PARTIALLY_PAID;
-
-        if (installment.status === DebtStatus.PAID && !installment.paidAt) {
-          installment.paidAt = paidAt;
-        }
-      }
-
-      await installmentRepository.save(installments);
-
-      const aggregateStatus = this.computeDebtStatus(installments);
-      debt.status = aggregateStatus;
-      debt.settledAt = aggregateStatus === DebtStatus.PAID ? paidAt : undefined;
-      const savedDebt = await debtRepository.save(debt);
-
-      const payments = await manager.getRepository(DebtPaymentEntity).find({
-        where: { idDebt: debt.idDebt },
-        order: { paidAt: "DESC" },
-      });
-
-      return this.mapToView(savedDebt, installments, payments);
+    const category = await this.categoryRepository.findOne({
+      where: { idCategory: debt.idCategory },
     });
+    const creditCard = await this.findCreditCardName(debt.idCreditCard);
+
+    return this.mapToView(
+      debt,
+      installments,
+      payments,
+      category?.name ?? "",
+      creditCard,
+    );
   }
 
   async updateStatus(
@@ -206,7 +132,9 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
   ): Promise<DebtView> {
     return this.dataSource.transaction(async (manager) => {
       const debtRepository = manager.getRepository(DebtEntity);
-      const installmentRepository = manager.getRepository(DebtInstallmentEntity);
+      const installmentRepository = manager.getRepository(
+        DebtInstallmentEntity,
+      );
 
       const debt = await debtRepository.findOne({
         where: { idDebt: payload.idDebt, idUsers },
@@ -221,7 +149,10 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
         order: { installmentNumber: "ASC" },
       });
 
-      if (payload.status === DebtStatus.OPEN || payload.status === DebtStatus.OVERDUE) {
+      if (
+        payload.status === DebtStatus.OPEN ||
+        payload.status === DebtStatus.OVERDUE
+      ) {
         for (const installment of installments) {
           const amountDue = Number(installment.amountDue);
           const amountPaid = Number(installment.amountPaid);
@@ -234,7 +165,8 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
       await installmentRepository.save(installments);
 
       debt.status = payload.status;
-      debt.settledAt = payload.status === DebtStatus.PAID ? new Date() : undefined;
+      debt.settledAt =
+        payload.status === DebtStatus.PAID ? new Date() : undefined;
       const savedDebt = await debtRepository.save(debt);
 
       const payments = await manager.getRepository(DebtPaymentEntity).find({
@@ -242,7 +174,128 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
         order: { paidAt: "DESC" },
       });
 
-      return this.mapToView(savedDebt, installments, payments);
+      const category = await manager.getRepository(CategoryEntity).findOne({
+        where: { idCategory: savedDebt.idCategory },
+      });
+      const creditCard = await this.findCreditCardName(
+        savedDebt.idCreditCard,
+        manager.getRepository(CreditCardEntity),
+      );
+
+      return this.mapToView(
+        savedDebt,
+        installments,
+        payments,
+        category?.name ?? "",
+        creditCard,
+      );
+    });
+  }
+
+  async updateDetails(
+    idUsers: string,
+    payload: UpdateDebtDetailsPayload,
+  ): Promise<DebtView> {
+    return this.dataSource.transaction(async (manager) => {
+      const debtRepository = manager.getRepository(DebtEntity);
+      const installmentRepository = manager.getRepository(
+        DebtInstallmentEntity,
+      );
+
+      const debt = await debtRepository.findOne({
+        where: { idDebt: payload.idDebt, idUsers },
+      });
+
+      if (!debt) {
+        throw AppException.from(APP_ERRORS.debts.notFound, undefined);
+      }
+
+      if (payload.title !== undefined) {
+        debt.title = payload.title;
+      }
+
+      if (payload.description !== undefined) {
+        debt.description = payload.description;
+      }
+
+      if (payload.idCategory !== undefined) {
+        debt.idCategory = payload.idCategory;
+      }
+
+      if (payload.debtType !== undefined) {
+        debt.debtType = payload.debtType;
+      }
+
+      if (payload.acquiredAt !== undefined) {
+        debt.acquiredAt = payload.acquiredAt;
+      }
+
+      const installments = await installmentRepository.find({
+        where: { idDebt: debt.idDebt },
+        order: { installmentNumber: "ASC" },
+      });
+
+      if (payload.dueDate !== undefined) {
+        if (debt.hasInstallments) {
+          throw AppException.from(
+            APP_ERRORS.debts.dueDateNotEditableForInstallments,
+            undefined,
+          );
+        }
+
+        if (debt.idCreditCard) {
+          throw AppException.from(
+            APP_ERRORS.debts.dueDateNotEditableForCreditCard,
+            undefined,
+          );
+        }
+
+        debt.dueDate = payload.dueDate;
+
+        if (installments[0]) {
+          installments[0].dueDate = payload.dueDate;
+          await installmentRepository.save(installments[0]);
+        }
+      }
+
+      if (payload.totalAmount !== undefined) {
+        if (debt.hasInstallments) {
+          throw AppException.from(
+            APP_ERRORS.debts.totalAmountNotEditableForInstallments,
+            undefined,
+          );
+        }
+
+        debt.totalAmount = payload.totalAmount.toFixed(2);
+
+        if (installments[0]) {
+          installments[0].amountDue = payload.totalAmount.toFixed(2);
+          await installmentRepository.save(installments[0]);
+        }
+      }
+
+      const savedDebt = await debtRepository.save(debt);
+
+      const payments = await manager.getRepository(DebtPaymentEntity).find({
+        where: { idDebt: savedDebt.idDebt },
+        order: { paidAt: "DESC" },
+      });
+
+      const category = await manager.getRepository(CategoryEntity).findOne({
+        where: { idCategory: savedDebt.idCategory },
+      });
+      const creditCard = await this.findCreditCardName(
+        savedDebt.idCreditCard,
+        manager.getRepository(CreditCardEntity),
+      );
+
+      return this.mapToView(
+        savedDebt,
+        installments,
+        payments,
+        category?.name ?? "",
+        creditCard,
+      );
     });
   }
 
@@ -266,6 +319,35 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
 
     if (filters?.debtType) {
       qb.andWhere("debt.debtType = :debtType", { debtType: filters.debtType });
+    }
+
+    if (filters?.idCategory) {
+      qb.andWhere("debt.idCategory = :idCategory", {
+        idCategory: filters.idCategory,
+      });
+    }
+
+    if (filters?.dueDateFrom || filters?.dueDateTo) {
+      const existsInstallmentInRange = this.installmentRepository
+        .createQueryBuilder("di")
+        .select("1")
+        .where("di.idDebt = CAST(debt.idDebt AS varchar)");
+
+      if (filters.dueDateFrom) {
+        existsInstallmentInRange.andWhere("di.dueDate >= :dueDateFrom", {
+          dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+        });
+      }
+
+      if (filters.dueDateTo) {
+        existsInstallmentInRange.andWhere("di.dueDate <= :dueDateTo", {
+          dueDateTo: toDateOnlyString(filters.dueDateTo),
+        });
+      }
+
+      qb.andWhere(
+        `EXISTS (${existsInstallmentInRange.getQuery()})`,
+      ).setParameters(existsInstallmentInRange.getParameters());
     }
 
     const [rows, total] = await qb.getManyAndCount();
@@ -299,39 +381,69 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
       paymentsByDebt.set(payment.idDebt, current);
     }
 
+    const categoryIds = Array.from(
+      new Set(rows.map((row) => row.idCategory).filter(Boolean)),
+    );
+    const categories = categoryIds.length
+      ? await this.categoryRepository.find({
+          where: { idCategory: In(categoryIds) },
+        })
+      : [];
+    const categoryById = new Map(
+      categories.map((category) => [category.idCategory, category.name]),
+    );
+
+    const creditCardIds = Array.from(
+      new Set(
+        rows
+          .map((row) => row.idCreditCard)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
+    const creditCards = creditCardIds.length
+      ? await this.creditCardRepository.find({
+          where: { idCreditCard: In(creditCardIds) },
+        })
+      : [];
+    const creditCardById = new Map(
+      creditCards.map((creditCard) => [
+        creditCard.idCreditCard,
+        creditCard.name,
+      ]),
+    );
+
     return {
       records: rows.map((row) =>
         this.mapToView(
           row,
           installmentsByDebt.get(row.idDebt) ?? [],
           paymentsByDebt.get(row.idDebt) ?? [],
+          categoryById.get(row.idCategory) ?? "",
+          row.idCreditCard ? creditCardById.get(row.idCreditCard) : undefined,
         ),
       ),
       total,
     };
   }
 
-  private computeDebtStatus(installments: DebtInstallmentEntity[]): DebtStatus {
-    if (installments.every((installment) => installment.status === DebtStatus.PAID)) {
-      return DebtStatus.PAID;
+  private computeEndDate(
+    entity: DebtEntity,
+    installments: DebtInstallmentEntity[],
+  ): Date | undefined {
+    if (!installments.length) {
+      return entity.dueDate;
     }
 
-    if (
-      installments.some(
-        (installment) => installment.status === DebtStatus.PARTIALLY_PAID,
-      )
-    ) {
-      return DebtStatus.PARTIALLY_PAID;
-    }
-
-    if (installments.some((installment) => installment.status === DebtStatus.OVERDUE)) {
-      return DebtStatus.OVERDUE;
-    }
-
-    return DebtStatus.OPEN;
+    return installments.reduce<Date>(
+      (latest, installment) =>
+        installment.dueDate > latest ? installment.dueDate : latest,
+      installments[0].dueDate,
+    );
   }
 
-  private mapInstallmentToView(entity: DebtInstallmentEntity): DebtInstallmentView {
+  private mapInstallmentToView(
+    entity: DebtInstallmentEntity,
+  ): DebtInstallmentView {
     return {
       idDebtInstallment: entity.idDebtInstallment,
       idDebt: entity.idDebt,
@@ -348,6 +460,7 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
     return {
       idDebtPayment: entity.idDebtPayment,
       idDebt: entity.idDebt,
+      idDebtInstallment: entity.idDebtInstallment,
       idUsers: entity.idUsers,
       amountPaid: Number(entity.amountPaid),
       paidAt: entity.paidAt,
@@ -355,19 +468,39 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
     };
   }
 
+  private async findCreditCardName(
+    idCreditCard: string | undefined,
+    repository: Repository<CreditCardEntity> = this.creditCardRepository,
+  ): Promise<string | undefined> {
+    if (!idCreditCard) {
+      return undefined;
+    }
+
+    const creditCard = await repository.findOne({ where: { idCreditCard } });
+    return creditCard?.name;
+  }
+
   private mapToView(
     entity: DebtEntity,
     installments: DebtInstallmentEntity[],
     payments: DebtPaymentEntity[],
+    category: string,
+    creditCard?: string,
   ): DebtView {
     return {
       idDebt: entity.idDebt,
       idUsers: entity.idUsers,
-      idAccount: entity.idAccount,
+      idCategory: entity.idCategory,
       title: entity.title,
+      category,
+      idCreditCard: entity.idCreditCard,
+      creditCard,
       description: entity.description,
       debtType: entity.debtType,
       totalAmount: Number(entity.totalAmount),
+      dueDate: entity.dueDate,
+      acquiredAt: entity.acquiredAt,
+      endDate: this.computeEndDate(entity, installments),
       startDate: entity.startDate,
       hasInstallments: entity.hasInstallments,
       installmentCount: entity.installmentCount,

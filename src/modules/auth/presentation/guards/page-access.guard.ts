@@ -52,8 +52,3 @@ export class PageAccessGuard implements CanActivate {
       .getRequest<Record<string, unknown> & { user?: unknown }>();
   }
 }
-
-
-
-
-

@@ -34,4 +34,3 @@ describe("ValidateSessionUseCase", () => {
     expect(result).toBeNull();
   });
 });
-

@@ -48,20 +48,6 @@ export const RESPONSE_MESSAGES = {
       message: "Usuários carregados com sucesso.",
     },
   },
-  accounts: {
-    created: {
-      code: "ACCOUNT_CREATED",
-      message: "Conta criada com sucesso.",
-    },
-    listed: {
-      code: "ACCOUNTS_LISTED",
-      message: "Contas carregadas com sucesso.",
-    },
-    transferred: {
-      code: "ACCOUNTS_TRANSFERRED",
-      message: "Transferencia entre contas realizada com sucesso.",
-    },
-  },
   debts: {
     created: {
       code: "DEBT_CREATED",
@@ -79,25 +65,61 @@ export const RESPONSE_MESSAGES = {
       code: "DEBT_STATUS_UPDATED",
       message: "Status da divida atualizado com sucesso.",
     },
+    detailsUpdated: {
+      code: "DEBT_DETAILS_UPDATED",
+      message: "Dados da divida atualizados com sucesso.",
+    },
   },
-  transactions: {
-    created: {
-      code: "TRANSACTION_CREATED",
-      message: "Transacao registrada com sucesso.",
+  payments: {
+    registered: {
+      code: "PAYMENT_REGISTERED",
+      message: "Pagamento registrado com sucesso.",
     },
     listed: {
-      code: "TRANSACTIONS_LISTED",
-      message: "Transacoes carregadas com sucesso.",
+      code: "PAYMENTS_LISTED",
+      message: "Pagamentos carregados com sucesso.",
     },
-    reported: {
-      code: "TRANSACTIONS_REPORTED",
-      message: "Relatorio de transacoes carregado com sucesso.",
+    updated: {
+      code: "PAYMENT_UPDATED",
+      message: "Pagamento atualizado com sucesso.",
+    },
+    deleted: {
+      code: "PAYMENT_DELETED",
+      message: "Pagamento excluido com sucesso.",
+    },
+  },
+  categories: {
+    created: {
+      code: "CATEGORY_CREATED",
+      message: "Categoria criada com sucesso.",
+    },
+    updated: {
+      code: "CATEGORY_UPDATED",
+      message: "Categoria atualizada com sucesso.",
+    },
+    listed: {
+      code: "CATEGORIES_LISTED",
+      message: "Categorias carregadas com sucesso.",
     },
   },
   profiles: {
     updated: {
       code: "PROFILE_UPDATED",
       message: "Perfil atualizado com sucesso.",
+    },
+  },
+  creditCards: {
+    created: {
+      code: "CREDIT_CARD_CREATED",
+      message: "Cartao de credito criado com sucesso.",
+    },
+    updated: {
+      code: "CREDIT_CARD_UPDATED",
+      message: "Cartao de credito atualizado com sucesso.",
+    },
+    listed: {
+      code: "CREDIT_CARDS_LISTED",
+      message: "Cartoes de credito carregados com sucesso.",
     },
   },
 } as const;

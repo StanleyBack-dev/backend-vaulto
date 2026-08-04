@@ -27,4 +27,3 @@ describe("SaveSessionUseCase", () => {
     expect(result).toEqual(sessionMock);
   });
 });
-

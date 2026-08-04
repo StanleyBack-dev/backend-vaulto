@@ -19,7 +19,10 @@ export class UpdateDebtStatusUseCase {
     private readonly debtRepository: DebtRepositoryPort,
   ) {}
 
-  async execute(userId: string, command: UpdateDebtStatusCommand): Promise<DebtView> {
+  async execute(
+    userId: string,
+    command: UpdateDebtStatusCommand,
+  ): Promise<DebtView> {
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_OWN_DEBTS,
@@ -29,7 +32,10 @@ export class UpdateDebtStatusUseCase {
       command.status === DebtStatus.PARTIALLY_PAID ||
       command.status === DebtStatus.PAID
     ) {
-      throw AppException.from(APP_ERRORS.debts.invalidManualStatusTransition, undefined);
+      throw AppException.from(
+        APP_ERRORS.debts.invalidManualStatusTransition,
+        undefined,
+      );
     }
 
     return this.debtRepository.updateStatus(userId, {
@@ -38,6 +44,3 @@ export class UpdateDebtStatusUseCase {
     });
   }
 }
-
-
-

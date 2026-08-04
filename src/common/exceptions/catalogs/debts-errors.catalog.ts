@@ -21,6 +21,28 @@ export const debtsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Quantidade de parcelas invalida para o tipo de divida informado.",
   },
+  dueDateRequiredForInstallments: {
+    code: "DEBTS_DUE_DATE_REQUIRED_FOR_INSTALLMENTS",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe a data de vencimento da primeira parcela.",
+  },
+  dueDateNotEditableForInstallments: {
+    code: "DEBTS_DUE_DATE_NOT_EDITABLE_FOR_INSTALLMENTS",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Nao e possivel alterar o vencimento de uma divida parcelada por aqui.",
+  },
+  dueDateNotEditableForCreditCard: {
+    code: "DEBTS_DUE_DATE_NOT_EDITABLE_FOR_CREDIT_CARD",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "O vencimento e calculado automaticamente pelo cartao de credito vinculado e nao pode ser alterado por aqui.",
+  },
+  totalAmountNotEditableForInstallments: {
+    code: "DEBTS_TOTAL_AMOUNT_NOT_EDITABLE_FOR_INSTALLMENTS",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Nao e possivel alterar o valor de uma divida parcelada por aqui.",
+  },
   installmentsNotFound: {
     code: "DEBTS_INSTALLMENTS_NOT_FOUND",
     status: HttpStatus.NOT_FOUND,

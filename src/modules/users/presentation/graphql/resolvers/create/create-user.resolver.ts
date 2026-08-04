@@ -1,8 +1,8 @@
 import { Args, Mutation, Resolver } from "@nestjs/graphql";
 import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import {
-	RequestInfo,
-	type IRequestInfo,
+  RequestInfo,
+  type IRequestInfo,
 } from "@/common/decorators/request-info.decorator";
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
 import { buildDataResponse } from "@/common/responses/helpers/response.helper";
@@ -15,23 +15,21 @@ import { CreateUserMutationResponseDto } from "@/modules/users/presentation/grap
 
 @Resolver(() => CreateUserMutationResponseDto)
 export class CreateUserResolver {
-	constructor(private readonly createUserUseCase: CreateUserUseCase) {}
+  constructor(private readonly createUserUseCase: CreateUserUseCase) {}
 
-	@RequirePermissions(AuthPermission.MANAGE_USERS)
-	@Mutation(() => CreateUserMutationResponseDto, { name: "createUser" })
-	async createUser(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: CreateUserInputDto,
-		@RequestInfo() requestInfo: IRequestInfo,
-	) {
-		const createdUser = await this.createUserUseCase.execute(
-			user.idUsers,
-			input,
-			requestInfo,
-		);
+  @RequirePermissions(AuthPermission.MANAGE_USERS)
+  @Mutation(() => CreateUserMutationResponseDto, { name: "createUser" })
+  async createUser(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: CreateUserInputDto,
+    @RequestInfo() requestInfo: IRequestInfo,
+  ) {
+    const createdUser = await this.createUserUseCase.execute(
+      user.idUsers,
+      input,
+      requestInfo,
+    );
 
-		return buildDataResponse(createdUser, RESPONSE_MESSAGES.users.created);
-	}
+    return buildDataResponse(createdUser, RESPONSE_MESSAGES.users.created);
+  }
 }
-
-

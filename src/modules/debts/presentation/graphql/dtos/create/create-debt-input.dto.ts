@@ -4,10 +4,13 @@ import { DebtType } from "@/modules/debts/domain/enums/debt-type.enum";
 @InputType()
 export class CreateDebtInputDto {
   @Field()
-  idAccount!: string;
+  title!: string;
 
   @Field()
-  title!: string;
+  idCategory!: string;
+
+  @Field({ nullable: true })
+  idCreditCard?: string;
 
   @Field({ nullable: true })
   description?: string;
@@ -15,15 +18,21 @@ export class CreateDebtInputDto {
   @Field(() => DebtType)
   debtType!: DebtType;
 
-  @Field(() => Float)
-  totalAmount!: number;
+  @Field(() => Float, { nullable: true })
+  totalAmount?: number;
 
-  @Field(() => Date)
-  startDate!: Date;
+  @Field(() => Date, { nullable: true })
+  dueDate?: Date;
+
+  @Field(() => Date, { nullable: true })
+  acquiredAt?: Date;
 
   @Field()
   hasInstallments!: boolean;
 
   @Field(() => Int, { nullable: true })
   installmentCount?: number;
+
+  @Field(() => Float, { nullable: true })
+  installmentAmount?: number;
 }

@@ -6,11 +6,14 @@ import { Money } from "@/modules/debts/domain/value-objects/money.vo";
 
 export type DebtProps = {
   idUsers: string;
-  idAccount: string;
+  idCategory: string;
   title: string;
   description?: string;
   debtType: DebtType;
-  totalAmount: number;
+  totalAmount?: number;
+  installmentAmount?: number;
+  dueDate?: Date;
+  acquiredAt?: Date;
   startDate: Date;
   hasInstallments: boolean;
   installmentCount?: number;
@@ -21,26 +24,57 @@ export class Debt {
   private constructor(private readonly props: DebtProps) {}
 
   static create(props: DebtProps): Debt {
-    if (!props.idAccount?.trim()) {
-      throw AppException.from(APP_ERRORS.debts.accountRequired, undefined);
+    const title = props.title?.trim();
+    const idCategory = props.idCategory?.trim();
+
+    if (!title || !idCategory) {
+      throw AppException.from(APP_ERRORS.validation.missingField, {
+        field: !title ? "title" : "idCategory",
+      });
     }
 
-    const amount = Money.from(props.totalAmount);
-
-    if (props.hasInstallments) {
-      if (!props.installmentCount || props.installmentCount < 2) {
-        throw AppException.from(APP_ERRORS.debts.invalidInstallmentCount, undefined);
-      }
+    if (props.hasInstallments && !props.dueDate) {
+      throw AppException.from(
+        APP_ERRORS.debts.dueDateRequiredForInstallments,
+        undefined,
+      );
     }
 
-    if (!props.hasInstallments && props.installmentCount && props.installmentCount > 1) {
-      throw AppException.from(APP_ERRORS.debts.invalidInstallmentCount, undefined);
+    const installmentCount = props.hasInstallments ? props.installmentCount : 1;
+
+    if (props.hasInstallments && (!installmentCount || installmentCount < 2)) {
+      throw AppException.from(
+        APP_ERRORS.debts.invalidInstallmentCount,
+        undefined,
+      );
     }
+
+    if (!props.hasInstallments && installmentCount && installmentCount > 1) {
+      throw AppException.from(
+        APP_ERRORS.debts.invalidInstallmentCount,
+        undefined,
+      );
+    }
+
+    const normalizedInstallmentAmount = props.hasInstallments
+      ? props.installmentAmount
+      : undefined;
+    const baseTotalAmount =
+      props.hasInstallments &&
+      normalizedInstallmentAmount &&
+      normalizedInstallmentAmount > 0 &&
+      installmentCount
+        ? normalizedInstallmentAmount * installmentCount
+        : props.totalAmount;
+    const amount = Money.from(baseTotalAmount ?? 0);
 
     return new Debt({
       ...props,
+      idCategory,
+      title,
       totalAmount: amount.toNumber(),
-      installmentCount: props.hasInstallments ? props.installmentCount : 1,
+      installmentCount,
+      installmentAmount: normalizedInstallmentAmount,
       status: props.status ?? DebtStatus.OPEN,
     });
   }

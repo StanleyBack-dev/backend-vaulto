@@ -47,4 +47,3 @@ describe("RefreshSessionUseCase", () => {
     ).rejects.toThrow();
   });
 });
-

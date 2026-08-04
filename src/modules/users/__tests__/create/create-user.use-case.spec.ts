@@ -12,6 +12,7 @@ import { UserOnboardingEmailUseCase } from "../../../mails/application/use-cases
 import { UserExistsValidator } from "../../application/validators/user-exists.validator";
 import { CreateUserUseCase } from "../../application/use-cases/create/create-user.use-case";
 import { UserPageAccessUseCase } from "../../application/use-cases/permissions/user-page-access.use-case";
+import { SeedDefaultCategoriesUseCase } from "../../../categories/application/use-cases/create/seed-default-categories.use-case";
 import { UserEntity } from "../../infrastructure/persistence/typeorm/entities/user.entity";
 
 describe("CreateUserUseCase", () => {
@@ -112,6 +113,12 @@ describe("CreateUserUseCase", () => {
           provide: UserPageAccessUseCase,
           useValue: {
             setDuringUserCreation: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: SeedDefaultCategoriesUseCase,
+          useValue: {
+            execute: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -218,4 +225,3 @@ describe("CreateUserUseCase", () => {
     });
   });
 });
-

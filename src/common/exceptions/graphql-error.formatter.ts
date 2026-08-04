@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
-import type { GraphQLFormattedError} from "graphql";
+import type { GraphQLFormattedError } from "graphql";
 import { GraphQLError } from "graphql";
 import { sanitizeSensitiveData } from "../security/sanitize-sensitive-data";
 

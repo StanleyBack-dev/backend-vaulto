@@ -54,23 +54,213 @@ type GroupDefaultDto {
 
 enum PageAccessKey {
   DASHBOARD
-  LEADS
-  BUDGETS
-  CONTRACTS
-  CLIENTS
-  EMPLOYEES
-  POSITIONS
-  USERS
-  EVENTS
-  PAYMENTS
-  FINANCES
+  CATEGORIES
   DEBTS
-  INVESTMENTS
+  PAYMENTS
+  CREDIT_CARDS
+  USERS
 }
 
 type PageAccessMetadataResponseDto {
   allKeys: [PageAccessKey!]!
   groupDefaults: [GroupDefaultDto!]!
+}
+
+type CategoryResponseDto {
+  idCategory: String!
+  idUsers: String!
+  name: String!
+  status: Boolean!
+  inactivatedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CreateCategoryMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CategoryResponseDto!
+}
+
+type ListCategoriesResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [CategoryResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateCategoryMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CategoryResponseDto!
+}
+
+type CreditCardResponseDto {
+  idCreditCard: String!
+  idUsers: String!
+  name: String!
+  creditLimit: Float!
+  dueDay: Int!
+  closingDay: Int!
+  status: Boolean!
+  usedLimit: Float!
+  availableLimit: Float!
+  inactivatedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CreateCreditCardMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreditCardResponseDto!
+}
+
+type ListCreditCardsResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [CreditCardResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateCreditCardMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreditCardResponseDto!
+}
+
+type DebtInstallmentResponseDto {
+  idDebtInstallment: String!
+  idDebt: String!
+  installmentNumber: Int!
+  amountDue: Float!
+  amountPaid: Float!
+  dueDate: DateTime!
+  paidAt: String
+  status: DebtStatus!
+}
+
+enum DebtStatus {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+type DebtPaymentResponseDto {
+  idDebtPayment: String!
+  idDebt: String!
+  idDebtInstallment: String
+  idUsers: String!
+  amountPaid: Float!
+  paidAt: String!
+  createdAt: String!
+}
+
+type DebtResponseDto {
+  idDebt: String!
+  idUsers: String!
+  idCategory: String!
+  title: String!
+  category: String!
+  idCreditCard: String
+  creditCard: String
+  description: String
+  debtType: DebtType!
+  totalAmount: Float!
+  dueDate: DateTime
+  acquiredAt: DateTime
+  endDate: DateTime
+  startDate: DateTime!
+  hasInstallments: Boolean!
+  installmentCount: Int!
+  status: DebtStatus!
+  settledAt: DateTime
+  installments: [DebtInstallmentResponseDto!]!
+  payments: [DebtPaymentResponseDto!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum DebtType {
+  FIXED
+  VARIABLE
+}
+
+type CreateDebtMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: DebtResponseDto!
+}
+
+type ListDebtsResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [DebtResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type RegisterInstallmentPaymentResponseDto {
+  idDebt: String!
+  debtStatus: DebtStatus!
+  payments: [DebtPaymentResponseDto!]!
+  installments: [DebtInstallmentResponseDto!]!
+}
+
+type RegisterInstallmentPaymentMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentPaymentResponseDto!
+}
+
+type UpdateDebtPaymentMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentPaymentResponseDto!
+}
+
+type DeleteDebtPaymentMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentPaymentResponseDto!
+}
+
+type DebtsReportStatusCountsDto {
+  open: Int!
+  overdue: Int!
+  partiallyPaid: Int!
+  paid: Int!
+}
+
+type DebtsReportResponseDto {
+  totalAmountDue: Float!
+  totalAmountPaid: Float!
+  totalOutstanding: Float!
+  totalCount: Int!
+  countByStatus: DebtsReportStatusCountsDto!
 }
 
 type GetUserResponseDto {
@@ -81,13 +271,20 @@ type GetUserResponseDto {
   urlAvatar: String
   status: Boolean!
   group: UserGroup!
-  inactivatedAt: DateTime
+  inactivatedAt: String
   mustChangePassword: Boolean
-  lastLoginAt: DateTime
+  lastLoginAt: String
   failedLoginAttempts: Int
-  lockedUntil: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  lockedUntil: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UserFilterOptionDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  username: String
 }
 
 type CreateUserResponseDto {
@@ -121,20 +318,20 @@ type GetUsersListResponseDto {
   hasNextPage: Boolean!
 }
 
-type UpdateUserResponseDto {
+type UserPagePermissionsResponseDto {
   idUsers: String!
-  name: String!
-  email: String!
-  urlAvatar: String
-  status: Boolean!
-  updatedAt: DateTime!
+  group: UserGroup!
+  effectivePermissions: [PageAccessKey!]!
+  defaultPermissions: [PageAccessKey!]!
+  useGroupDefaults: Boolean!
+  updatedAt: DateTime
 }
 
-type UpdateUserMutationResponseDto {
+type SetUserPagePermissionsMutationResponseDto {
   success: Boolean!
   message: String
   code: String
-  data: UpdateUserResponseDto!
+  data: UserPagePermissionsResponseDto!
 }
 
 type AdminUpdateUserAccessResponseDto {
@@ -164,889 +361,48 @@ type UnlockUserCredentialMutationResponseDto {
   data: UnlockUserCredentialResponseDto!
 }
 
-type UserPagePermissionsResponseDto {
+type UpdateUserResponseDto {
   idUsers: String!
-  group: UserGroup!
-  effectivePermissions: [PageAccessKey!]!
-  defaultPermissions: [PageAccessKey!]!
-  useGroupDefaults: Boolean!
-  updatedAt: DateTime
-}
-
-type SetUserPagePermissionsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UserPagePermissionsResponseDto!
-}
-
-type GetCustomersResponseDto {
-  idCustomers: String!
   name: String!
-  document: String!
-  type: String!
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
+  email: String!
+  urlAvatar: String
+  status: Boolean!
+  updatedAt: DateTime!
 }
 
-type UpdateCustomersResponseDto {
-  idCustomers: String!
-  name: String!
-  document: String!
-  type: String!
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetCustomersListResponseDto {
+type UpdateUserMutationResponseDto {
   success: Boolean!
   message: String
   code: String
-  items: [GetCustomersResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type CreateCustomersResponseDto {
-  idCustomers: String!
-  name: String!
-  document: String!
-  type: String!
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateCustomersMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreateCustomersResponseDto!
-}
-
-type UpdateCustomersMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateCustomersResponseDto!
-}
-
-type CreateEmployeesResponseDto {
-  idEmployees: String!
-  name: String!
-  gender: EmployeeGender
-  document: String
-  email: String
-  phone: String
-  idPositions: String!
-  position: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum EmployeeGender {
-  MALE
-  FEMALE
-}
-
-type GetEmployeesResponseDto {
-  idEmployees: String!
-  name: String!
-  gender: EmployeeGender
-  document: String
-  email: String
-  phone: String
-  idPositions: String!
-  position: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdateEmployeesResponseDto {
-  idEmployees: String!
-  name: String!
-  gender: EmployeeGender
-  document: String
-  email: String
-  phone: String
-  idPositions: String!
-  position: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateEmployeesMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreateEmployeesResponseDto!
-}
-
-type GetEmployeesListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetEmployeesResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdateEmployeesMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateEmployeesResponseDto!
-}
-
-type CreateLeadsResponseDto {
-  idLeads: String!
-  name: String!
-  email: String
-  phone: String
-  document: String
-  source: LeadSource
-  notes: String
-  status: LeadStatus!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum LeadSource {
-  INSTAGRAM
-  REFERRAL
-  WEBSITE
-  WHATSAPP
-  EVENT
-  OTHER
-}
-
-enum LeadStatus {
-  NEW
-  QUALIFIED
-  WON
-  LOST
-}
-
-type GetLeadsResponseDto {
-  idLeads: String!
-  name: String!
-  email: String
-  phone: String
-  document: String
-  source: LeadSource
-  notes: String
-  status: LeadStatus!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdateLeadsResponseDto {
-  idLeads: String!
-  name: String!
-  email: String
-  phone: String
-  document: String
-  source: LeadSource
-  notes: String
-  status: LeadStatus!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateLeadsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreateLeadsResponseDto!
-}
-
-type GetLeadsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetLeadsResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdateLeadsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateLeadsResponseDto!
-}
-
-type SuccessResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-}
-
-type SignatureRequestResponseDto {
-  requestId: String!
-  status: SignatureStatus!
-  providerRawStatus: String!
-  signatureUrl: String
-  completedAt: String
-}
-
-enum SignatureStatus {
-  DRAFT
-  PENDING
-  SIGNED
-  REJECTED
-  CANCELLED
-  EXPIRED
-  UNKNOWN
-}
-
-type CreateSignatureRequestMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: SignatureRequestResponseDto!
-}
-
-type GetSignatureStatusMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: SignatureRequestResponseDto!
-}
-
-type GetSignaturesResponseDto {
-  idSignatures: String!
-  idContracts: String!
-  contractNumber: String
-  contractStatus: String
-  provider: String!
-  envelopeId: String!
-  status: SignatureStatus!
-  signedByName: String
-  signedByEmail: String
-  signedByDocument: String
-  signerIp: String
-  signedAt: String
-  signatureUrl: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetSignaturesListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetSignaturesResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type PaymentItemResponseDto {
-  idPaymentItems: String!
-  idPayments: String!
-  origin: String!
-  status: String!
-  plannedAmount: Float!
-  paidAmount: Float
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  sortOrder: Int!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreatePaymentResponseDto {
-  idPayments: String!
-  idUsers: String!
-  idLeads: String
-  idBudgets: String
-  idContracts: String
-  idEvents: String
-  idEmployees: String
-  origin: String!
-  status: String!
-  plannedAmount: Float!
-  paidAmount: Float
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  paymentItems: [PaymentItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetEventAssignmentResponseDto {
-  idEventAssignments: String!
-  idBudgetItems: String!
-  idEmployees: String
-  allocationIndex: Float!
-  employeePayment: Float!
-  isActive: Boolean!
-  budgetItemDescription: String
-  budgetItemQuantity: Float
-  employeeName: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetEventServiceLineResponseDto {
-  idBudgetItems: String!
-  serviceDescription: String!
-  quantity: Float!
-  unitPrice: Float!
-  totalPrice: Float!
-  sortOrder: Float!
-}
-
-type GetEventsResponseDto {
-  idEvents: String!
-  eventNumber: String
-  idContracts: String!
-  idBudgets: String!
-  idLeads: String
-  idCustomers: String
-  status: EventStatus!
-  notes: String
-  contractNumber: String
-  budgetNumber: String
-  customerName: String
-  leadName: String
-  eventDates: [String!]!
-  eventLocation: String
-  displacementFee: Float!
-  discountTotal: Float!
-  overtimeMinutes: Int!
-  overtimeAmount: Float!
-  serviceBreakdown: [GetEventServiceLineResponseDto!]!
-  totalRevenue: Float!
-  totalCost: Float!
-  companyReceivable: Float!
-  assignments: [GetEventAssignmentResponseDto!]!
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum EventStatus {
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  CANCELED
-}
-
-type UpdateEventAssignmentResponseDto {
-  idEventAssignments: String!
-  idEvents: String!
-  idBudgetItems: String!
-  idEmployees: String
-  allocationIndex: Float!
-  employeePayment: Float!
-  isActive: Boolean!
-  employeeName: String
-  budgetItemDescription: String
-  updatedAt: String!
-}
-
-type UpdateEventsResponseDto {
-  idEvents: String!
-  status: EventStatus!
-  overtimeMinutes: Int!
-  updatedAt: String!
-}
-
-type GetEventsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetEventsResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdateEventAssignmentMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateEventAssignmentResponseDto!
-}
-
-type UpdateEventsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateEventsResponseDto!
-}
-
-type UpdatePaymentResponseDto {
-  idPayments: String!
-  idUsers: String!
-  idLeads: String
-  idBudgets: String
-  idContracts: String
-  idEvents: String
-  idEmployees: String
-  origin: String!
-  status: String!
-  plannedAmount: Float!
-  paidAmount: Float
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  paymentItems: [PaymentItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetPaymentResponseDto {
-  idPayments: String!
-  idUsers: String!
-  idLeads: String
-  idBudgets: String
-  idContracts: String
-  idEvents: String
-  idEmployees: String
-  origin: String!
-  status: String!
-  plannedAmount: Float!
-  paidAmount: Float
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  paymentItems: [PaymentItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetPaymentsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetPaymentResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type CreateContractsResponseDto {
-  idContracts: String!
-  idBudgets: String!
-  idLeads: String
-  idCustomers: String
-  budgetNumber: String!
-  contractNumber: String!
-  status: ContractStatus!
-  issueDate: String!
-  validUntil: String
-  effectiveDate: String
-  expiresAt: String
-  body: String
-  templateVersion: Int!
-  retentionUntil: String
-  sentVia: String
-  sentAt: String
-  notes: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum ContractStatus {
-  DRAFT
-  GENERATED
-  PENDING_SIGNATURE
-  SIGNED
-  CLOSED_WITHOUT_SIGNATURE
-  REJECTED
-  EXPIRED
-  CANCELED
-}
-
-type GetContractsResponseDto {
-  idContracts: String!
-  idBudgets: String!
-  idLeads: String
-  idCustomers: String
-  budgetNumber: String!
-  contractNumber: String!
-  status: ContractStatus!
-  issueDate: String!
-  validUntil: String
-  effectiveDate: String
-  expiresAt: String
-  body: String
-  templateVersion: Int!
-  retentionUntil: String
-  sentVia: String
-  sentAt: String
-  notes: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdateContractsResponseDto {
-  idContracts: String!
-  idBudgets: String!
-  idLeads: String
-  idCustomers: String
-  budgetNumber: String!
-  contractNumber: String!
-  status: ContractStatus!
-  issueDate: String!
-  validUntil: String
-  effectiveDate: String
-  expiresAt: String
-  body: String
-  templateVersion: Int!
-  retentionUntil: String
-  signatureProvider: String
-  signatureEnvelopeId: String
-  signatureStatus: String
-  signedByName: String
-  signedByDocument: String
-  signedByEmail: String
-  signerIp: String
-  signerUserAgent: String
-  signedAt: String
-  consentAt: String
-  sentVia: String
-  sentAt: String
-  notes: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateContractsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreateContractsResponseDto!
-}
-
-type GetContractsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetContractsResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdateContractsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateContractsResponseDto!
-}
-
-type GenerateContractPreviewResponseDto {
-  fileName: String!
-  mimeType: String!
-  base64Content: String!
-  snapshotHash: String!
-}
-
-type GenerateContractPreviewMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: GenerateContractPreviewResponseDto!
-}
-
-type CreateBudgetItemResponseDto {
-  idBudgetItems: String!
-  idPositions: String
-  position: String
-  description: String!
-  quantity: Float!
-  unitPrice: Float!
-  totalPrice: Float!
-  notes: String
-  sortOrder: Float!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateBudgetsResponseDto {
-  idBudgets: String!
-  idLeads: String
-  budgetNumber: String!
-  status: BudgetStatus!
-  issueDate: String!
-  validUntil: String!
-  eventDates: [String!]!
-  eventArrivalTimes: [String!]!
-  eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
-  paymentMethod: String
-  advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
-  subtotal: Float!
-  totalAmount: Float!
-  sentVia: String
-  sentAt: String
-  items: [CreateBudgetItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum BudgetStatus {
-  DRAFT
-  GENERATED
-  SENT
-  APPROVED
-  REJECTED
-  EXPIRED
-  CANCELED
-}
-
-type GetBudgetItemResponseDto {
-  idBudgetItems: String!
-  idPositions: String
-  position: String
-  description: String!
-  quantity: Float!
-  unitPrice: Float!
-  totalPrice: Float!
-  notes: String
-  sortOrder: Float!
-  serviceGender: String
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetBudgetsResponseDto {
-  idBudgets: String!
-  idLeads: String
-  budgetNumber: String!
-  status: BudgetStatus!
-  issueDate: String!
-  validUntil: String!
-  eventDates: [String!]!
-  eventArrivalTimes: [String!]!
-  eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
-  paymentMethod: String
-  advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
-  subtotal: Float!
-  totalAmount: Float!
-  sentVia: String
-  sentAt: String
-  items: [GetBudgetItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdateBudgetItemResponseDto {
-  idBudgetItems: String!
-  idPositions: String
-  position: String
-  description: String!
-  quantity: Float!
-  unitPrice: Float!
-  totalPrice: Float!
-  notes: String
-  sortOrder: Float!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdateBudgetsResponseDto {
-  idBudgets: String!
-  idLeads: String
-  budgetNumber: String!
-  status: BudgetStatus!
-  issueDate: String!
-  validUntil: String!
-  eventDates: [String!]!
-  eventArrivalTimes: [String!]!
-  eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
-  paymentMethod: String
-  advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
-  subtotal: Float!
-  totalAmount: Float!
-  sentVia: String
-  sentAt: String
-  items: [UpdateBudgetItemResponseDto!]
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreateBudgetsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreateBudgetsResponseDto!
-}
-
-type GetBudgetsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetBudgetsResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdateBudgetsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateBudgetsResponseDto!
-}
-
-type GenerateBudgetPreviewResponseDto {
-  fileName: String!
-  mimeType: String!
-  base64Content: String!
-  snapshotHash: String!
-}
-
-type GenerateBudgetPreviewMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: GenerateBudgetPreviewResponseDto!
-}
-
-type CreatePositionsResponseDto {
-  idPositions: String!
-  name: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type GetPositionsResponseDto {
-  idPositions: String!
-  name: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UpdatePositionsResponseDto {
-  idPositions: String!
-  name: String!
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type CreatePositionsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: CreatePositionsResponseDto!
-}
-
-type GetPositionsListResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  items: [GetPositionsResponseDto!]!
-  total: Int!
-  currentPage: Int!
-  limit: Int!
-  totalPages: Int!
-  hasNextPage: Boolean!
-}
-
-type UpdatePositionsMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdatePositionsResponseDto!
+  data: UpdateUserResponseDto!
 }
 
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
+  getUserFilterOptions: [UserFilterOptionDto!]!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
-  getUserPagePermissions(
-    input: GetUserPagePermissionsInputDto!
-  ): UserPagePermissionsResponseDto!
+  getUserPagePermissions(input: GetUserPagePermissionsInputDto!): UserPagePermissionsResponseDto!
   getMyPagePermissions: UserPagePermissionsResponseDto!
-  getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
-  getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
-  getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
-  getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
-  getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
-  getEvents(input: GetEventsInputDto): GetEventsListResponseDto!
-  getPayments(input: GetPaymentsInputDto): GetPaymentsListResponseDto!
-  getPayment(idPayments: String!): GetPaymentResponseDto!
-  getPaymentsByBudget(idBudgets: String!): [GetPaymentResponseDto!]!
-  getPaymentsByContract(idContracts: String!): [GetPaymentResponseDto!]!
-  getPaymentsByLead(idLeads: String!): [GetPaymentResponseDto!]!
-  getPaymentsByEvent(idEvents: String!): [GetPaymentResponseDto!]!
-  getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
-  getPositions(input: GetPositionsInputDto): GetPositionsListResponseDto!
+  getMyCategories(input: ListCategoriesInputDto): ListCategoriesResponseDto!
+  getCategoryById(input: GetCategoryByIdInputDto!): CategoryResponseDto!
+  getMyCreditCards(input: ListCreditCardsInputDto): ListCreditCardsResponseDto!
+  getCreditCardById(input: GetCreditCardByIdInputDto!): CreditCardResponseDto!
+  getDebtById(input: GetDebtByIdInputDto!): DebtResponseDto!
+  getMyDebts(input: ListDebtsInputDto): ListDebtsResponseDto!
+  getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
+  getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
 }
 
 input GetUsersInputDto {
   page: Int = 1
   limit: Int = 10
+  name: String
+  email: String
+  username: String
+  group: UserGroup
+  status: Boolean
 }
 
 input GetUserInputDto {
@@ -1058,87 +414,45 @@ input GetUserPagePermissionsInputDto {
   idUsers: String!
 }
 
-input GetCustomersInputDto {
+input ListCategoriesInputDto {
   page: Int = 1
   limit: Int = 10
-  idCustomers: String
-  startDate: String
-  endDate: String
+  status: Boolean
 }
 
-input GetEmployeesInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idEmployees: String
-  startDate: String
-  endDate: String
+input GetCategoryByIdInputDto {
+  idCategory: String!
 }
 
-input GetLeadsInputDto {
+input ListCreditCardsInputDto {
   page: Int = 1
   limit: Int = 10
-  idLeads: String
-  status: LeadStatus
-  startDate: String
-  endDate: String
+  status: Boolean
 }
 
-input GetContractsInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idContracts: String
-  idBudgets: String
-  status: ContractStatus
-  startDate: String
-  endDate: String
+input GetCreditCardByIdInputDto {
+  idCreditCard: String!
 }
 
-input GetSignaturesInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idContracts: String
-  status: SignatureStatus
+input GetDebtByIdInputDto {
+  idDebt: String!
 }
 
-input GetEventsInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idEvents: String
-  idContracts: String
-  status: EventStatus
-  startDate: String
-  endDate: String
+input ListDebtsInputDto {
+  page: Int
+  limit: Int
+  status: DebtStatus
+  debtType: DebtType
+  idCategory: String
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
 }
 
-input GetPaymentsInputDto {
-  page: Int = 1
-  limit: Int = 10
-  status: String
-  idPayments: String
-  idBudgets: String
-  idContracts: String
-  idEvents: String
-  idLeads: String
-  startDate: String
-  endDate: String
-}
-
-input GetBudgetsInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idBudgets: String
-  idLeads: String
-  status: BudgetStatus
-  startDate: String
-  endDate: String
-}
-
-input GetPositionsInputDto {
-  page: Int = 1
-  limit: Int = 10
-  idPositions: String
-  search: String
-  isActive: Boolean
+input GetDebtsReportInputDto {
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+  debtType: DebtType
+  idCategory: String
 }
 
 type Mutation {
@@ -1146,87 +460,24 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  requestPasswordRecovery(
-    input: RequestPasswordRecoveryInputDto!
-  ): LogoutResponseDto!
-  verifyPasswordRecoveryCode(
-    input: VerifyPasswordRecoveryCodeInputDto!
-  ): VerifyPasswordRecoveryCodeMutationResponseDto!
-  resetPasswordWithRecovery(
-    input: ResetPasswordWithRecoveryInputDto!
-  ): LogoutResponseDto!
+  requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
+  verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
+  resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(
-    input: AdminUpdateUserAccessInputDto!
-  ): AdminUpdateUserAccessMutationResponseDto!
-  setUserPagePermissions(
-    input: SetUserPagePermissionsInputDto!
-  ): SetUserPagePermissionsMutationResponseDto!
-  unlockUserCredential(
-    input: UnlockUserCredentialInputDto!
-  ): UnlockUserCredentialMutationResponseDto!
-  createCustomers(
-    input: CreateCustomersInputDto!
-  ): CreateCustomersMutationResponseDto!
-  updateCustomers(
-    input: UpdateCustomersInputDto!
-  ): UpdateCustomersMutationResponseDto!
-  createEmployees(
-    input: CreateEmployeesInputDto!
-  ): CreateEmployeesMutationResponseDto!
-  updateEmployees(
-    input: UpdateEmployeesInputDto!
-  ): UpdateEmployeesMutationResponseDto!
-  createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
-  updateLeads(input: UpdateLeadsInputDto!): UpdateLeadsMutationResponseDto!
-  createContracts(
-    input: CreateContractsInputDto!
-  ): CreateContractsMutationResponseDto!
-  updateContracts(
-    input: UpdateContractsInputDto!
-  ): UpdateContractsMutationResponseDto!
-  generateContractPreviewPdf(
-    input: GenerateContractPreviewInputDto!
-  ): GenerateContractPreviewMutationResponseDto!
-  sendContractEmail(input: SendContractEmailInputDto!): SuccessResponseDto!
-  sendContractSignatureRequest(
-    input: SendContractSignatureRequestInputDto!
-  ): SuccessResponseDto!
-  closeContractWithoutSignature(
-    input: CloseContractWithoutSignatureInputDto!
-  ): SuccessResponseDto!
-  createSignatureRequest(
-    input: CreateSignatureRequestInputDto!
-  ): CreateSignatureRequestMutationResponseDto!
-  getSignatureStatus(
-    input: GetSignatureStatusInputDto!
-  ): GetSignatureStatusMutationResponseDto!
-  cancelSignatureRequest(
-    input: CancelSignatureRequestInputDto!
-  ): SuccessResponseDto!
-  updateEvents(input: UpdateEventsInputDto!): UpdateEventsMutationResponseDto!
-  updateEventAssignment(
-    input: UpdateEventAssignmentInputDto!
-  ): UpdateEventAssignmentMutationResponseDto!
-  createPayment(input: CreatePaymentInputDto!): CreatePaymentResponseDto!
-  updatePayment(input: UpdatePaymentInputDto!): UpdatePaymentResponseDto!
-  createBudgets(
-    input: CreateBudgetsInputDto!
-  ): CreateBudgetsMutationResponseDto!
-  updateBudgets(
-    input: UpdateBudgetsInputDto!
-  ): UpdateBudgetsMutationResponseDto!
-  generateBudgetPreviewPdf(
-    input: GenerateBudgetPreviewInputDto!
-  ): GenerateBudgetPreviewMutationResponseDto!
-  sendBudgetEmail(input: SendBudgetEmailInputDto!): SuccessResponseDto!
-  createPositions(
-    input: CreatePositionsInputDto!
-  ): CreatePositionsMutationResponseDto!
-  updatePositions(
-    input: UpdatePositionsInputDto!
-  ): UpdatePositionsMutationResponseDto!
+  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
+  setUserPagePermissions(input: SetUserPagePermissionsInputDto!): SetUserPagePermissionsMutationResponseDto!
+  unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
+  createCategory(input: CreateCategoryInputDto!): CreateCategoryMutationResponseDto!
+  updateCategory(input: UpdateCategoryInputDto!): UpdateCategoryMutationResponseDto!
+  createCreditCard(input: CreateCreditCardInputDto!): CreateCreditCardMutationResponseDto!
+  updateCreditCard(input: UpdateCreditCardInputDto!): UpdateCreditCardMutationResponseDto!
+  createDebt(input: CreateDebtInputDto!): CreateDebtMutationResponseDto!
+  updateDebtDetails(input: UpdateDebtDetailsInputDto!): CreateDebtMutationResponseDto!
+  updateDebtStatus(input: UpdateDebtStatusInputDto!): CreateDebtMutationResponseDto!
+  registerInstallmentPayment(input: RegisterInstallmentPaymentInputDto!): RegisterInstallmentPaymentMutationResponseDto!
+  updateDebtPayment(input: UpdateDebtPaymentInputDto!): UpdateDebtPaymentMutationResponseDto!
+  deleteDebtPayment(idDebtPayment: String!): DeleteDebtPaymentMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -1287,271 +538,73 @@ input UnlockUserCredentialInputDto {
   idUsers: String!
 }
 
-input CreateCustomersInputDto {
+input CreateCategoryInputDto {
   name: String!
-  document: String!
-  type: String!
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean! = true
+  status: Boolean
 }
 
-input UpdateCustomersInputDto {
-  idCustomers: String!
-  name: String
-  document: String
-  type: String
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean
-}
-
-input CreateEmployeesInputDto {
+input UpdateCategoryInputDto {
+  idCategory: String!
   name: String!
-  document: String
-  email: String
-  phone: String
-  gender: EmployeeGender!
-  idPositions: String!
-  isActive: Boolean! = true
+  status: Boolean!
 }
 
-input UpdateEmployeesInputDto {
-  idEmployees: String!
-  name: String
-  document: String
-  email: String
-  phone: String
-  gender: EmployeeGender
-  idPositions: String
-  isActive: Boolean
-}
-
-input CreateLeadsInputDto {
+input CreateCreditCardInputDto {
   name: String!
-  email: String
-  phone: String
-  document: String
-  source: LeadSource!
-  notes: String
-  status: LeadStatus! = NEW
-  isActive: Boolean! = true
+  creditLimit: Float!
+  dueDay: Int!
+  closingDay: Int!
+  status: Boolean
 }
 
-input UpdateLeadsInputDto {
-  idLeads: String!
-  name: String
-  email: String
-  phone: String
-  document: String
-  source: LeadSource
-  notes: String
-  status: LeadStatus
-  isActive: Boolean
-}
-
-input CreateContractsInputDto {
-  idBudgets: String!
-  status: ContractStatus
-  issueDate: String!
-  body: String
-  templateVersion: Int
-  notes: String
-}
-
-input UpdateContractsInputDto {
-  idContracts: String!
-  status: ContractStatus
-  effectiveDate: String
-  expiresAt: String
-  body: String
-  templateVersion: Int
-  sentVia: String
-  sentAt: String
-  notes: String
-}
-
-input GenerateContractPreviewInputDto {
-  idContracts: String!
-}
-
-input SendContractEmailInputDto {
-  idContracts: String!
-}
-
-input SendContractSignatureRequestInputDto {
-  idContracts: String!
-}
-
-input CloseContractWithoutSignatureInputDto {
-  idContracts: String!
-}
-
-input CreateSignatureRequestInputDto {
-  documentName: String!
-  documentBase64: String!
-  externalReference: String
-  signers: [SignatureSignerInputDto!]!
-}
-
-input SignatureSignerInputDto {
+input UpdateCreditCardInputDto {
+  idCreditCard: String!
   name: String!
-  email: String!
-  phone: String
-  identifier: String
+  creditLimit: Float!
+  dueDay: Int!
+  closingDay: Int!
+  status: Boolean!
 }
 
-input GetSignatureStatusInputDto {
-  requestId: String!
-}
-
-input CancelSignatureRequestInputDto {
-  requestId: String!
-}
-
-input UpdateEventsInputDto {
-  idEvents: String!
-  status: EventStatus
-  overtimeMinutes: Int
-}
-
-input UpdateEventAssignmentInputDto {
-  idEventAssignments: String!
-  idEmployees: String!
-  employeePayment: Float!
-  isActive: Boolean
-}
-
-input CreatePaymentInputDto {
-  idLeads: String!
-  idBudgets: String
-  idContracts: String
-  idEvents: String
-  idEmployees: String
-  origin: String
-  plannedAmount: Float
-  dueDate: String
-  notes: String
-  paymentItems: [CreatePaymentItemInputDto!]
-}
-
-input CreatePaymentItemInputDto {
-  origin: String!
-  plannedAmount: Float!
-  status: String!
-  paidAmount: Float!
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  sortOrder: Int
-}
-
-input UpdatePaymentInputDto {
-  idPayments: String!
-  status: PaymentStatus
-  paidAmount: Float
-  paymentDate: String
-  dueDate: String
-  proofUrl: String
-  notes: String
-  paymentItems: [CreatePaymentItemInputDto!]
-}
-
-"""
-Status de pagamento
-"""
-enum PaymentStatus {
-  PENDING
-  PARTIAL
-  PAID
-  CANCELED
-}
-
-input CreateBudgetsInputDto {
-  idLeads: String!
-  status: BudgetStatus! = DRAFT
-  issueDate: String
-  validUntil: String!
-  eventDates: [String!]!
-  eventArrivalTimes: [String!]!
-  eventDepartureTimes: [String!]!
-  eventLocation: String!
-  guestCount: Int!
-  durationHours: Int!
-  paymentMethod: String!
-  advancePercentage: Float!
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
+input CreateDebtInputDto {
+  title: String!
+  idCategory: String!
+  idCreditCard: String
+  description: String
+  debtType: DebtType!
   totalAmount: Float
-  displacementFee: Float! = 0
-  items: [CreateBudgetItemInputDto!]!
+  dueDate: DateTime
+  acquiredAt: DateTime
+  hasInstallments: Boolean!
+  installmentCount: Int
+  installmentAmount: Float
 }
 
-input CreateBudgetItemInputDto {
-  idPositions: String!
-  description: String!
-  gender: String
-  quantity: Int!
-  unitPrice: Float!
-  notes: String
-  sortOrder: Int = 0
-}
-
-input UpdateBudgetsInputDto {
-  idBudgets: String!
-  idLeads: String
-  status: BudgetStatus
-  issueDate: String
-  validUntil: String
-  eventDates: [String!]
-  eventArrivalTimes: [String!]
-  eventDepartureTimes: [String!]
-  eventLocation: String
-  guestCount: Int
-  durationHours: Int
-  paymentMethod: String
-  advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
+input UpdateDebtDetailsInputDto {
+  idDebt: String!
+  title: String
+  description: String
+  idCategory: String
+  debtType: DebtType
+  acquiredAt: DateTime
+  dueDate: DateTime
   totalAmount: Float
-  displacementFee: Float
-  items: [UpdateBudgetItemInputDto!]
-  sentVia: String
-  sentAt: String
 }
 
-input UpdateBudgetItemInputDto {
-  idPositions: String!
-  description: String!
-  gender: String
-  quantity: Int!
-  unitPrice: Float!
-  notes: String
-  sortOrder: Int = 0
+input UpdateDebtStatusInputDto {
+  idDebt: String!
+  status: DebtStatus!
 }
 
-input GenerateBudgetPreviewInputDto {
-  idBudgets: String
-  budgetNumber: String
-  draft: CreateBudgetsInputDto
+input RegisterInstallmentPaymentInputDto {
+  idDebt: String!
+  idDebtInstallment: String!
+  amountPaid: Float!
+  paidAt: DateTime
 }
 
-input SendBudgetEmailInputDto {
-  idBudgets: String!
-}
-
-input CreatePositionsInputDto {
-  name: String!
-  isActive: Boolean! = true
-}
-
-input UpdatePositionsInputDto {
-  idPositions: String!
-  name: String
-  isActive: Boolean
+input UpdateDebtPaymentInputDto {
+  idDebtPayment: String!
+  amountPaid: Float
+  paidAt: DateTime
 }

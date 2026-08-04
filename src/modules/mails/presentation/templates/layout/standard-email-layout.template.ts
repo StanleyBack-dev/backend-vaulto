@@ -9,6 +9,7 @@ interface StandardEmailLayoutInput {
   ctaLabel?: string;
   ctaUrl?: string;
   footerNote?: string;
+  logoUrl?: string;
 }
 
 function escapeHtml(value: string): string {
@@ -29,13 +30,14 @@ export function renderStandardEmailLayout({
   ctaLabel,
   ctaUrl,
   footerNote,
+  logoUrl,
 }: StandardEmailLayoutInput): string {
   const year = new Date().getFullYear();
   const ctaHtml =
     ctaLabel && ctaUrl
       ? `
       <div style="margin: 28px 0 10px 0; text-align: center;">
-        <a href="${escapeHtml(ctaUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${EMAIL_BRAND.accent};border:1px solid ${EMAIL_BRAND.accentDark};color:${EMAIL_BRAND.text};text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px;box-shadow:0 6px 18px rgba(44,24,16,0.12);">
+        <a href="${escapeHtml(ctaUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${EMAIL_BRAND.accent};border:1px solid ${EMAIL_BRAND.accentDark};color:${EMAIL_BRAND.text};text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px;box-shadow:0 6px 18px rgba(9,9,15,0.18);">
           ${escapeHtml(ctaLabel)}
         </a>
       </div>
@@ -55,15 +57,29 @@ export function renderStandardEmailLayout({
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${EMAIL_BRAND.pageBackground};padding:24px 12px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="620" cellspacing="0" cellpadding="0" style="max-width:620px;background:${EMAIL_BRAND.surface};border:1px solid ${EMAIL_BRAND.border};border-radius:14px;overflow:hidden;box-shadow:0 14px 34px rgba(44,24,16,0.08);">
+          <table role="presentation" width="620" cellspacing="0" cellpadding="0" style="max-width:620px;background:${EMAIL_BRAND.surface};border:1px solid ${EMAIL_BRAND.border};border-radius:14px;overflow:hidden;box-shadow:0 14px 34px rgba(9,9,15,0.1);">
             <tr>
               <td style="padding:0;background:${EMAIL_BRAND.headerBackground};color:${EMAIL_BRAND.white};">
                 <div style="height:6px;background:${EMAIL_BRAND.accent};font-size:0;line-height:0;">&nbsp;</div>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr>
                     <td style="padding:22px 28px;vertical-align:middle;">
-                      <div style="font-size:12px;letter-spacing:1.8px;text-transform:uppercase;color:${EMAIL_BRAND.headerMuted};">Royal Copeiras</div>
-                      <h1 style="margin:10px 0 0 0;font-size:22px;line-height:1.3;color:${EMAIL_BRAND.white};">${escapeHtml(heading)}</h1>
+                      <table role="presentation" cellspacing="0" cellpadding="0">
+                        <tr>
+                          ${
+                            logoUrl
+                              ? `<td style="padding-right:12px;vertical-align:middle;">
+                                  <img src="${escapeHtml(logoUrl)}" width="44" height="44" alt="Vaulto" style="display:block;border-radius:50%;" />
+                                </td>`
+                              : ""
+                          }
+                          <td style="vertical-align:middle;">
+                            <div style="font-size:16px;font-weight:800;letter-spacing:2.5px;color:${EMAIL_BRAND.white};">VAULTO</div>
+                            <div style="margin-top:3px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${EMAIL_BRAND.accent};">Finance Platform</div>
+                          </td>
+                        </tr>
+                      </table>
+                      <h1 style="margin:16px 0 0 0;font-size:22px;line-height:1.3;color:${EMAIL_BRAND.white};">${escapeHtml(heading)}</h1>
                     </td>
                   </tr>
                 </table>
@@ -84,7 +100,7 @@ export function renderStandardEmailLayout({
             </tr>
             <tr>
               <td style="padding:14px 28px;background:${EMAIL_BRAND.cardBackground};border-top:1px solid ${EMAIL_BRAND.border};font-size:11px;color:${EMAIL_BRAND.textSoft};text-align:center;">
-                Royal Copeiras © ${year}
+                Vaulto © ${year}
               </td>
             </tr>
           </table>

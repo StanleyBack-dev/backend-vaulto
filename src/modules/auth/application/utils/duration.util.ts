@@ -27,4 +27,3 @@ export function parseDurationToMs(value: string): number {
   const [, amount, unit] = match;
   return Number(amount) * DURATION_MULTIPLIERS[unit.toLowerCase()];
 }
-

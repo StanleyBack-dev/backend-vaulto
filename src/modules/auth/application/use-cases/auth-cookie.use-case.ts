@@ -40,5 +40,3 @@ export class AuthCookieService {
     response.clearCookie(REFRESH_TOKEN_COOKIE_NAME, clearOptions);
   }
 }
-
-

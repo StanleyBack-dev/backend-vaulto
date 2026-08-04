@@ -23,5 +23,3 @@ import { RenderContractTemplateService } from "./presentation/templates/contract
   ],
 })
 export class PdfGeneratorModule {}
-
-

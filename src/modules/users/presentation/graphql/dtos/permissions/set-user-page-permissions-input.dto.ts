@@ -24,4 +24,3 @@ export class SetUserPagePermissionsInputDto {
   @IsEnum(PageAccessKey, { each: true })
   pagePermissions?: PageAccessKey[];
 }
-

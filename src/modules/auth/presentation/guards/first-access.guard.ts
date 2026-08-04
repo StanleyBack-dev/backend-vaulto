@@ -62,8 +62,3 @@ export class FirstAccessGuard implements CanActivate {
       .getRequest<Record<string, unknown> & { user?: unknown }>();
   }
 }
-
-
-
-
-

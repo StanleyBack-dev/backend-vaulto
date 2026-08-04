@@ -25,7 +25,12 @@ export default [
         {
           patterns: [
             {
-              group: ["@nestjs/*", "typeorm", "src/modules/**/infrastructure/**", "src/modules/**/presentation/**"],
+              group: [
+                "@nestjs/*",
+                "typeorm",
+                "src/modules/**/infrastructure/**",
+                "src/modules/**/presentation/**",
+              ],
               message:
                 "Domain deve ser puro e nao pode depender de framework, persistencia ou camada de apresentacao.",
             },
@@ -42,7 +47,10 @@ export default [
         {
           patterns: [
             {
-              group: ["src/modules/**/infrastructure/**", "src/modules/**/presentation/**"],
+              group: [
+                "src/modules/**/infrastructure/**",
+                "src/modules/**/presentation/**",
+              ],
               message:
                 "Application deve depender de portas/contratos e nao de implementacoes concretas.",
             },

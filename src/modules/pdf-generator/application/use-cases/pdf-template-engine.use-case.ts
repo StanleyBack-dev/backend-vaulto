@@ -43,4 +43,3 @@ export class PdfTemplateEngineService {
     return renderer.render(input.payload);
   }
 }
-

@@ -151,6 +151,3 @@ export class AuthCredentialsService {
     return (await this.findByUserId(credential.idUsers))!;
   }
 }
-
-
-

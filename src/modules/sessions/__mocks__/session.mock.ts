@@ -14,4 +14,3 @@ export const sessionMock: SessionEntity = {
   updatedAt: new Date("2024-04-12T00:00:00Z"),
   user: undefined as never,
 };
-

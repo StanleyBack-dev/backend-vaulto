@@ -84,6 +84,3 @@ export class AuthGuard implements CanActivate {
     return headerValue.slice(7);
   }
 }
-
-
-

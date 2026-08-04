@@ -13,5 +13,3 @@ export class LogoutService {
     await this.revokeSessionUseCase.execute(refreshToken);
   }
 }
-
-

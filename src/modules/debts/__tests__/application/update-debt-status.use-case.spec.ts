@@ -14,9 +14,13 @@ describe("UpdateDebtStatusUseCase", () => {
       updateStatus: jest.fn().mockResolvedValue({
         idDebt: "debt-1",
         idUsers: "user-1",
+        idAccount: "account-1",
+        idCategory: "category-1",
         title: "Emprestimo",
+        category: "Emprestimo",
         debtType: DebtType.VARIABLE,
         totalAmount: 2000,
+        dueDate: new Date("2026-07-01"),
         startDate: new Date("2026-07-01"),
         hasInstallments: true,
         installmentCount: 10,
@@ -70,4 +74,3 @@ describe("UpdateDebtStatusUseCase", () => {
     expect(debtRepository.updateStatus).not.toHaveBeenCalled();
   });
 });
-

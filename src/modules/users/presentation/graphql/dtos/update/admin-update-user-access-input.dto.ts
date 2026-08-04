@@ -36,4 +36,3 @@ export class AdminUpdateUserAccessInputDto {
   @IsBoolean()
   useGroupDefaults?: boolean;
 }
-

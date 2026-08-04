@@ -51,8 +51,3 @@ export class AuthPermissionsGuard implements CanActivate {
       .getRequest<Record<string, unknown> & { user?: unknown }>();
   }
 }
-
-
-
-
-

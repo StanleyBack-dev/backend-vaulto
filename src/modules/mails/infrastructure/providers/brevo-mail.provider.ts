@@ -27,9 +27,9 @@ export class BrevoMailProvider implements MailProviderPort {
     apiKey.apiKey = apiKeyValue || "";
     this.senderEmail =
       this.configService.get<string>("MAIL_FROM_EMAIL") ||
-      "no-reply@royalcopeiras.com.br";
+      "no-reply@vaulto.com.br";
     this.senderName =
-      this.configService.get<string>("MAIL_FROM_NAME") || "Royal Copeiras";
+      this.configService.get<string>("MAIL_FROM_NAME") || "Vaulto";
     this.apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
   }
 

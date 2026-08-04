@@ -31,4 +31,3 @@ describe("CreateSessionUseCase", () => {
     expect(result).toEqual(sessionMock);
   });
 });
-

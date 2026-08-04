@@ -29,4 +29,3 @@ export function createListResponseDto<TItem>(
 
   return ListResponseDto;
 }
-

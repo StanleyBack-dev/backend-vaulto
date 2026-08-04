@@ -31,4 +31,3 @@ import { SaveSessionUseCase } from "@/modules/sessions/application/use-cases/sav
   ],
 })
 export class SessionsModule {}
-

@@ -1,11 +1,12 @@
 import { Test } from "@nestjs/testing";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
-import { ACCOUNT_REPOSITORY } from "@/modules/accounts/application/ports/account-repository.port";
+import { CATEGORY_REPOSITORY } from "@/modules/categories/application/ports/category-repository.port";
+import { CREDIT_CARD_REPOSITORY } from "@/modules/credit-cards/application/ports/credit-card-repository.port";
 import { DebtsResolver } from "@/modules/debts/presentation/graphql/resolvers/debts.resolver";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
 import { GetDebtByIdUseCase } from "@/modules/debts/application/use-cases/get/get-debt-by-id.use-case";
 import { ListDebtsUseCase } from "@/modules/debts/application/use-cases/get/list-debts.use-case";
-import { RegisterDebtPaymentUseCase } from "@/modules/debts/application/use-cases/payment/register-debt-payment.use-case";
+import { UpdateDebtDetailsUseCase } from "@/modules/debts/application/use-cases/update/update-debt-details.use-case";
 import { UpdateDebtStatusUseCase } from "@/modules/debts/application/use-cases/update/update-debt-status.use-case";
 import {
   DEBT_REPOSITORY,
@@ -14,7 +15,7 @@ import {
   type DebtRepositoryPort,
   type DebtView,
   type ListDebtsFilters,
-  type RegisterDebtPaymentPayload,
+  type UpdateDebtDetailsPayload,
   type UpdateDebtStatusPayload,
 } from "@/modules/debts/application/ports/debt-repository.port";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
@@ -32,11 +33,13 @@ class InMemoryDebtRepository implements DebtRepositoryPort {
     const debt: DebtView = {
       idDebt: `debt-${this.debts.length + 1}`,
       idUsers: payload.idUsers,
-      idAccount: payload.idAccount,
+      idCategory: payload.idCategory,
       title: payload.title,
+      category: payload.category,
       description: payload.description,
       debtType: payload.debtType,
       totalAmount: payload.totalAmount,
+      dueDate: payload.dueDate,
       startDate: payload.startDate,
       hasInstallments: payload.hasInstallments,
       installmentCount: payload.installmentCount ?? 1,
@@ -90,61 +93,6 @@ class InMemoryDebtRepository implements DebtRepositoryPort {
     return debt;
   }
 
-  async registerPayment(
-    idUsers: string,
-    payload: RegisterDebtPaymentPayload,
-  ): Promise<DebtView> {
-    const debt = this.debts.find(
-      (item) => item.idDebt === payload.idDebt && item.idUsers === idUsers,
-    );
-
-    if (!debt) {
-      throw AppException.from(APP_ERRORS.debts.notFound, undefined);
-    }
-
-    let remaining = payload.amountPaid;
-
-    debt.payments.unshift({
-      idDebtPayment: `payment-${debt.payments.length + 1}`,
-      idDebt: debt.idDebt,
-      idUsers,
-      amountPaid: payload.amountPaid,
-      paidAt: payload.paidAt ?? new Date(),
-      createdAt: new Date(),
-    });
-
-    for (const installment of debt.installments) {
-      if (remaining <= 0) {
-        break;
-      }
-
-      const outstanding = installment.amountDue - installment.amountPaid;
-      if (outstanding <= 0) {
-        continue;
-      }
-
-      const applied = Math.min(remaining, outstanding);
-      installment.amountPaid = Number((installment.amountPaid + applied).toFixed(2));
-      remaining = Number((remaining - applied).toFixed(2));
-
-      installment.status =
-        installment.amountPaid >= installment.amountDue
-          ? DebtStatus.PAID
-          : DebtStatus.PARTIALLY_PAID;
-    }
-
-    if (debt.installments.every((installment) => installment.status === DebtStatus.PAID)) {
-      debt.status = DebtStatus.PAID;
-      debt.settledAt = payload.paidAt ?? new Date();
-    } else {
-      debt.status = DebtStatus.PARTIALLY_PAID;
-      debt.settledAt = undefined;
-    }
-
-    debt.updatedAt = new Date();
-    return debt;
-  }
-
   async updateStatus(
     idUsers: string,
     payload: UpdateDebtStatusPayload,
@@ -161,17 +109,39 @@ class InMemoryDebtRepository implements DebtRepositoryPort {
     debt.updatedAt = new Date();
     return debt;
   }
+
+  async updateDetails(
+    idUsers: string,
+    payload: UpdateDebtDetailsPayload,
+  ): Promise<DebtView> {
+    const debt = this.debts.find(
+      (item) => item.idDebt === payload.idDebt && item.idUsers === idUsers,
+    );
+
+    if (!debt) {
+      throw AppException.from(APP_ERRORS.debts.notFound, undefined);
+    }
+
+    if (payload.title !== undefined) debt.title = payload.title;
+    if (payload.idCategory !== undefined) debt.idCategory = payload.idCategory;
+    if (payload.category !== undefined) debt.category = payload.category;
+    if (payload.debtType !== undefined) debt.debtType = payload.debtType;
+    if (payload.acquiredAt !== undefined) debt.acquiredAt = payload.acquiredAt;
+
+    debt.updatedAt = new Date();
+    return debt;
+  }
 }
 
-describe("Debts GraphQL flow (create/list/pay)", () => {
-  it("should create debt, list debts and register payment", async () => {
+describe("Debts GraphQL flow (create/list/update status)", () => {
+  it("should create debt, list debts, read details and update status", async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         DebtsResolver,
         CreateDebtUseCase,
         GetDebtByIdUseCase,
         ListDebtsUseCase,
-        RegisterDebtPaymentUseCase,
+        UpdateDebtDetailsUseCase,
         UpdateDebtStatusUseCase,
         {
           provide: AuthorizationService,
@@ -180,9 +150,20 @@ describe("Debts GraphQL flow (create/list/pay)", () => {
           },
         },
         {
-          provide: ACCOUNT_REPOSITORY,
+          provide: CATEGORY_REPOSITORY,
           useValue: {
-            findByIdAndUser: jest.fn().mockResolvedValue({ idAccount: "account-1" }),
+            findById: jest.fn().mockResolvedValue({
+              idCategory: "category-1",
+              status: true,
+              name: "Cartao",
+            }),
+          },
+        },
+        {
+          provide: CREDIT_CARD_REPOSITORY,
+          useValue: {
+            findById: jest.fn().mockResolvedValue(null),
+            findByName: jest.fn().mockResolvedValue(null),
           },
         },
         {
@@ -193,15 +174,19 @@ describe("Debts GraphQL flow (create/list/pay)", () => {
     }).compile();
 
     const resolver = moduleRef.get(DebtsResolver);
-    const user = { idUsers: "user-1", username: "john", group: "USER" as never };
+    const user = {
+      idUsers: "user-1",
+      username: "john",
+      group: "USER" as never,
+    };
 
     const created = await resolver.createDebt(user, {
-      idAccount: "account-1",
       title: "Cartao principal",
+      idCategory: "category-1",
       description: "Fatura do cartao",
       debtType: DebtType.FIXED,
       totalAmount: 300,
-      startDate: new Date("2026-07-01"),
+      dueDate: new Date("2026-07-01"),
       hasInstallments: true,
       installmentCount: 3,
     });
@@ -212,18 +197,11 @@ describe("Debts GraphQL flow (create/list/pay)", () => {
     expect(list.items).toHaveLength(1);
     expect(list.items[0]?.status).toBe(DebtStatus.OPEN);
 
-    const paid = await resolver.registerDebtPayment(user, {
-      idDebt: created.data.idDebt,
-      amountPaid: 100,
-    });
-
-    expect(paid.data.status).toBe(DebtStatus.PARTIALLY_PAID);
-
     const detail = await resolver.getDebtById(user, {
       idDebt: created.data.idDebt,
     });
 
-    expect(detail.payments).toHaveLength(1);
+    expect(detail.installments).toHaveLength(3);
 
     const updated = await resolver.updateDebtStatus(user, {
       idDebt: created.data.idDebt,
@@ -233,5 +211,3 @@ describe("Debts GraphQL flow (create/list/pay)", () => {
     expect(updated.data.status).toBe(DebtStatus.OVERDUE);
   });
 });
-
-

@@ -11,5 +11,3 @@ describe("PdfTemplateResolverService", () => {
     expect(existsSync(absolutePath)).toBe(true);
   });
 });
-
-

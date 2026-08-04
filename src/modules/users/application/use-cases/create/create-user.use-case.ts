@@ -12,6 +12,7 @@ import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import type { IRequestInfo } from "@/common/decorators/request-info.decorator";
+import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { sanitizeSensitiveData } from "@/common/security/sanitize-sensitive-data";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
@@ -29,6 +30,7 @@ export class CreateUserUseCase {
     private readonly dataSource: DataSource,
     private readonly userOnboardingEmailUseCase: UserOnboardingEmailUseCase,
     private readonly userPageAccessUseCase: UserPageAccessUseCase,
+    private readonly seedDefaultCategoriesUseCase: SeedDefaultCategoriesUseCase,
   ) {}
 
   async execute(
@@ -95,6 +97,8 @@ export class CreateUserUseCase {
         input.pagePermissions,
       );
 
+      await this.seedDefaultCategoriesUseCase.execute(savedUser.idUsers);
+
       return {
         idUsers: savedUser.idUsers,
         name: savedUser.name,
@@ -134,7 +138,3 @@ export class CreateUserUseCase {
     }
   }
 }
-
-
-
-

@@ -58,7 +58,7 @@ export class UserOnboardingEmailUseCase {
       name:
         this.configService.get<string>("MAIL_REPLY_TO_NAME") ||
         this.configService.get<string>("MAIL_FROM_NAME") ||
-        "Royal Copeiras",
+        "Vaulto",
     };
   }
 }

@@ -11,37 +11,46 @@ import { GetUserInputDto } from "@/modules/users/presentation/graphql/dtos/get/g
 import { GetUserResponseDto } from "@/modules/users/presentation/graphql/dtos/get/get-user-response.dto";
 import { GetUsersInputDto } from "@/modules/users/presentation/graphql/dtos/get/get-users-input.dto";
 import { GetUsersListResponseDto } from "@/modules/users/presentation/graphql/dtos/get/get-users-list-response.dto";
+import { UserFilterOptionDto } from "@/modules/users/presentation/graphql/dtos/get/user-filter-option.dto";
 
 @Resolver()
 export class GetUsersResolver {
-	constructor(private readonly getUsersUseCase: GetUsersUseCase) {}
+  constructor(private readonly getUsersUseCase: GetUsersUseCase) {}
 
-	@Query(() => GetUsersListResponseDto, { name: "getUsers" })
-	@RequirePermissions(AuthPermission.READ_USERS)
-	async getUsers(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input", { nullable: true }) input?: GetUsersInputDto,
-	) {
-		const result = await this.getUsersUseCase.findAll(user.idUsers, input);
+  @Query(() => GetUsersListResponseDto, { name: "getUsers" })
+  @RequirePermissions(AuthPermission.READ_USERS)
+  async getUsers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input", { nullable: true }) input?: GetUsersInputDto,
+  ) {
+    const result = await this.getUsersUseCase.findAll(user.idUsers, input);
 
-		return buildPaginatedListResponse(result, RESPONSE_MESSAGES.users.listed);
-	}
+    return buildPaginatedListResponse(result, RESPONSE_MESSAGES.users.listed);
+  }
 
-	@Query(() => GetUserResponseDto, { name: "getUser" })
-	@RequirePermissions(AuthPermission.READ_USERS)
-	async getUser(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: GetUserInputDto,
-	): Promise<GetUserResponseDto> {
-		return this.getUsersUseCase.findOne(user.idUsers, input);
-	}
+  @Query(() => [UserFilterOptionDto], { name: "getUserFilterOptions" })
+  @RequirePermissions(AuthPermission.READ_USERS)
+  async getUserFilterOptions(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<UserFilterOptionDto[]> {
+    return this.getUsersUseCase.findFilterOptions(user.idUsers);
+  }
 
-	@Query(() => GetUserResponseDto, { name: "me" })
-	@AllowFirstAccess()
-	@RequirePermissions(AuthPermission.READ_OWN_USER)
-	async me(@CurrentUser() user: AuthenticatedUser): Promise<GetUserResponseDto> {
-		return this.getUsersUseCase.findByIdOrFail(user.idUsers);
-	}
+  @Query(() => GetUserResponseDto, { name: "getUser" })
+  @RequirePermissions(AuthPermission.READ_USERS)
+  async getUser(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: GetUserInputDto,
+  ): Promise<GetUserResponseDto> {
+    return this.getUsersUseCase.findOne(user.idUsers, input);
+  }
+
+  @Query(() => GetUserResponseDto, { name: "me" })
+  @AllowFirstAccess()
+  @RequirePermissions(AuthPermission.READ_OWN_USER)
+  async me(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<GetUserResponseDto> {
+    return this.getUsersUseCase.findByIdOrFail(user.idUsers);
+  }
 }
-
-

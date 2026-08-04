@@ -1,11 +1,23 @@
 import type { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 import type { DebtType } from "@/modules/debts/domain/enums/debt-type.enum";
-import type { CreateDebtCommand } from "@/modules/debts/application/dto/create/create-debt.command";
-import type { RegisterDebtPaymentCommand } from "@/modules/debts/application/dto/payment/register-debt-payment.command";
+import type { UpdateDebtDetailsCommand } from "@/modules/debts/application/dto/update/update-debt-details.command";
 import type { UpdateDebtStatusCommand } from "@/modules/debts/application/dto/update/update-debt-status.command";
 
-export type CreateDebtPayload = CreateDebtCommand & {
+export type CreateDebtPayload = {
   idUsers: string;
+  idCategory: string;
+  title: string;
+  category: string;
+  idCreditCard?: string;
+  creditCard?: string;
+  description?: string;
+  debtType: DebtType;
+  totalAmount: number;
+  dueDate?: Date;
+  acquiredAt?: Date;
+  startDate: Date;
+  hasInstallments: boolean;
+  installmentCount: number;
   status: DebtStatus;
 };
 
@@ -32,6 +44,7 @@ export type DebtInstallmentView = {
 export type DebtPaymentView = {
   idDebtPayment: string;
   idDebt: string;
+  idDebtInstallment?: string;
   idUsers: string;
   amountPaid: number;
   paidAt: Date;
@@ -41,11 +54,17 @@ export type DebtPaymentView = {
 export type DebtView = {
   idDebt: string;
   idUsers: string;
-  idAccount: string;
+  idCategory: string;
   title: string;
+  category: string;
+  idCreditCard?: string;
+  creditCard?: string;
   description?: string;
   debtType: DebtType;
   totalAmount: number;
+  dueDate?: Date;
+  acquiredAt?: Date;
+  endDate?: Date;
   startDate: Date;
   hasInstallments: boolean;
   installmentCount: number;
@@ -62,11 +81,16 @@ export type ListDebtsFilters = {
   limit?: number;
   status?: DebtStatus;
   debtType?: DebtType;
+  idCategory?: string;
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
 };
 
-export type RegisterDebtPaymentPayload = RegisterDebtPaymentCommand;
-
 export type UpdateDebtStatusPayload = UpdateDebtStatusCommand;
+
+export type UpdateDebtDetailsPayload = UpdateDebtDetailsCommand & {
+  category?: string;
+};
 
 export interface DebtRepositoryPort {
   create(
@@ -78,13 +102,13 @@ export interface DebtRepositoryPort {
     filters?: ListDebtsFilters,
   ): Promise<{ records: DebtView[]; total: number }>;
   findById(idUsers: string, idDebt: string): Promise<DebtView>;
-  registerPayment(
-    idUsers: string,
-    payload: RegisterDebtPaymentPayload,
-  ): Promise<DebtView>;
   updateStatus(
     idUsers: string,
     payload: UpdateDebtStatusPayload,
+  ): Promise<DebtView>;
+  updateDetails(
+    idUsers: string,
+    payload: UpdateDebtDetailsPayload,
   ): Promise<DebtView>;
 }
 

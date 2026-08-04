@@ -15,4 +15,13 @@ export class ListDebtsInputDto {
 
   @Field(() => DebtType, { nullable: true })
   debtType?: DebtType;
+
+  @Field(() => String, { nullable: true })
+  idCategory?: string;
+
+  @Field(() => Date, { nullable: true })
+  dueDateFrom?: Date;
+
+  @Field(() => Date, { nullable: true })
+  dueDateTo?: Date;
 }

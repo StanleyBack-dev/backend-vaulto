@@ -19,5 +19,3 @@ export class PageAccessMetadataResponseDto {
   @Field(() => [GroupDefaultDto])
   groupDefaults!: GroupDefaultDto[];
 }
-
-

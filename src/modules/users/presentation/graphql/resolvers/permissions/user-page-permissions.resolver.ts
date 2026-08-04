@@ -14,41 +14,45 @@ import { UserPagePermissionsResponseDto } from "@/modules/users/presentation/gra
 
 @Resolver()
 export class UserPagePermissionsResolver {
-	constructor(private readonly userPageAccessUseCase: UserPageAccessUseCase) {}
+  constructor(private readonly userPageAccessUseCase: UserPageAccessUseCase) {}
 
-	@Query(() => UserPagePermissionsResponseDto, {
-		name: "getUserPagePermissions",
-	})
-	@RequirePermissions(AuthPermission.MANAGE_USERS)
-	async getUserPagePermissions(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: GetUserPagePermissionsInputDto,
-	): Promise<UserPagePermissionsResponseDto> {
-		return this.userPageAccessUseCase.getByUserIdManaged(
-			user.idUsers,
-			input.idUsers,
-		);
-	}
+  @Query(() => UserPagePermissionsResponseDto, {
+    name: "getUserPagePermissions",
+  })
+  @RequirePermissions(AuthPermission.MANAGE_USERS)
+  async getUserPagePermissions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: GetUserPagePermissionsInputDto,
+  ): Promise<UserPagePermissionsResponseDto> {
+    return this.userPageAccessUseCase.getByUserIdManaged(
+      user.idUsers,
+      input.idUsers,
+    );
+  }
 
-	@Query(() => UserPagePermissionsResponseDto, { name: "getMyPagePermissions" })
-	@AllowFirstAccess()
-	@RequirePermissions(AuthPermission.READ_OWN_USER)
-	async getMyPagePermissions(
-		@CurrentUser() user: AuthenticatedUser,
-	): Promise<UserPagePermissionsResponseDto> {
-		return this.userPageAccessUseCase.getByUserId(user.idUsers);
-	}
+  @Query(() => UserPagePermissionsResponseDto, { name: "getMyPagePermissions" })
+  @AllowFirstAccess()
+  @RequirePermissions(AuthPermission.READ_OWN_USER)
+  async getMyPagePermissions(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<UserPagePermissionsResponseDto> {
+    return this.userPageAccessUseCase.getByUserId(user.idUsers);
+  }
 
-	@Mutation(() => SetUserPagePermissionsMutationResponseDto)
-	@RequirePermissions(AuthPermission.MANAGE_USERS)
-	async setUserPagePermissions(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: SetUserPagePermissionsInputDto,
-	) {
-		const result = await this.userPageAccessUseCase.setForUser(user.idUsers, input);
+  @Mutation(() => SetUserPagePermissionsMutationResponseDto)
+  @RequirePermissions(AuthPermission.MANAGE_USERS)
+  async setUserPagePermissions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: SetUserPagePermissionsInputDto,
+  ) {
+    const result = await this.userPageAccessUseCase.setForUser(
+      user.idUsers,
+      input,
+    );
 
-		return buildDataResponse(result, RESPONSE_MESSAGES.users.permissionsUpdated);
-	}
+    return buildDataResponse(
+      result,
+      RESPONSE_MESSAGES.users.permissionsUpdated,
+    );
+  }
 }
-
-

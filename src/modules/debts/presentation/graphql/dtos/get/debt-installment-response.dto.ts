@@ -1,4 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
+import { toLocalNaiveIsoString } from "@/common/utils/date.util";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 import type { DebtInstallmentView } from "@/modules/debts/application/ports/debt-repository.port";
 
@@ -12,7 +13,7 @@ export class DebtInstallmentResponseDto {
     dto.amountDue = view.amountDue;
     dto.amountPaid = view.amountPaid;
     dto.dueDate = view.dueDate;
-    dto.paidAt = view.paidAt;
+    dto.paidAt = toLocalNaiveIsoString(view.paidAt);
     dto.status = view.status;
     return dto;
   }
@@ -35,8 +36,8 @@ export class DebtInstallmentResponseDto {
   @Field(() => Date)
   dueDate!: Date;
 
-  @Field(() => Date, { nullable: true })
-  paidAt?: Date;
+  @Field({ nullable: true })
+  paidAt?: string;
 
   @Field(() => DebtStatus)
   status!: DebtStatus;

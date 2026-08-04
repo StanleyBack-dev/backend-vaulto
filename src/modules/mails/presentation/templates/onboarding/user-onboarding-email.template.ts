@@ -17,7 +17,7 @@ function buildPlainTextContent({
   return [
     `Olá, ${name}.`,
     "",
-    "Sua conta na Royal Copeiras foi criada com sucesso.",
+    "Sua conta na Vaulto foi criada com sucesso.",
     `Usuário: ${username}`,
     `Senha temporária: ${temporaryPassword}`,
     "",
@@ -44,19 +44,20 @@ export function buildUserOnboardingEmail(input: UserOnboardingTemplateInput): {
   `;
 
   const html = renderStandardEmailLayout({
-    title: "Bem-vindo(a) à Royal Copeiras",
+    title: "Bem-vindo(a) à Vaulto",
     preheader: "Sua conta foi criada com sucesso.",
-    heading: "Bem-vindo(a) à Royal Copeiras",
+    heading: "Bem-vindo(a) à Vaulto",
     greeting: `Olá, ${firstName}!`,
     contentHtml,
     ctaLabel: "Acessar plataforma",
     ctaUrl: input.appUrl,
+    logoUrl: `${input.appUrl.replace(/\/$/, "")}/vaulto-logo-96.png`,
     footerNote:
       "Este email contém dados de primeiro acesso. Não compartilhe esta mensagem.",
   });
 
   return {
-    subject: "Sua conta foi criada - Royal Copeiras",
+    subject: "Sua conta foi criada - Vaulto",
     html,
     text: buildPlainTextContent(input),
   };

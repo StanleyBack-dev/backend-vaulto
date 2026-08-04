@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ILike, In, Repository } from "typeorm";
+import { FindOptionsWhere, ILike, In, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { PaginatedResult } from "@/common/responses/interfaces/response.interface";
@@ -13,6 +13,7 @@ import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/e
 import { GetUserInputDto } from "@/modules/users/presentation/graphql/dtos/get/get-user-input.dto";
 import { GetUserResponseDto } from "@/modules/users/presentation/graphql/dtos/get/get-user-response.dto";
 import { GetUsersInputDto } from "@/modules/users/presentation/graphql/dtos/get/get-users-input.dto";
+import { UserFilterOptionDto } from "@/modules/users/presentation/graphql/dtos/get/user-filter-option.dto";
 import { GetUserValidator } from "@/modules/users/application/validators/get/get-user.validator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
@@ -77,7 +78,51 @@ export class GetUsersUseCase {
     );
 
     const { page, limit, skip } = resolvePagination(input?.page, input?.limit);
+
+    const where: FindOptionsWhere<UserEntity> = {};
+
+    if (input?.name) {
+      where.name = ILike(input.name.trim());
+    }
+
+    if (input?.email) {
+      where.email = ILike(input.email.trim());
+    }
+
+    if (input?.group) {
+      where.group = input.group;
+    }
+
+    if (typeof input?.status === "boolean") {
+      where.status = input.status;
+    }
+
+    if (input?.username) {
+      const matchingCredentials = await this.authCredentialRepo.find({
+        where: { username: ILike(input.username.trim()) },
+        select: ["idUsers"],
+      });
+
+      const matchingIds = matchingCredentials.map(
+        (credential) => credential.idUsers,
+      );
+
+      if (!matchingIds.length) {
+        return {
+          items: [],
+          total: 0,
+          currentPage: page,
+          limit,
+          totalPages: calculateTotalPages(limit, 0),
+          hasNextPage: false,
+        };
+      }
+
+      where.idUsers = In(matchingIds);
+    }
+
     const [records, total] = await this.repo.findAndCount({
+      where,
       order: { createdAt: "DESC" },
       skip,
       take: limit,
@@ -100,6 +145,27 @@ export class GetUsersUseCase {
       totalPages: calculateTotalPages(limit, total),
       hasNextPage: calculateHasNextPage(page, limit, total),
     };
+  }
+
+  async findFilterOptions(userId: string): Promise<UserFilterOptionDto[]> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.READ_USERS,
+    );
+
+    const records = await this.repo.find({ order: { name: "ASC" } });
+    const credentialMap = await this.loadCredentialsByUserIds(
+      records.map((record) => record.idUsers),
+    );
+
+    return records.map((record) => {
+      const option = new UserFilterOptionDto();
+      option.idUsers = record.idUsers;
+      option.name = record.name;
+      option.email = record.email;
+      option.username = credentialMap.get(record.idUsers)?.username;
+      return option;
+    });
   }
 
   async findByEmail(email: string) {
@@ -130,6 +196,3 @@ export class GetUsersUseCase {
     return GetUserResponseDto.fromEntity(user, credential);
   }
 }
-
-
-

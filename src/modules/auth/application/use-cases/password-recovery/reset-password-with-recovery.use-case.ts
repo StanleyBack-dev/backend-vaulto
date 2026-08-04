@@ -42,6 +42,3 @@ export class ResetPasswordWithRecoveryService {
     await this.passwordRecoveryCodesUseCase.consume(activeRecovery);
   }
 }
-
-
-

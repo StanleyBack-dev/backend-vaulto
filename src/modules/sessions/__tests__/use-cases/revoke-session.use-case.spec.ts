@@ -27,4 +27,3 @@ describe("RevokeSessionUseCase", () => {
     ).resolves.toBeUndefined();
   });
 });
-

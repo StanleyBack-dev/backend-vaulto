@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { dateOnlyTransformer } from "@/common/persistence/date-only.transformer";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 import { DebtType } from "@/modules/debts/domain/enums/debt-type.enum";
 
@@ -16,11 +17,14 @@ export class DebtEntity {
   @Column({ name: "idtb_users" })
   idUsers!: string;
 
-  @Column({ name: "idtb_accounts" })
-  idAccount!: string;
-
   @Column({ length: 120 })
   title!: string;
+
+  @Column({ name: "idtb_categories" })
+  idCategory!: string;
+
+  @Column({ name: "idtb_credit_cards", nullable: true })
+  idCreditCard?: string;
 
   @Column({ type: "text", nullable: true })
   description?: string;
@@ -35,8 +39,28 @@ export class DebtEntity {
   @Column({ name: "total_amount", type: "numeric", precision: 12, scale: 2 })
   totalAmount!: string;
 
-  @Column({ name: "start_date", type: "date" })
+  @Column({
+    name: "start_date",
+    type: "date",
+    transformer: dateOnlyTransformer,
+  })
   startDate!: Date;
+
+  @Column({
+    name: "due_date",
+    type: "date",
+    nullable: true,
+    transformer: dateOnlyTransformer,
+  })
+  dueDate?: Date;
+
+  @Column({
+    name: "acquired_at",
+    type: "date",
+    nullable: true,
+    transformer: dateOnlyTransformer,
+  })
+  acquiredAt?: Date;
 
   @Column({ name: "has_installments", type: "boolean", default: false })
   hasInstallments!: boolean;
@@ -47,12 +71,12 @@ export class DebtEntity {
   @Column({ type: "enum", enum: DebtStatus, default: DebtStatus.OPEN })
   status!: DebtStatus;
 
-  @Column({ name: "settled_at", type: "timestamp", nullable: true })
+  @Column({ name: "settled_at", type: "timestamptz", nullable: true })
   settledAt?: Date;
 
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }

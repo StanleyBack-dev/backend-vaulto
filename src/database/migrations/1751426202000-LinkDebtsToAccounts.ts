@@ -1,4 +1,4 @@
-import type { MigrationInterface, QueryRunner} from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 import { TableColumn, TableForeignKey } from "typeorm";
 
 export class LinkDebtsToAccounts1751426202000 implements MigrationInterface {

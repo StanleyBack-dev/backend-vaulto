@@ -23,6 +23,3 @@ export class PageAccessMetadataResolver {
     };
   }
 }
-
-
-

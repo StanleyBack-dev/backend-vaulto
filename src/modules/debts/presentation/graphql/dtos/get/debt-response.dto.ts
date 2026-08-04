@@ -11,11 +11,17 @@ export class DebtResponseDto {
     const dto = new DebtResponseDto();
     dto.idDebt = view.idDebt;
     dto.idUsers = view.idUsers;
-    dto.idAccount = view.idAccount;
+    dto.idCategory = view.idCategory;
     dto.title = view.title;
+    dto.category = view.category;
+    dto.idCreditCard = view.idCreditCard;
+    dto.creditCard = view.creditCard;
     dto.description = view.description;
     dto.debtType = view.debtType;
     dto.totalAmount = view.totalAmount;
+    dto.dueDate = view.dueDate;
+    dto.acquiredAt = view.acquiredAt;
+    dto.endDate = view.endDate;
     dto.startDate = view.startDate;
     dto.hasInstallments = view.hasInstallments;
     dto.installmentCount = view.installmentCount;
@@ -39,10 +45,19 @@ export class DebtResponseDto {
   idUsers!: string;
 
   @Field()
-  idAccount!: string;
+  idCategory!: string;
 
   @Field()
   title!: string;
+
+  @Field()
+  category!: string;
+
+  @Field({ nullable: true })
+  idCreditCard?: string;
+
+  @Field({ nullable: true })
+  creditCard?: string;
 
   @Field({ nullable: true })
   description?: string;
@@ -52,6 +67,15 @@ export class DebtResponseDto {
 
   @Field(() => Float)
   totalAmount!: number;
+
+  @Field(() => Date, { nullable: true })
+  dueDate?: Date;
+
+  @Field(() => Date, { nullable: true })
+  acquiredAt?: Date;
+
+  @Field(() => Date, { nullable: true })
+  endDate?: Date;
 
   @Field(() => Date)
   startDate!: Date;

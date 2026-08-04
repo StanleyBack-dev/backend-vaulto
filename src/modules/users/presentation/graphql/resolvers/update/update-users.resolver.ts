@@ -11,18 +11,19 @@ import { UpdateUserMutationResponseDto } from "@/modules/users/presentation/grap
 
 @Resolver(() => UpdateUserMutationResponseDto)
 export class UpdateUserResolver {
-	constructor(private readonly updateUserUseCase: UpdateUserUseCase) {}
+  constructor(private readonly updateUserUseCase: UpdateUserUseCase) {}
 
-	@Mutation(() => UpdateUserMutationResponseDto)
-	@RequirePermissions(AuthPermission.MANAGE_OWN_USER)
-	async updateUser(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: UpdateUserInputDto,
-	) {
-		const updatedUser = await this.updateUserUseCase.execute(user.idUsers, input);
+  @Mutation(() => UpdateUserMutationResponseDto)
+  @RequirePermissions(AuthPermission.MANAGE_OWN_USER)
+  async updateUser(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: UpdateUserInputDto,
+  ) {
+    const updatedUser = await this.updateUserUseCase.execute(
+      user.idUsers,
+      input,
+    );
 
-		return buildDataResponse(updatedUser, RESPONSE_MESSAGES.users.updated);
-	}
+    return buildDataResponse(updatedUser, RESPONSE_MESSAGES.users.updated);
+  }
 }
-
-

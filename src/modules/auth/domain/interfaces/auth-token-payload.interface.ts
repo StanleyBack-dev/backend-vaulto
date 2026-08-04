@@ -13,5 +13,3 @@ export interface AuthenticatedUser {
   username: string;
   group: UserGroup;
 }
-
-

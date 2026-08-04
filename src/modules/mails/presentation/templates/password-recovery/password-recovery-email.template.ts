@@ -31,7 +31,7 @@ export function buildPasswordRecoveryEmail({
   const text = [
     `Ola, ${name}.`,
     "",
-    "Recebemos uma solicitacao para recuperar a senha da sua conta na Royal Copeiras.",
+    "Recebemos uma solicitacao para recuperar a senha da sua conta na Vaulto.",
     `Usuario: ${username}`,
     `Codigo de verificacao: ${code}`,
     `Validade: ${formattedExpiration}`,
@@ -47,7 +47,7 @@ export function buildPasswordRecoveryEmail({
     greeting: `Ola, ${name}.`,
     contentHtml: `
       <p style="margin:0 0 14px 0;color:${EMAIL_BRAND.textMuted};font-size:15px;line-height:1.6;">
-        Recebemos uma solicitacao para recuperar a senha da sua conta na Royal Copeiras.
+        Recebemos uma solicitacao para recuperar a senha da sua conta na Vaulto.
       </p>
       <p style="margin:0 0 14px 0;color:${EMAIL_BRAND.textMuted};font-size:15px;line-height:1.6;">
         Usuario: <strong>${username}</strong>
@@ -65,6 +65,7 @@ export function buildPasswordRecoveryEmail({
     `,
     ctaLabel: "Recuperar senha",
     ctaUrl: `${appUrl}/recuperar-senha`,
+    logoUrl: `${appUrl.replace(/\/$/, "")}/vaulto-logo-96.png`,
     footerNote:
       "Por seguranca, o codigo e de uso unico e ficara invalido apos a redefinicao da senha.",
   });

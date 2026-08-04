@@ -11,12 +11,14 @@ import { RateLimitGuard } from "@/common/guards/rate-limit.guard";
 import { RequestInfoInterceptor } from "@/common/interceptors/request-info.interceptors";
 import { AppConfigModule } from "@/config/config.module";
 import { DatabaseModule } from "@/database/database.module";
-import { AccountsModule } from "@/modules/accounts/accounts.module";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { CategoriesModule } from "@/modules/categories/categories.module";
+import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
 import { DebtsModule } from "@/modules/debts/debts.module";
 import { MailModule } from "@/modules/mails/mail.module";
+import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
-import { TransactionsModule } from "@/modules/transactions/transactions.module";
+import { ReportsModule } from "@/modules/reports/reports.module";
 import { UsersModule } from "@/modules/users/users.module";
 
 @Module({
@@ -37,10 +39,12 @@ import { UsersModule } from "@/modules/users/users.module";
     }),
     AuthModule,
     UsersModule,
+    CategoriesModule,
+    CreditCardsModule,
     PdfGeneratorModule,
     DebtsModule,
-    AccountsModule,
-    TransactionsModule,
+    PaymentsModule,
+    ReportsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })

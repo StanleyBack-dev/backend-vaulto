@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { dateOnlyTransformer } from "@/common/persistence/date-only.transformer";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 
 @Entity("tb_debt_installments")
@@ -30,10 +31,10 @@ export class DebtInstallmentEntity {
   })
   amountPaid!: string;
 
-  @Column({ name: "due_date", type: "date" })
+  @Column({ name: "due_date", type: "date", transformer: dateOnlyTransformer })
   dueDate!: Date;
 
-  @Column({ name: "paid_at", type: "timestamp", nullable: true })
+  @Column({ name: "paid_at", type: "timestamptz", nullable: true })
   paidAt?: Date;
 
   @Column({ type: "enum", enum: DebtStatus, default: DebtStatus.OPEN })

@@ -11,23 +11,21 @@ import { UnlockUserCredentialMutationResponseDto } from "@/modules/users/present
 
 @Resolver(() => UnlockUserCredentialMutationResponseDto)
 export class UnlockUserCredentialResolver {
-	constructor(
-		private readonly unlockUserCredentialUseCase: UnlockUserCredentialUseCase,
-	) {}
+  constructor(
+    private readonly unlockUserCredentialUseCase: UnlockUserCredentialUseCase,
+  ) {}
 
-	@Mutation(() => UnlockUserCredentialMutationResponseDto)
-	@RequirePermissions(AuthPermission.MANAGE_USERS)
-	async unlockUserCredential(
-		@CurrentUser() user: AuthenticatedUser,
-		@Args("input") input: UnlockUserCredentialInputDto,
-	) {
-		const result = await this.unlockUserCredentialUseCase.execute(
-			user.idUsers,
-			input,
-		);
+  @Mutation(() => UnlockUserCredentialMutationResponseDto)
+  @RequirePermissions(AuthPermission.MANAGE_USERS)
+  async unlockUserCredential(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: UnlockUserCredentialInputDto,
+  ) {
+    const result = await this.unlockUserCredentialUseCase.execute(
+      user.idUsers,
+      input,
+    );
 
-		return buildDataResponse(result, RESPONSE_MESSAGES.users.unlocked);
-	}
+    return buildDataResponse(result, RESPONSE_MESSAGES.users.unlocked);
+  }
 }
-
-

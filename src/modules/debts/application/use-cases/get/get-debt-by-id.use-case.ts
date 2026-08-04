@@ -25,6 +25,3 @@ export class GetDebtByIdUseCase {
     return this.debtRepository.findById(userId, query.idDebt);
   }
 }
-
-
-

@@ -34,28 +34,26 @@ export class AuthCredentialEntity {
 
   @Column({
     name: "temporary_password_created_at",
-    type: "timestamp",
+    type: "timestamptz",
     nullable: true,
   })
   temporaryPasswordCreatedAt?: Date;
 
-  @Column({ name: "password_changed_at", type: "timestamp", nullable: true })
+  @Column({ name: "password_changed_at", type: "timestamptz", nullable: true })
   passwordChangedAt?: Date;
 
-  @Column({ name: "last_login_at", type: "timestamp", nullable: true })
+  @Column({ name: "last_login_at", type: "timestamptz", nullable: true })
   lastLoginAt?: Date;
 
   @Column({ name: "failed_login_attempts", type: "int", default: 0 })
   failedLoginAttempts!: number;
 
-  @Column({ name: "lock_until", type: "timestamp", nullable: true })
+  @Column({ name: "lock_until", type: "timestamptz", nullable: true })
   lockUntil?: Date | null;
 
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }
-
-

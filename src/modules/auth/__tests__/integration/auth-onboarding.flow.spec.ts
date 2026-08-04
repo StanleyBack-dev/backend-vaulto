@@ -19,6 +19,7 @@ import { LoginService } from "@/modules/auth/application/use-cases/login.use-cas
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
+import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
 
 describe("Auth onboarding flow", () => {
   let createUserUseCase: CreateUserUseCase;
@@ -269,6 +270,12 @@ describe("Auth onboarding flow", () => {
             setDuringUserCreation: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: SeedDefaultCategoriesUseCase,
+          useValue: {
+            execute: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -341,12 +348,3 @@ describe("Auth onboarding flow", () => {
     expect(sessions).toHaveLength(2);
   });
 });
-
-
-
-
-
-
-
-
-

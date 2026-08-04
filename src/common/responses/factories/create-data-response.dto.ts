@@ -14,4 +14,3 @@ export function createDataResponseDto<TData>(
 
   return DataResponseDto;
 }
-

@@ -11,7 +11,7 @@ import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-to
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
 import { GetDebtByIdUseCase } from "@/modules/debts/application/use-cases/get/get-debt-by-id.use-case";
 import { ListDebtsUseCase } from "@/modules/debts/application/use-cases/get/list-debts.use-case";
-import { RegisterDebtPaymentUseCase } from "@/modules/debts/application/use-cases/payment/register-debt-payment.use-case";
+import { UpdateDebtDetailsUseCase } from "@/modules/debts/application/use-cases/update/update-debt-details.use-case";
 import { UpdateDebtStatusUseCase } from "@/modules/debts/application/use-cases/update/update-debt-status.use-case";
 import { CreateDebtInputDto } from "@/modules/debts/presentation/graphql/dtos/create/create-debt-input.dto";
 import { CreateDebtMutationResponseDto } from "@/modules/debts/presentation/graphql/dtos/create/create-debt-mutation-response.dto";
@@ -19,7 +19,7 @@ import { DebtResponseDto } from "@/modules/debts/presentation/graphql/dtos/get/d
 import { GetDebtByIdInputDto } from "@/modules/debts/presentation/graphql/dtos/get/get-debt-by-id-input.dto";
 import { ListDebtsInputDto } from "@/modules/debts/presentation/graphql/dtos/get/list-debts-input.dto";
 import { ListDebtsResponseDto } from "@/modules/debts/presentation/graphql/dtos/get/list-debts-response.dto";
-import { RegisterDebtPaymentInputDto } from "@/modules/debts/presentation/graphql/dtos/payment/register-debt-payment-input.dto";
+import { UpdateDebtDetailsInputDto } from "@/modules/debts/presentation/graphql/dtos/update/update-debt-details-input.dto";
 import { UpdateDebtStatusInputDto } from "@/modules/debts/presentation/graphql/dtos/update/update-debt-status-input.dto";
 
 @Resolver()
@@ -28,7 +28,7 @@ export class DebtsResolver {
     private readonly createDebtUseCase: CreateDebtUseCase,
     private readonly getDebtByIdUseCase: GetDebtByIdUseCase,
     private readonly listDebtsUseCase: ListDebtsUseCase,
-    private readonly registerDebtPaymentUseCase: RegisterDebtPaymentUseCase,
+    private readonly updateDebtDetailsUseCase: UpdateDebtDetailsUseCase,
     private readonly updateDebtStatusUseCase: UpdateDebtStatusUseCase,
   ) {}
 
@@ -52,14 +52,17 @@ export class DebtsResolver {
     @Args("input") input: CreateDebtInputDto,
   ) {
     const createdDebt = await this.createDebtUseCase.execute(user.idUsers, {
-      idAccount: input.idAccount,
       title: input.title,
+      idCategory: input.idCategory,
+      idCreditCard: input.idCreditCard,
       description: input.description,
       debtType: input.debtType,
       totalAmount: input.totalAmount,
-      startDate: input.startDate,
+      dueDate: input.dueDate,
+      acquiredAt: input.acquiredAt,
       hasInstallments: input.hasInstallments,
       installmentCount: input.installmentCount,
+      installmentAmount: input.installmentAmount,
     });
 
     return buildDataResponse(
@@ -85,21 +88,29 @@ export class DebtsResolver {
     );
   }
 
-  @Mutation(() => CreateDebtMutationResponseDto, { name: "registerDebtPayment" })
+  @Mutation(() => CreateDebtMutationResponseDto, { name: "updateDebtDetails" })
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
-  async registerDebtPayment(
+  async updateDebtDetails(
     @CurrentUser() user: AuthenticatedUser,
-    @Args("input") input: RegisterDebtPaymentInputDto,
+    @Args("input") input: UpdateDebtDetailsInputDto,
   ) {
-    const updatedDebt = await this.registerDebtPaymentUseCase.execute(user.idUsers, {
-      idDebt: input.idDebt,
-      amountPaid: input.amountPaid,
-      paidAt: input.paidAt,
-    });
+    const updatedDebt = await this.updateDebtDetailsUseCase.execute(
+      user.idUsers,
+      {
+        idDebt: input.idDebt,
+        title: input.title,
+        description: input.description,
+        idCategory: input.idCategory,
+        debtType: input.debtType,
+        acquiredAt: input.acquiredAt,
+        dueDate: input.dueDate,
+        totalAmount: input.totalAmount,
+      },
+    );
 
     return buildDataResponse(
       DebtResponseDto.fromView(updatedDebt),
-      RESPONSE_MESSAGES.debts.paymentRegistered,
+      RESPONSE_MESSAGES.debts.detailsUpdated,
     );
   }
 
@@ -109,10 +120,13 @@ export class DebtsResolver {
     @CurrentUser() user: AuthenticatedUser,
     @Args("input") input: UpdateDebtStatusInputDto,
   ) {
-    const updatedDebt = await this.updateDebtStatusUseCase.execute(user.idUsers, {
-      idDebt: input.idDebt,
-      status: input.status,
-    });
+    const updatedDebt = await this.updateDebtStatusUseCase.execute(
+      user.idUsers,
+      {
+        idDebt: input.idDebt,
+        status: input.status,
+      },
+    );
 
     return buildDataResponse(
       DebtResponseDto.fromView(updatedDebt),
@@ -120,5 +134,3 @@ export class DebtsResolver {
     );
   }
 }
-
-

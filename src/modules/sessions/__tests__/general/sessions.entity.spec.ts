@@ -5,4 +5,3 @@ describe("SessionEntity", () => {
     expect(new SessionEntity()).toBeDefined();
   });
 });
-

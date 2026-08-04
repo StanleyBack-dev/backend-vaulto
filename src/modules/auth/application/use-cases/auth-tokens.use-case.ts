@@ -108,5 +108,3 @@ export class AuthTokensService {
     return this.configService.get<string>("JWT_REFRESH_EXPIRES_IN") ?? "30d";
   }
 }
-
-

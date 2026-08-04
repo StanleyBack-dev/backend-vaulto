@@ -4,4 +4,3 @@ import type { AuthPermission } from "@/modules/auth/domain/enums/auth-permission
 export const AUTH_PERMISSIONS_KEY = "authPermissions";
 export const RequirePermissions = (...permissions: AuthPermission[]) =>
   SetMetadata(AUTH_PERMISSIONS_KEY, permissions);
-

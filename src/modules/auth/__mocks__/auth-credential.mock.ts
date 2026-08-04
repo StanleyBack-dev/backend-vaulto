@@ -16,5 +16,3 @@ export const authCredentialMock: AuthCredentialEntity = {
   createdAt: new Date("2024-04-12T00:00:00Z"),
   updatedAt: new Date("2024-04-12T00:00:00Z"),
 };
-
-

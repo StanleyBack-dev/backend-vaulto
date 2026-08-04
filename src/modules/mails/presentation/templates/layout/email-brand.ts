@@ -1,14 +1,17 @@
+// Mirrors the Vaulto app palette (see frontend-vaulto/src/config/theme.ts and
+// brand.ts) so transactional emails match the product instead of the old
+// Royal Copeiras identity this module was built for.
 export const EMAIL_BRAND = {
-  pageBackground: "#f5ede8",
+  pageBackground: "#f4f2fa",
   surface: "#ffffff",
-  cardBackground: "#faf6f2",
-  headerBackground: "#2c1810",
-  headerMuted: "#e8d5c9",
-  accent: "#c9a227",
-  accentDark: "#a8811a",
-  border: "#e8d5c9",
-  text: "#2c1810",
-  textMuted: "#7a4430",
-  textSoft: "#8c756a",
+  cardBackground: "#f7f5ff",
+  headerBackground: "#09090f",
+  headerMuted: "#c5bbeb",
+  accent: "#d4af37",
+  accentDark: "#b8891b",
+  border: "#e0d9f5",
+  text: "#1a1333",
+  textMuted: "#5a4e7a",
+  textSoft: "#8b7fac",
   white: "#ffffff",
 } as const;

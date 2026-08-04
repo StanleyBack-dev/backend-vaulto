@@ -6,4 +6,7 @@ export type ListDebtsQuery = {
   limit?: number;
   status?: DebtStatus;
   debtType?: DebtType;
+  idCategory?: string;
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
 };

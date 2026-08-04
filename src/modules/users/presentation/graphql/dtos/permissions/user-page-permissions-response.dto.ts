@@ -22,4 +22,3 @@ export class UserPagePermissionsResponseDto {
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
 }
-
