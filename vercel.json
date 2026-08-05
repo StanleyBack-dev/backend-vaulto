@@ -1,18 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "serverless.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["src/assets/**", "tsconfig.json"]
-      }
+  "buildCommand": "npm run build",
+  "functions": {
+    "dist/serverless.js": {
+      "includeFiles": "src/assets/**"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "serverless.ts"
+      "source": "/(.*)",
+      "destination": "/dist/serverless.js"
     }
   ]
 }
