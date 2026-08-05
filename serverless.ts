@@ -1,3 +1,9 @@
+// Must run before any other import: Vercel's builder compiles this file's
+// module graph to plain CommonJS without rewriting the "@/..." path
+// aliases into relative requires, so nothing else resolves them at
+// runtime unless this registers a resolver first (mirrors the
+// `-r tsconfig-paths/register` flag used by the local `npm start`).
+import "tsconfig-paths/register";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./src/app.module";
 import { ConfigService } from "@nestjs/config";
