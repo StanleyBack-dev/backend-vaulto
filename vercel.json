@@ -2,14 +2,14 @@
   "version": 2,
   "buildCommand": "npm run build",
   "functions": {
-    "dist/serverless.js": {
+    "api/index.js": {
       "includeFiles": "src/assets/**"
     }
   },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/dist/serverless.js"
+      "destination": "/api/index"
     }
   ]
 }
