@@ -9,6 +9,7 @@ import {
   type CategoryView,
 } from "@/modules/categories/application/ports/category-repository.port";
 import type { CreateCategoryCommand } from "@/modules/categories/application/dto/create/create-category.command";
+import { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 
 @Injectable()
 export class CreateCategoryUseCase {
@@ -45,6 +46,7 @@ export class CreateCategoryUseCase {
     return this.categoryRepository.create({
       idUsers: userId,
       name: normalizedName,
+      type: command.type ?? CategoryType.EXPENSE,
       status: command.status ?? true,
     });
   }

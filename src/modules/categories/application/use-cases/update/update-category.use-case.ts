@@ -54,6 +54,7 @@ export class UpdateCategoryUseCase {
       idUsers: userId,
       idCategory: command.idCategory,
       name: normalizedName,
+      type: command.type ?? current.type,
       status: command.status,
     });
   }

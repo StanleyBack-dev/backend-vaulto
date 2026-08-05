@@ -8,6 +8,7 @@ import type {
   UpdateCategoryPayload,
 } from "@/modules/categories/application/ports/category-repository.port";
 import type { ListCategoriesQuery } from "@/modules/categories/application/dto/get/list-categories.query";
+import { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 
 @Injectable()
@@ -21,6 +22,7 @@ export class CategoryTypeormRepository implements CategoryRepositoryPort {
     const created = this.repository.create({
       idUsers: payload.idUsers,
       name: payload.name,
+      type: payload.type ?? CategoryType.EXPENSE,
       status: payload.status ?? true,
       inactivatedAt: payload.status === false ? new Date() : undefined,
     });
@@ -38,6 +40,9 @@ export class CategoryTypeormRepository implements CategoryRepositoryPort {
     }
 
     current.name = payload.name;
+    if (payload.type !== undefined) {
+      current.type = payload.type;
+    }
     current.status = payload.status;
     current.inactivatedAt = payload.status ? undefined : new Date();
 
@@ -85,6 +90,10 @@ export class CategoryTypeormRepository implements CategoryRepositoryPort {
       qb.andWhere("category.status = :status", { status: query.status });
     }
 
+    if (query?.type) {
+      qb.andWhere("category.type = :type", { type: query.type });
+    }
+
     const [rows, total] = await qb.getManyAndCount();
     return { records: rows.map((row) => this.mapToView(row)), total };
   }
@@ -94,6 +103,7 @@ export class CategoryTypeormRepository implements CategoryRepositoryPort {
       idCategory: entity.idCategory,
       idUsers: entity.idUsers,
       name: entity.name,
+      type: entity.type,
       status: entity.status,
       inactivatedAt: entity.inactivatedAt,
       createdAt: entity.createdAt,

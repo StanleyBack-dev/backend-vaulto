@@ -74,6 +74,28 @@ export const RESPONSE_MESSAGES = {
       message: "Divida excluida com sucesso.",
     },
   },
+  incomes: {
+    created: {
+      code: "INCOME_CREATED",
+      message: "Receita criada com sucesso.",
+    },
+    listed: {
+      code: "INCOMES_LISTED",
+      message: "Receitas carregadas com sucesso.",
+    },
+    detailsUpdated: {
+      code: "INCOME_DETAILS_UPDATED",
+      message: "Dados da receita atualizados com sucesso.",
+    },
+    statusUpdated: {
+      code: "INCOME_STATUS_UPDATED",
+      message: "Status da receita atualizado com sucesso.",
+    },
+    deleted: {
+      code: "INCOME_DELETED",
+      message: "Receita excluída com sucesso.",
+    },
+  },
   payments: {
     registered: {
       code: "PAYMENT_REGISTERED",

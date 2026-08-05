@@ -57,6 +57,7 @@ enum PageAccessKey {
   CATEGORIES
   DEBTS
   DEBTS_STATEMENT
+  INCOMES
   PAYMENTS
   CREDIT_CARDS
   USERS
@@ -71,10 +72,16 @@ type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
   name: String!
+  type: CategoryType!
   status: Boolean!
   inactivatedAt: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+enum CategoryType {
+  EXPENSE
+  INCOME
 }
 
 type CreateCategoryMutationResponseDto {
@@ -220,6 +227,61 @@ type ListDebtsResponseDto {
   message: String
   code: String
   items: [DebtResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type IncomeResponseDto {
+  idIncome: String!
+  idUsers: String!
+  idCategory: String!
+  category: String!
+  title: String!
+  description: String
+  incomeType: IncomeType!
+  expectedAmount: Float!
+  expectedDate: DateTime!
+  receivedAmount: Float!
+  receivedAt: DateTime
+  isRecurring: Boolean!
+  status: IncomeStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum IncomeType {
+  FIXED
+  VARIABLE
+}
+
+enum IncomeStatus {
+  PENDING
+  PARTIALLY_RECEIVED
+  RECEIVED
+  OVERDUE
+}
+
+type CreateIncomeMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: IncomeResponseDto!
+}
+
+type DeleteIncomeResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type ListIncomesResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [IncomeResponseDto!]!
   total: Int!
   currentPage: Int!
   limit: Int!
@@ -399,6 +461,8 @@ type Query {
   getDebtById(input: GetDebtByIdInputDto!): DebtResponseDto!
   getMyDebts(input: ListDebtsInputDto): ListDebtsResponseDto!
   getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
+  getIncomeById(input: GetIncomeByIdInputDto!): IncomeResponseDto!
+  getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
 }
 
@@ -425,6 +489,7 @@ input ListCategoriesInputDto {
   page: Int = 1
   limit: Int = 10
   status: Boolean
+  type: CategoryType
 }
 
 input GetCategoryByIdInputDto {
@@ -453,6 +518,20 @@ input ListDebtsInputDto {
   idCategory: String
   dueDateFrom: DateTime
   dueDateTo: DateTime
+}
+
+input GetIncomeByIdInputDto {
+  idIncome: String!
+}
+
+input ListIncomesInputDto {
+  page: Int
+  limit: Int
+  status: IncomeStatus
+  incomeType: IncomeType
+  idCategory: String
+  expectedDateFrom: DateTime
+  expectedDateTo: DateTime
 }
 
 input GetDebtsReportInputDto {
@@ -486,6 +565,10 @@ type Mutation {
   registerInstallmentPayment(input: RegisterInstallmentPaymentInputDto!): RegisterInstallmentPaymentMutationResponseDto!
   updateDebtPayment(input: UpdateDebtPaymentInputDto!): UpdateDebtPaymentMutationResponseDto!
   deleteDebtPayment(idDebtPayment: String!): DeleteDebtPaymentMutationResponseDto!
+  createIncome(input: CreateIncomeInputDto!): CreateIncomeMutationResponseDto!
+  updateIncomeDetails(input: UpdateIncomeDetailsInputDto!): CreateIncomeMutationResponseDto!
+  updateIncomeStatus(input: UpdateIncomeStatusInputDto!): CreateIncomeMutationResponseDto!
+  deleteIncome(idIncome: String!): DeleteIncomeResponseDto!
 }
 
 input LoginInputDto {
@@ -548,12 +631,14 @@ input UnlockUserCredentialInputDto {
 
 input CreateCategoryInputDto {
   name: String!
+  type: CategoryType
   status: Boolean
 }
 
 input UpdateCategoryInputDto {
   idCategory: String!
   name: String!
+  type: CategoryType
   status: Boolean!
 }
 
@@ -615,4 +700,32 @@ input UpdateDebtPaymentInputDto {
   idDebtPayment: String!
   amountPaid: Float
   paidAt: DateTime
+}
+
+input CreateIncomeInputDto {
+  title: String!
+  idCategory: String!
+  description: String
+  incomeType: IncomeType!
+  expectedAmount: Float!
+  expectedDate: DateTime!
+  isRecurring: Boolean
+}
+
+input UpdateIncomeDetailsInputDto {
+  idIncome: String!
+  title: String
+  description: String
+  idCategory: String
+  incomeType: IncomeType
+  expectedAmount: Float
+  expectedDate: DateTime
+  receivedAmount: Float
+  receivedAt: DateTime
+  isRecurring: Boolean
+}
+
+input UpdateIncomeStatusInputDto {
+  idIncome: String!
+  status: IncomeStatus!
 }

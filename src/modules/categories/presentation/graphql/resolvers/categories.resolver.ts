@@ -71,6 +71,7 @@ export class CategoriesResolver {
   ) {
     const created = await this.createCategoryUseCase.execute(user.idUsers, {
       name: input.name,
+      type: input.type,
       status: input.status,
     });
 
@@ -89,6 +90,7 @@ export class CategoriesResolver {
     const updated = await this.updateCategoryUseCase.execute(user.idUsers, {
       idCategory: input.idCategory,
       name: input.name,
+      type: input.type,
       status: input.status,
     });
 
