@@ -7,6 +7,6 @@ export type ListIncomesQuery = {
   status?: IncomeStatus;
   incomeType?: IncomeType;
   idCategory?: string;
-  expectedDateFrom?: Date;
-  expectedDateTo?: Date;
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
 };

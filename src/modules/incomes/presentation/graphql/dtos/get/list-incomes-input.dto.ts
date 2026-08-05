@@ -20,8 +20,8 @@ export class ListIncomesInputDto {
   idCategory?: string;
 
   @Field(() => Date, { nullable: true })
-  expectedDateFrom?: Date;
+  dueDateFrom?: Date;
 
   @Field(() => Date, { nullable: true })
-  expectedDateTo?: Date;
+  dueDateTo?: Date;
 }

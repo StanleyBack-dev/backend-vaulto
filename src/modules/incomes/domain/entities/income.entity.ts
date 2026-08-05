@@ -9,10 +9,12 @@ export type IncomeProps = {
   title: string;
   description?: string;
   incomeType: IncomeType;
-  expectedAmount: number;
-  expectedDate: Date;
-  receivedAmount?: number;
-  receivedAt?: Date;
+  totalAmount?: number;
+  installmentAmount?: number;
+  dueDate?: Date;
+  startDate: Date;
+  hasInstallments: boolean;
+  installmentCount?: number;
   isRecurring?: boolean;
   status?: IncomeStatus;
 };
@@ -30,7 +32,41 @@ export class Income {
       });
     }
 
-    if (!Number.isFinite(props.expectedAmount) || props.expectedAmount <= 0) {
+    if (props.hasInstallments && !props.dueDate) {
+      throw AppException.from(
+        APP_ERRORS.incomes.dueDateRequiredForInstallments,
+        undefined,
+      );
+    }
+
+    const installmentCount = props.hasInstallments ? props.installmentCount : 1;
+
+    if (props.hasInstallments && (!installmentCount || installmentCount < 2)) {
+      throw AppException.from(
+        APP_ERRORS.incomes.invalidInstallmentCount,
+        undefined,
+      );
+    }
+
+    if (!props.hasInstallments && installmentCount && installmentCount > 1) {
+      throw AppException.from(
+        APP_ERRORS.incomes.invalidInstallmentCount,
+        undefined,
+      );
+    }
+
+    const normalizedInstallmentAmount = props.hasInstallments
+      ? props.installmentAmount
+      : undefined;
+    const baseTotalAmount =
+      props.hasInstallments &&
+      normalizedInstallmentAmount &&
+      normalizedInstallmentAmount > 0 &&
+      installmentCount
+        ? normalizedInstallmentAmount * installmentCount
+        : props.totalAmount;
+
+    if (!Number.isFinite(baseTotalAmount) || (baseTotalAmount ?? 0) <= 0) {
       throw AppException.from(APP_ERRORS.incomes.invalidAmount, undefined);
     }
 
@@ -38,7 +74,9 @@ export class Income {
       ...props,
       idCategory,
       title,
-      receivedAmount: props.receivedAmount ?? 0,
+      totalAmount: Number((baseTotalAmount as number).toFixed(2)),
+      installmentCount,
+      installmentAmount: normalizedInstallmentAmount,
       isRecurring: props.isRecurring ?? false,
       status: props.status ?? IncomeStatus.PENDING,
     });

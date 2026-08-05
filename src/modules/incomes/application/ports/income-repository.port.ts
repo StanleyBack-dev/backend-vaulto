@@ -1,5 +1,7 @@
 import type { IncomeStatus } from "@/modules/incomes/domain/enums/income-status.enum";
 import type { IncomeType } from "@/modules/incomes/domain/enums/income-type.enum";
+import type { UpdateIncomeDetailsCommand } from "@/modules/incomes/application/dto/update/update-income-details.command";
+import type { UpdateIncomeStatusCommand } from "@/modules/incomes/application/dto/update/update-income-status.command";
 
 export type CreateIncomePayload = {
   idUsers: string;
@@ -8,30 +10,32 @@ export type CreateIncomePayload = {
   title: string;
   description?: string;
   incomeType: IncomeType;
-  expectedAmount: number;
-  expectedDate: Date;
-  receivedAmount: number;
-  receivedAt?: Date;
+  totalAmount: number;
+  dueDate?: Date;
+  startDate: Date;
+  hasInstallments: boolean;
+  installmentCount: number;
   isRecurring: boolean;
   status: IncomeStatus;
 };
 
-export type UpdateIncomeDetailsPayload = {
-  idIncome: string;
-  title?: string;
-  description?: string;
-  idCategory?: string;
-  category?: string;
-  incomeType?: IncomeType;
-  expectedAmount?: number;
-  expectedDate?: Date;
-  receivedAmount?: number;
+export type CreateIncomeInstallmentPayload = {
+  installmentNumber: number;
+  amountDue: number;
+  dueDate: Date;
+  amountReceived?: number;
   receivedAt?: Date;
-  isRecurring?: boolean;
+  status: IncomeStatus;
 };
 
-export type UpdateIncomeStatusPayload = {
+export type IncomeInstallmentView = {
+  idIncomeInstallment: string;
   idIncome: string;
+  installmentNumber: number;
+  amountDue: number;
+  amountReceived: number;
+  dueDate: Date;
+  receivedAt?: Date;
   status: IncomeStatus;
 };
 
@@ -43,12 +47,16 @@ export type IncomeView = {
   title: string;
   description?: string;
   incomeType: IncomeType;
-  expectedAmount: number;
-  expectedDate: Date;
-  receivedAmount: number;
-  receivedAt?: Date;
+  totalAmount: number;
+  dueDate?: Date;
+  endDate?: Date;
+  startDate: Date;
+  hasInstallments: boolean;
+  installmentCount: number;
   isRecurring: boolean;
   status: IncomeStatus;
+  receivedAt?: Date;
+  installments: IncomeInstallmentView[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -59,12 +67,21 @@ export type ListIncomesFilters = {
   status?: IncomeStatus;
   incomeType?: IncomeType;
   idCategory?: string;
-  expectedDateFrom?: Date;
-  expectedDateTo?: Date;
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
+};
+
+export type UpdateIncomeStatusPayload = UpdateIncomeStatusCommand;
+
+export type UpdateIncomeDetailsPayload = UpdateIncomeDetailsCommand & {
+  category?: string;
 };
 
 export interface IncomeRepositoryPort {
-  create(payload: CreateIncomePayload): Promise<IncomeView>;
+  create(
+    payload: CreateIncomePayload,
+    installments: CreateIncomeInstallmentPayload[],
+  ): Promise<IncomeView>;
   listByUser(
     idUsers: string,
     filters?: ListIncomesFilters,

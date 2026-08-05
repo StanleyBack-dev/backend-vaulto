@@ -9,6 +9,7 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.DEBTS_STATEMENT,
     PageAccessKey.INCOMES,
     PageAccessKey.PAYMENTS,
+    PageAccessKey.INCOME_RECEIPTS,
     PageAccessKey.CREDIT_CARDS,
   ],
   [UserGroup.ADMIN]: [
@@ -18,6 +19,7 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.DEBTS_STATEMENT,
     PageAccessKey.INCOMES,
     PageAccessKey.PAYMENTS,
+    PageAccessKey.INCOME_RECEIPTS,
     PageAccessKey.CREDIT_CARDS,
   ],
   [UserGroup.ADMIN_MASTER]: [
@@ -27,6 +29,7 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.DEBTS_STATEMENT,
     PageAccessKey.INCOMES,
     PageAccessKey.PAYMENTS,
+    PageAccessKey.INCOME_RECEIPTS,
     PageAccessKey.CREDIT_CARDS,
     PageAccessKey.USERS,
   ],

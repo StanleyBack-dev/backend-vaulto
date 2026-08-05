@@ -12,6 +12,7 @@ import { UpdateIncomeDetailsUseCase } from "@/modules/incomes/application/use-ca
 import { UpdateIncomeStatusUseCase } from "@/modules/incomes/application/use-cases/update/update-income-status.use-case";
 import {
   INCOME_REPOSITORY,
+  type CreateIncomeInstallmentPayload,
   type CreateIncomePayload,
   type IncomeRepositoryPort,
   type IncomeView,
@@ -26,21 +27,36 @@ import { IncomeType } from "@/modules/incomes/domain/enums/income-type.enum";
 class InMemoryIncomeRepository implements IncomeRepositoryPort {
   private incomes: IncomeView[] = [];
 
-  async create(payload: CreateIncomePayload): Promise<IncomeView> {
+  async create(
+    payload: CreateIncomePayload,
+    installments: CreateIncomeInstallmentPayload[],
+  ): Promise<IncomeView> {
+    const idIncome = `income-${this.incomes.length + 1}`;
     const income: IncomeView = {
-      idIncome: `income-${this.incomes.length + 1}`,
+      idIncome,
       idUsers: payload.idUsers,
       idCategory: payload.idCategory,
       category: payload.category,
       title: payload.title,
       description: payload.description,
       incomeType: payload.incomeType,
-      expectedAmount: payload.expectedAmount,
-      expectedDate: payload.expectedDate,
-      receivedAmount: payload.receivedAmount,
-      receivedAt: payload.receivedAt,
+      totalAmount: payload.totalAmount,
+      dueDate: payload.dueDate,
+      startDate: payload.startDate,
+      hasInstallments: payload.hasInstallments,
+      installmentCount: payload.installmentCount,
       isRecurring: payload.isRecurring,
       status: payload.status,
+      installments: installments.map((installment, idx) => ({
+        idIncomeInstallment: `inst-${idIncome}-${idx + 1}`,
+        idIncome,
+        installmentNumber: installment.installmentNumber,
+        amountDue: installment.amountDue,
+        amountReceived: installment.amountReceived ?? 0,
+        dueDate: installment.dueDate,
+        receivedAt: installment.receivedAt,
+        status: installment.status,
+      })),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -86,17 +102,16 @@ class InMemoryIncomeRepository implements IncomeRepositoryPort {
       throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
     }
 
-    if (payload.receivedAmount !== undefined) {
-      income.receivedAmount = payload.receivedAmount;
-
-      if (income.receivedAmount <= 0) {
-        income.status = IncomeStatus.PENDING;
-      } else if (income.receivedAmount >= income.expectedAmount) {
-        income.status = IncomeStatus.RECEIVED;
-      } else {
-        income.status = IncomeStatus.PARTIALLY_RECEIVED;
-      }
-    }
+    if (payload.title !== undefined) income.title = payload.title;
+    if (payload.description !== undefined)
+      income.description = payload.description;
+    if (payload.idCategory !== undefined)
+      income.idCategory = payload.idCategory;
+    if (payload.category !== undefined) income.category = payload.category;
+    if (payload.incomeType !== undefined)
+      income.incomeType = payload.incomeType;
+    if (payload.isRecurring !== undefined)
+      income.isRecurring = payload.isRecurring;
 
     income.updatedAt = new Date();
     return income;
@@ -132,8 +147,8 @@ class InMemoryIncomeRepository implements IncomeRepositoryPort {
   }
 }
 
-describe("Incomes GraphQL flow (create/list/receive/delete)", () => {
-  it("should create income, list, register a partial receipt and delete it", async () => {
+describe("Incomes GraphQL flow (create/list/update status/delete)", () => {
+  it("should create income with installments, list, read details and update status", async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         IncomesResolver,
@@ -178,26 +193,28 @@ describe("Incomes GraphQL flow (create/list/receive/delete)", () => {
       title: "Projeto site",
       idCategory: "category-1",
       incomeType: IncomeType.VARIABLE,
-      expectedAmount: 1000,
-      expectedDate: new Date("2026-08-05"),
+      totalAmount: 1000,
+      dueDate: new Date("2026-08-05"),
+      hasInstallments: true,
+      installmentCount: 4,
     });
 
     expect(created.data.status).toBe(IncomeStatus.PENDING);
+    expect(created.data.installments).toHaveLength(4);
 
     const list = await resolver.getMyIncomes(user, { page: 1, limit: 10 });
     expect(list.items).toHaveLength(1);
 
-    const partiallyReceived = await resolver.updateIncomeDetails(user, {
+    const detail = await resolver.getIncomeById(user, {
       idIncome: created.data.idIncome,
-      receivedAmount: 400,
     });
-    expect(partiallyReceived.data.status).toBe(IncomeStatus.PARTIALLY_RECEIVED);
+    expect(detail.installments).toHaveLength(4);
 
-    const fullyReceived = await resolver.updateIncomeDetails(user, {
+    const updated = await resolver.updateIncomeStatus(user, {
       idIncome: created.data.idIncome,
-      receivedAmount: 1000,
+      status: IncomeStatus.OVERDUE,
     });
-    expect(fullyReceived.data.status).toBe(IncomeStatus.RECEIVED);
+    expect(updated.data.status).toBe(IncomeStatus.OVERDUE);
 
     const deleted = await resolver.deleteIncome(user, created.data.idIncome);
     expect(deleted.success).toBe(true);

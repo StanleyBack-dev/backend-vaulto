@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
+import { DataSource, In, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { toDateOnlyString } from "@/common/utils/date.util";
 import {
+  type CreateIncomeInstallmentPayload,
   type CreateIncomePayload,
+  type IncomeInstallmentView,
   type IncomeRepositoryPort,
   type IncomeView,
   type ListIncomesFilters,
@@ -14,34 +16,66 @@ import {
 } from "@/modules/incomes/application/ports/income-repository.port";
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { IncomeStatus } from "@/modules/incomes/domain/enums/income-status.enum";
+import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income-installment.entity";
 import { IncomeEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income.entity";
+import { IncomeReceiptEntity } from "@/modules/income-receipts/infrastructure/persistence/typeorm/entities/income-receipt.entity";
 
 @Injectable()
 export class IncomeTypeormRepository implements IncomeRepositoryPort {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(IncomeEntity)
     private readonly incomeRepository: Repository<IncomeEntity>,
+    @InjectRepository(IncomeInstallmentEntity)
+    private readonly installmentRepository: Repository<IncomeInstallmentEntity>,
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
   ) {}
 
-  async create(payload: CreateIncomePayload): Promise<IncomeView> {
-    const created = this.incomeRepository.create({
-      idUsers: payload.idUsers,
-      idCategory: payload.idCategory,
-      title: payload.title,
-      description: payload.description,
-      incomeType: payload.incomeType,
-      expectedAmount: payload.expectedAmount.toFixed(2),
-      expectedDate: payload.expectedDate,
-      receivedAmount: payload.receivedAmount.toFixed(2),
-      receivedAt: payload.receivedAt,
-      isRecurring: payload.isRecurring,
-      status: payload.status,
-    });
+  async create(
+    payload: CreateIncomePayload,
+    installments: CreateIncomeInstallmentPayload[],
+  ): Promise<IncomeView> {
+    return this.dataSource.transaction(async (manager) => {
+      const incomeRepository = manager.getRepository(IncomeEntity);
+      const installmentRepository = manager.getRepository(
+        IncomeInstallmentEntity,
+      );
 
-    const saved = await this.incomeRepository.save(created);
-    return this.mapToView(saved, payload.category);
+      const created = incomeRepository.create({
+        idUsers: payload.idUsers,
+        idCategory: payload.idCategory,
+        title: payload.title,
+        description: payload.description,
+        incomeType: payload.incomeType,
+        startDate: payload.startDate,
+        hasInstallments: payload.hasInstallments,
+        installmentCount: payload.installmentCount,
+        isRecurring: payload.isRecurring,
+        status: payload.status,
+        dueDate: payload.dueDate,
+        totalAmount: payload.totalAmount.toFixed(2),
+      });
+
+      const saved = await incomeRepository.save(created);
+
+      const installmentEntities = installments.map((installment) =>
+        installmentRepository.create({
+          idIncome: saved.idIncome,
+          installmentNumber: installment.installmentNumber,
+          amountDue: installment.amountDue.toFixed(2),
+          amountReceived: (installment.amountReceived ?? 0).toFixed(2),
+          dueDate: installment.dueDate,
+          receivedAt: installment.receivedAt,
+          status: installment.status,
+        }),
+      );
+
+      const savedInstallments =
+        await installmentRepository.save(installmentEntities);
+
+      return this.mapToView(saved, savedInstallments, payload.category);
+    });
   }
 
   async findById(idUsers: string, idIncome: string): Promise<IncomeView> {
@@ -53,98 +87,182 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
       throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
     }
 
-    const category = await this.findCategoryName(income.idCategory);
-    return this.mapToView(income, category);
-  }
-
-  async updateDetails(
-    idUsers: string,
-    payload: UpdateIncomeDetailsPayload,
-  ): Promise<IncomeView> {
-    const income = await this.incomeRepository.findOne({
-      where: { idIncome: payload.idIncome, idUsers },
+    const installments = await this.installmentRepository.find({
+      where: { idIncome: income.idIncome },
+      order: { installmentNumber: "ASC" },
     });
 
-    if (!income) {
-      throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
-    }
+    const category = await this.categoryRepository.findOne({
+      where: { idCategory: income.idCategory },
+    });
 
-    if (payload.title !== undefined) {
-      income.title = payload.title;
-    }
-    if (payload.description !== undefined) {
-      income.description = payload.description;
-    }
-    if (payload.idCategory !== undefined) {
-      income.idCategory = payload.idCategory;
-    }
-    if (payload.incomeType !== undefined) {
-      income.incomeType = payload.incomeType;
-    }
-    if (payload.expectedAmount !== undefined) {
-      income.expectedAmount = payload.expectedAmount.toFixed(2);
-    }
-    if (payload.expectedDate !== undefined) {
-      income.expectedDate = payload.expectedDate;
-    }
-    if (payload.receivedAt !== undefined) {
-      income.receivedAt = payload.receivedAt;
-    }
-
-    if (payload.receivedAmount !== undefined) {
-      income.receivedAmount = payload.receivedAmount.toFixed(2);
-
-      // RECEIVED and PARTIALLY_RECEIVED are derived from how the received
-      // amount compares to what's expected — this is the income module's
-      // equivalent of a debt's payment registration triggering its status,
-      // just folded into the same details update since there's no separate
-      // receipts sub-table.
-      const expected = Number(income.expectedAmount);
-      const received = Number(income.receivedAmount);
-
-      if (received <= 0) {
-        income.status = IncomeStatus.PENDING;
-      } else if (received >= expected) {
-        income.status = IncomeStatus.RECEIVED;
-      } else {
-        income.status = IncomeStatus.PARTIALLY_RECEIVED;
-      }
-    }
-
-    const saved = await this.incomeRepository.save(income);
-    const category = await this.findCategoryName(saved.idCategory);
-    return this.mapToView(saved, category);
+    return this.mapToView(income, installments, category?.name ?? "");
   }
 
   async updateStatus(
     idUsers: string,
     payload: UpdateIncomeStatusPayload,
   ): Promise<IncomeView> {
-    const income = await this.incomeRepository.findOne({
-      where: { idIncome: payload.idIncome, idUsers },
+    return this.dataSource.transaction(async (manager) => {
+      const incomeRepository = manager.getRepository(IncomeEntity);
+      const installmentRepository = manager.getRepository(
+        IncomeInstallmentEntity,
+      );
+
+      const income = await incomeRepository.findOne({
+        where: { idIncome: payload.idIncome, idUsers },
+      });
+
+      if (!income) {
+        throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
+      }
+
+      const installments = await installmentRepository.find({
+        where: { idIncome: income.idIncome },
+        order: { installmentNumber: "ASC" },
+      });
+
+      if (
+        payload.status === IncomeStatus.PENDING ||
+        payload.status === IncomeStatus.OVERDUE
+      ) {
+        for (const installment of installments) {
+          const amountDue = Number(installment.amountDue);
+          const amountReceived = Number(installment.amountReceived);
+          if (amountReceived < amountDue) {
+            installment.status = payload.status;
+          }
+        }
+      }
+
+      await installmentRepository.save(installments);
+
+      income.status = payload.status;
+      income.receivedAt =
+        payload.status === IncomeStatus.RECEIVED ? new Date() : undefined;
+      const savedIncome = await incomeRepository.save(income);
+
+      const category = await manager.getRepository(CategoryEntity).findOne({
+        where: { idCategory: savedIncome.idCategory },
+      });
+
+      return this.mapToView(
+        savedIncome,
+        installments,
+        category?.name ?? "",
+      );
     });
+  }
 
-    if (!income) {
-      throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
-    }
+  async updateDetails(
+    idUsers: string,
+    payload: UpdateIncomeDetailsPayload,
+  ): Promise<IncomeView> {
+    return this.dataSource.transaction(async (manager) => {
+      const incomeRepository = manager.getRepository(IncomeEntity);
+      const installmentRepository = manager.getRepository(
+        IncomeInstallmentEntity,
+      );
 
-    income.status = payload.status;
+      const income = await incomeRepository.findOne({
+        where: { idIncome: payload.idIncome, idUsers },
+      });
 
-    const saved = await this.incomeRepository.save(income);
-    const category = await this.findCategoryName(saved.idCategory);
-    return this.mapToView(saved, category);
+      if (!income) {
+        throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
+      }
+
+      if (payload.title !== undefined) {
+        income.title = payload.title;
+      }
+      if (payload.description !== undefined) {
+        income.description = payload.description;
+      }
+      if (payload.idCategory !== undefined) {
+        income.idCategory = payload.idCategory;
+      }
+      if (payload.incomeType !== undefined) {
+        income.incomeType = payload.incomeType;
+      }
+      if (payload.isRecurring !== undefined) {
+        income.isRecurring = payload.isRecurring;
+      }
+
+      const installments = await installmentRepository.find({
+        where: { idIncome: income.idIncome },
+        order: { installmentNumber: "ASC" },
+      });
+
+      if (payload.dueDate !== undefined) {
+        if (income.hasInstallments) {
+          throw AppException.from(
+            APP_ERRORS.incomes.dueDateNotEditableForInstallments,
+            undefined,
+          );
+        }
+
+        income.dueDate = payload.dueDate;
+
+        if (installments[0]) {
+          installments[0].dueDate = payload.dueDate;
+          await installmentRepository.save(installments[0]);
+        }
+      }
+
+      if (payload.totalAmount !== undefined) {
+        if (income.hasInstallments) {
+          throw AppException.from(
+            APP_ERRORS.incomes.totalAmountNotEditableForInstallments,
+            undefined,
+          );
+        }
+
+        income.totalAmount = payload.totalAmount.toFixed(2);
+
+        if (installments[0]) {
+          installments[0].amountDue = payload.totalAmount.toFixed(2);
+          await installmentRepository.save(installments[0]);
+        }
+      }
+
+      const savedIncome = await incomeRepository.save(income);
+
+      const category = await manager.getRepository(CategoryEntity).findOne({
+        where: { idCategory: savedIncome.idCategory },
+      });
+
+      return this.mapToView(
+        savedIncome,
+        installments,
+        category?.name ?? "",
+      );
+    });
   }
 
   async delete(idUsers: string, idIncome: string): Promise<void> {
-    const income = await this.incomeRepository.findOne({
-      where: { idIncome, idUsers },
+    await this.dataSource.transaction(async (manager) => {
+      const incomeRepository = manager.getRepository(IncomeEntity);
+
+      const income = await incomeRepository.findOne({
+        where: { idIncome, idUsers },
+      });
+
+      if (!income) {
+        throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
+      }
+
+      // Neither the installment nor the receipt table declares a DB-level
+      // foreign key relation (they're plain idtb_incomes columns), so
+      // nothing cascades automatically — every related row must be removed
+      // explicitly before the income itself, in the same transaction.
+      await manager
+        .getRepository(IncomeReceiptEntity)
+        .delete({ idIncome: income.idIncome });
+      await manager
+        .getRepository(IncomeInstallmentEntity)
+        .delete({ idIncome: income.idIncome });
+      await incomeRepository.delete({ idIncome: income.idIncome });
     });
-
-    if (!income) {
-      throw AppException.from(APP_ERRORS.incomes.notFound, undefined);
-    }
-
-    await this.incomeRepository.delete({ idIncome: income.idIncome });
   }
 
   async listByUser(
@@ -157,7 +275,7 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
     const qb = this.incomeRepository
       .createQueryBuilder("income")
       .where("income.idUsers = :idUsers", { idUsers })
-      .orderBy("income.expectedDate", "ASC")
+      .orderBy("income.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -177,22 +295,48 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
       });
     }
 
-    if (filters?.expectedDateFrom) {
-      qb.andWhere("income.expectedDate >= :expectedDateFrom", {
-        expectedDateFrom: toDateOnlyString(filters.expectedDateFrom),
-      });
-    }
+    if (filters?.dueDateFrom || filters?.dueDateTo) {
+      const existsInstallmentInRange = this.installmentRepository
+        .createQueryBuilder("ii")
+        .select("1")
+        .where("ii.idIncome = CAST(income.idIncome AS varchar)");
 
-    if (filters?.expectedDateTo) {
-      qb.andWhere("income.expectedDate <= :expectedDateTo", {
-        expectedDateTo: toDateOnlyString(filters.expectedDateTo),
-      });
+      if (filters.dueDateFrom) {
+        existsInstallmentInRange.andWhere("ii.dueDate >= :dueDateFrom", {
+          dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+        });
+      }
+
+      if (filters.dueDateTo) {
+        existsInstallmentInRange.andWhere("ii.dueDate <= :dueDateTo", {
+          dueDateTo: toDateOnlyString(filters.dueDateTo),
+        });
+      }
+
+      qb.andWhere(
+        `EXISTS (${existsInstallmentInRange.getQuery()})`,
+      ).setParameters(existsInstallmentInRange.getParameters());
     }
 
     const [rows, total] = await qb.getManyAndCount();
 
+    const ids = rows.map((row) => row.idIncome);
+    const installments = ids.length
+      ? await this.installmentRepository.find({
+          where: { idIncome: In(ids) },
+          order: { installmentNumber: "ASC" },
+        })
+      : [];
+
+    const installmentsByIncome = new Map<string, IncomeInstallmentEntity[]>();
+    for (const installment of installments) {
+      const current = installmentsByIncome.get(installment.idIncome) ?? [];
+      current.push(installment);
+      installmentsByIncome.set(installment.idIncome, current);
+    }
+
     const categoryIds = Array.from(
-      new Set(rows.map((row) => row.idCategory)),
+      new Set(rows.map((row) => row.idCategory).filter(Boolean)),
     );
     const categories = categoryIds.length
       ? await this.categoryRepository.find({
@@ -205,21 +349,51 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
 
     return {
       records: rows.map((row) =>
-        this.mapToView(row, categoryById.get(row.idCategory) ?? ""),
+        this.mapToView(
+          row,
+          installmentsByIncome.get(row.idIncome) ?? [],
+          categoryById.get(row.idCategory) ?? "",
+        ),
       ),
       total,
     };
   }
 
-  private async findCategoryName(idCategory: string): Promise<string> {
-    const category = await this.categoryRepository.findOne({
-      where: { idCategory },
-    });
+  private computeEndDate(
+    entity: IncomeEntity,
+    installments: IncomeInstallmentEntity[],
+  ): Date | undefined {
+    if (!installments.length) {
+      return entity.dueDate;
+    }
 
-    return category?.name ?? "";
+    return installments.reduce<Date>(
+      (latest, installment) =>
+        installment.dueDate > latest ? installment.dueDate : latest,
+      installments[0].dueDate,
+    );
   }
 
-  private mapToView(entity: IncomeEntity, category: string): IncomeView {
+  private mapInstallmentToView(
+    entity: IncomeInstallmentEntity,
+  ): IncomeInstallmentView {
+    return {
+      idIncomeInstallment: entity.idIncomeInstallment,
+      idIncome: entity.idIncome,
+      installmentNumber: entity.installmentNumber,
+      amountDue: Number(entity.amountDue),
+      amountReceived: Number(entity.amountReceived),
+      dueDate: entity.dueDate,
+      receivedAt: entity.receivedAt,
+      status: entity.status,
+    };
+  }
+
+  private mapToView(
+    entity: IncomeEntity,
+    installments: IncomeInstallmentEntity[],
+    category: string,
+  ): IncomeView {
     return {
       idIncome: entity.idIncome,
       idUsers: entity.idUsers,
@@ -228,12 +402,18 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
       title: entity.title,
       description: entity.description,
       incomeType: entity.incomeType,
-      expectedAmount: Number(entity.expectedAmount),
-      expectedDate: entity.expectedDate,
-      receivedAmount: Number(entity.receivedAmount),
-      receivedAt: entity.receivedAt,
+      totalAmount: Number(entity.totalAmount),
+      dueDate: entity.dueDate,
+      endDate: this.computeEndDate(entity, installments),
+      startDate: entity.startDate,
+      hasInstallments: entity.hasInstallments,
+      installmentCount: entity.installmentCount,
       isRecurring: entity.isRecurring,
       status: entity.status,
+      receivedAt: entity.receivedAt,
+      installments: installments.map((installment) =>
+        this.mapInstallmentToView(installment),
+      ),
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };

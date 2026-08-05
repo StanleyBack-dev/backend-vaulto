@@ -1,4 +1,4 @@
-import { Field, Float, InputType } from "@nestjs/graphql";
+import { Field, Float, InputType, Int } from "@nestjs/graphql";
 import { IncomeType } from "@/modules/incomes/domain/enums/income-type.enum";
 
 @InputType()
@@ -15,11 +15,20 @@ export class CreateIncomeInputDto {
   @Field(() => IncomeType)
   incomeType!: IncomeType;
 
-  @Field(() => Float)
-  expectedAmount!: number;
+  @Field(() => Float, { nullable: true })
+  totalAmount?: number;
 
-  @Field(() => Date)
-  expectedDate!: Date;
+  @Field(() => Date, { nullable: true })
+  dueDate?: Date;
+
+  @Field()
+  hasInstallments!: boolean;
+
+  @Field(() => Int, { nullable: true })
+  installmentCount?: number;
+
+  @Field(() => Float, { nullable: true })
+  installmentAmount?: number;
 
   @Field({ nullable: true })
   isRecurring?: boolean;

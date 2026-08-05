@@ -5,7 +5,10 @@ export type CreateIncomeCommand = {
   idCategory: string;
   description?: string;
   incomeType: IncomeType;
-  expectedAmount: number;
-  expectedDate: Date;
+  totalAmount?: number;
+  dueDate?: Date;
+  hasInstallments: boolean;
+  installmentCount?: number;
+  installmentAmount?: number;
   isRecurring?: boolean;
 };

@@ -10,6 +10,7 @@ import { GetIncomeByIdUseCase } from "@/modules/incomes/application/use-cases/ge
 import { ListIncomesUseCase } from "@/modules/incomes/application/use-cases/get/list-incomes.use-case";
 import { UpdateIncomeDetailsUseCase } from "@/modules/incomes/application/use-cases/update/update-income-details.use-case";
 import { UpdateIncomeStatusUseCase } from "@/modules/incomes/application/use-cases/update/update-income-status.use-case";
+import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income-installment.entity";
 import { IncomeEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income.entity";
 import { IncomeTypeormRepository } from "@/modules/incomes/infrastructure/persistence/typeorm/repositories/income-typeorm.repository";
 import { IncomesResolver } from "@/modules/incomes/presentation/graphql/resolvers/incomes.resolver";
@@ -17,7 +18,11 @@ import "@/modules/incomes/presentation/graphql/enums/incomes-graphql.enums";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([IncomeEntity, CategoryEntity]),
+    TypeOrmModule.forFeature([
+      IncomeEntity,
+      IncomeInstallmentEntity,
+      CategoryEntity,
+    ]),
     CategoriesModule,
     AuthModule,
   ],

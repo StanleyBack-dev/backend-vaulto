@@ -34,13 +34,6 @@ export class UpdateIncomeDetailsUseCase {
       AuthPermission.MANAGE_OWN_DEBTS,
     );
 
-    if (
-      command.expectedAmount !== undefined &&
-      (!Number.isFinite(command.expectedAmount) || command.expectedAmount <= 0)
-    ) {
-      throw AppException.from(APP_ERRORS.incomes.invalidAmount, undefined);
-    }
-
     let categoryName: string | undefined;
 
     if (command.idCategory) {
@@ -72,10 +65,8 @@ export class UpdateIncomeDetailsUseCase {
       idCategory: command.idCategory,
       category: categoryName,
       incomeType: command.incomeType,
-      expectedAmount: command.expectedAmount,
-      expectedDate: command.expectedDate,
-      receivedAmount: command.receivedAmount,
-      receivedAt: command.receivedAt,
+      dueDate: command.dueDate,
+      totalAmount: command.totalAmount,
       isRecurring: command.isRecurring,
     });
   }

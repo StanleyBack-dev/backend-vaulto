@@ -59,6 +59,7 @@ enum PageAccessKey {
   DEBTS_STATEMENT
   INCOMES
   PAYMENTS
+  INCOME_RECEIPTS
   CREDIT_CARDS
   USERS
 }
@@ -234,6 +235,62 @@ type ListDebtsResponseDto {
   hasNextPage: Boolean!
 }
 
+type IncomeReceiptResponseDto {
+  idIncomeReceipt: String!
+  idIncome: String!
+  idIncomeInstallment: String
+  idUsers: String!
+  amountReceived: Float!
+  receivedAt: String!
+  createdAt: String!
+}
+
+type IncomeInstallmentResponseDto {
+  idIncomeInstallment: String!
+  idIncome: String!
+  installmentNumber: Int!
+  amountDue: Float!
+  amountReceived: Float!
+  dueDate: DateTime!
+  receivedAt: String
+  status: IncomeStatus!
+}
+
+enum IncomeStatus {
+  PENDING
+  PARTIALLY_RECEIVED
+  RECEIVED
+  OVERDUE
+}
+
+type RegisterInstallmentReceiptResponseDto {
+  idIncome: String!
+  incomeStatus: IncomeStatus!
+  receipts: [IncomeReceiptResponseDto!]!
+  installments: [IncomeInstallmentResponseDto!]!
+}
+
+type RegisterInstallmentReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type UpdateIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type DeleteIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
 type IncomeResponseDto {
   idIncome: String!
   idUsers: String!
@@ -242,12 +299,16 @@ type IncomeResponseDto {
   title: String!
   description: String
   incomeType: IncomeType!
-  expectedAmount: Float!
-  expectedDate: DateTime!
-  receivedAmount: Float!
-  receivedAt: DateTime
+  totalAmount: Float!
+  dueDate: DateTime
+  endDate: DateTime
+  startDate: DateTime!
+  hasInstallments: Boolean!
+  installmentCount: Int!
   isRecurring: Boolean!
   status: IncomeStatus!
+  receivedAt: DateTime
+  installments: [IncomeInstallmentResponseDto!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -255,13 +316,6 @@ type IncomeResponseDto {
 enum IncomeType {
   FIXED
   VARIABLE
-}
-
-enum IncomeStatus {
-  PENDING
-  PARTIALLY_RECEIVED
-  RECEIVED
-  OVERDUE
 }
 
 type CreateIncomeMutationResponseDto {
@@ -463,6 +517,7 @@ type Query {
   getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
   getIncomeById(input: GetIncomeByIdInputDto!): IncomeResponseDto!
   getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
+  getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
 }
 
@@ -530,8 +585,8 @@ input ListIncomesInputDto {
   status: IncomeStatus
   incomeType: IncomeType
   idCategory: String
-  expectedDateFrom: DateTime
-  expectedDateTo: DateTime
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
 }
 
 input GetDebtsReportInputDto {
@@ -569,6 +624,9 @@ type Mutation {
   updateIncomeDetails(input: UpdateIncomeDetailsInputDto!): CreateIncomeMutationResponseDto!
   updateIncomeStatus(input: UpdateIncomeStatusInputDto!): CreateIncomeMutationResponseDto!
   deleteIncome(idIncome: String!): DeleteIncomeResponseDto!
+  registerInstallmentReceipt(input: RegisterInstallmentReceiptInputDto!): RegisterInstallmentReceiptMutationResponseDto!
+  updateIncomeReceipt(input: UpdateIncomeReceiptInputDto!): UpdateIncomeReceiptMutationResponseDto!
+  deleteIncomeReceipt(idIncomeReceipt: String!): DeleteIncomeReceiptMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -707,8 +765,11 @@ input CreateIncomeInputDto {
   idCategory: String!
   description: String
   incomeType: IncomeType!
-  expectedAmount: Float!
-  expectedDate: DateTime!
+  totalAmount: Float
+  dueDate: DateTime
+  hasInstallments: Boolean!
+  installmentCount: Int
+  installmentAmount: Float
   isRecurring: Boolean
 }
 
@@ -718,14 +779,25 @@ input UpdateIncomeDetailsInputDto {
   description: String
   idCategory: String
   incomeType: IncomeType
-  expectedAmount: Float
-  expectedDate: DateTime
-  receivedAmount: Float
-  receivedAt: DateTime
+  dueDate: DateTime
+  totalAmount: Float
   isRecurring: Boolean
 }
 
 input UpdateIncomeStatusInputDto {
   idIncome: String!
   status: IncomeStatus!
+}
+
+input RegisterInstallmentReceiptInputDto {
+  idIncome: String!
+  idIncomeInstallment: String!
+  amountReceived: Float!
+  receivedAt: DateTime
+}
+
+input UpdateIncomeReceiptInputDto {
+  idIncomeReceipt: String!
+  amountReceived: Float
+  receivedAt: DateTime
 }

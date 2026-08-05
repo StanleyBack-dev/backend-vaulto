@@ -114,6 +114,24 @@ export const RESPONSE_MESSAGES = {
       message: "Pagamento excluido com sucesso.",
     },
   },
+  incomeReceipts: {
+    registered: {
+      code: "INCOME_RECEIPT_REGISTERED",
+      message: "Recebimento registrado com sucesso.",
+    },
+    listed: {
+      code: "INCOME_RECEIPTS_LISTED",
+      message: "Recebimentos carregados com sucesso.",
+    },
+    updated: {
+      code: "INCOME_RECEIPT_UPDATED",
+      message: "Recebimento atualizado com sucesso.",
+    },
+    deleted: {
+      code: "INCOME_RECEIPT_DELETED",
+      message: "Recebimento excluído com sucesso.",
+    },
+  },
   categories: {
     created: {
       code: "CATEGORY_CREATED",

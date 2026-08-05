@@ -6,9 +6,7 @@ export type UpdateIncomeDetailsCommand = {
   description?: string;
   idCategory?: string;
   incomeType?: IncomeType;
-  expectedAmount?: number;
-  expectedDate?: Date;
-  receivedAmount?: number;
-  receivedAt?: Date;
+  dueDate?: Date;
+  totalAmount?: number;
   isRecurring?: boolean;
 };

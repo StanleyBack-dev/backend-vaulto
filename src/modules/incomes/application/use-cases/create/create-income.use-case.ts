@@ -10,11 +10,14 @@ import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
 import {
   INCOME_REPOSITORY,
+  type CreateIncomeInstallmentPayload,
+  type CreateIncomePayload,
   type IncomeRepositoryPort,
   type IncomeView,
 } from "@/modules/incomes/application/ports/income-repository.port";
 import { CreateIncomeCommand } from "@/modules/incomes/application/dto/create/create-income.command";
 import { Income } from "@/modules/incomes/domain/entities/income.entity";
+import { IncomeInstallmentScheduleService } from "@/modules/incomes/domain/services/income-installment-schedule.service";
 
 @Injectable()
 export class CreateIncomeUseCase {
@@ -55,26 +58,45 @@ export class CreateIncomeUseCase {
       title: command.title,
       description: command.description,
       incomeType: command.incomeType,
-      expectedAmount: command.expectedAmount,
-      expectedDate: command.expectedDate,
+      totalAmount: command.totalAmount,
+      installmentAmount: command.installmentAmount,
+      dueDate: command.dueDate,
+      startDate: command.dueDate ?? new Date(),
+      hasInstallments: command.hasInstallments,
+      installmentCount: command.installmentCount,
       isRecurring: command.isRecurring,
     });
 
     const primitive = income.toPrimitive();
-
-    return this.incomeRepository.create({
+    const payload: CreateIncomePayload = {
       idUsers: primitive.idUsers,
       idCategory: primitive.idCategory,
       category: category.name,
       title: primitive.title,
       description: primitive.description,
       incomeType: primitive.incomeType,
-      expectedAmount: primitive.expectedAmount,
-      expectedDate: primitive.expectedDate,
-      receivedAmount: primitive.receivedAmount ?? 0,
-      receivedAt: primitive.receivedAt,
+      totalAmount: primitive.totalAmount ?? 0,
+      dueDate: primitive.dueDate,
+      startDate: primitive.startDate,
+      hasInstallments: primitive.hasInstallments,
+      installmentCount: primitive.installmentCount ?? 1,
       isRecurring: primitive.isRecurring ?? false,
       status: primitive.status!,
-    });
+    };
+
+    const installments: CreateIncomeInstallmentPayload[] =
+      IncomeInstallmentScheduleService.build({
+        totalAmount: payload.totalAmount,
+        installmentCount: payload.installmentCount ?? 1,
+        startDate: payload.startDate,
+      }).map(
+        (installment) =>
+          ({
+            ...installment.toPrimitive(),
+            status: primitive.status!,
+          }) as CreateIncomeInstallmentPayload,
+      );
+
+    return this.incomeRepository.create(payload, installments);
   }
 }

@@ -17,11 +17,11 @@ export class IncomeEntity {
   @Column({ name: "idtb_users" })
   idUsers!: string;
 
-  @Column({ name: "idtb_categories" })
-  idCategory!: string;
-
   @Column({ length: 120 })
   title!: string;
+
+  @Column({ name: "idtb_categories" })
+  idCategory!: string;
 
   @Column({ type: "text", nullable: true })
   description?: string;
@@ -33,38 +33,38 @@ export class IncomeEntity {
   })
   incomeType!: IncomeType;
 
-  @Column({
-    name: "expected_amount",
-    type: "numeric",
-    precision: 12,
-    scale: 2,
-  })
-  expectedAmount!: string;
+  @Column({ name: "total_amount", type: "numeric", precision: 12, scale: 2 })
+  totalAmount!: string;
 
   @Column({
-    name: "expected_date",
+    name: "start_date",
     type: "date",
     transformer: dateOnlyTransformer,
   })
-  expectedDate!: Date;
+  startDate!: Date;
 
   @Column({
-    name: "received_amount",
-    type: "numeric",
-    precision: 12,
-    scale: 2,
-    default: 0,
+    name: "due_date",
+    type: "date",
+    nullable: true,
+    transformer: dateOnlyTransformer,
   })
-  receivedAmount!: string;
+  dueDate?: Date;
 
-  @Column({ name: "received_at", type: "timestamptz", nullable: true })
-  receivedAt?: Date;
+  @Column({ name: "has_installments", type: "boolean", default: false })
+  hasInstallments!: boolean;
+
+  @Column({ name: "installment_count", type: "int", default: 1 })
+  installmentCount!: number;
 
   @Column({ name: "is_recurring", type: "boolean", default: false })
   isRecurring!: boolean;
 
   @Column({ type: "enum", enum: IncomeStatus, default: IncomeStatus.PENDING })
   status!: IncomeStatus;
+
+  @Column({ name: "received_at", type: "timestamptz", nullable: true })
+  receivedAt?: Date;
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;

@@ -18,17 +18,11 @@ export class UpdateIncomeDetailsInputDto {
   @Field(() => IncomeType, { nullable: true })
   incomeType?: IncomeType;
 
-  @Field(() => Float, { nullable: true })
-  expectedAmount?: number;
-
   @Field(() => Date, { nullable: true })
-  expectedDate?: Date;
+  dueDate?: Date;
 
   @Field(() => Float, { nullable: true })
-  receivedAmount?: number;
-
-  @Field(() => Date, { nullable: true })
-  receivedAt?: Date;
+  totalAmount?: number;
 
   @Field({ nullable: true })
   isRecurring?: boolean;

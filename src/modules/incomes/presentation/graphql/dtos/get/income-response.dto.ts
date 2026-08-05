@@ -1,7 +1,8 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import type { IncomeView } from "@/modules/incomes/application/ports/income-repository.port";
 import { IncomeStatus } from "@/modules/incomes/domain/enums/income-status.enum";
 import { IncomeType } from "@/modules/incomes/domain/enums/income-type.enum";
+import { IncomeInstallmentResponseDto } from "@/modules/incomes/presentation/graphql/dtos/get/income-installment-response.dto";
 
 @ObjectType()
 export class IncomeResponseDto {
@@ -14,12 +15,18 @@ export class IncomeResponseDto {
     dto.title = view.title;
     dto.description = view.description;
     dto.incomeType = view.incomeType;
-    dto.expectedAmount = view.expectedAmount;
-    dto.expectedDate = view.expectedDate;
-    dto.receivedAmount = view.receivedAmount;
-    dto.receivedAt = view.receivedAt;
+    dto.totalAmount = view.totalAmount;
+    dto.dueDate = view.dueDate;
+    dto.endDate = view.endDate;
+    dto.startDate = view.startDate;
+    dto.hasInstallments = view.hasInstallments;
+    dto.installmentCount = view.installmentCount;
     dto.isRecurring = view.isRecurring;
     dto.status = view.status;
+    dto.receivedAt = view.receivedAt;
+    dto.installments = view.installments.map((installment) =>
+      IncomeInstallmentResponseDto.fromView(installment),
+    );
     dto.createdAt = view.createdAt;
     dto.updatedAt = view.updatedAt;
     return dto;
@@ -47,22 +54,34 @@ export class IncomeResponseDto {
   incomeType!: IncomeType;
 
   @Field(() => Float)
-  expectedAmount!: number;
-
-  @Field(() => Date)
-  expectedDate!: Date;
-
-  @Field(() => Float)
-  receivedAmount!: number;
+  totalAmount!: number;
 
   @Field(() => Date, { nullable: true })
-  receivedAt?: Date;
+  dueDate?: Date;
+
+  @Field(() => Date, { nullable: true })
+  endDate?: Date;
+
+  @Field(() => Date)
+  startDate!: Date;
+
+  @Field()
+  hasInstallments!: boolean;
+
+  @Field(() => Int)
+  installmentCount!: number;
 
   @Field()
   isRecurring!: boolean;
 
   @Field(() => IncomeStatus)
   status!: IncomeStatus;
+
+  @Field(() => Date, { nullable: true })
+  receivedAt?: Date;
+
+  @Field(() => [IncomeInstallmentResponseDto])
+  installments!: IncomeInstallmentResponseDto[];
 
   @Field(() => Date)
   createdAt!: Date;
