@@ -36,4 +36,9 @@ export const creditCardsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Limite disponivel insuficiente no cartao selecionado.",
   },
+  acquiredAtRequiredForCreditCard: {
+    code: "CREDIT_CARDS_ACQUIRED_AT_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe a data da compra para calcular o vencimento no cartao.",
+  },
 } as const;

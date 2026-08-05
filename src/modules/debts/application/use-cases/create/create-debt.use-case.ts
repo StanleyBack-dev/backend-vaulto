@@ -75,10 +75,23 @@ export class CreateDebtUseCase {
         );
       }
 
+      // The billing cycle a purchase falls into depends on when it actually
+      // happened, not on when it's being registered — a backdated debt
+      // (e.g. entered weeks after the purchase) must still land on the due
+      // date that purchase would have gotten back then, so this can never
+      // silently default to "today".
+      if (!command.acquiredAt) {
+        throw AppException.from(
+          APP_ERRORS.creditCards.acquiredAtRequiredForCreditCard,
+          undefined,
+        );
+      }
+
       creditCardName = creditCard.name;
       cardDerivedDueDate = CreditCardDueDateService.computeNextDueDate(
         creditCard.dueDay,
         creditCard.closingDay,
+        command.acquiredAt,
       );
     }
 
