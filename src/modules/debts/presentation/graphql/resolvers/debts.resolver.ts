@@ -4,17 +4,20 @@ import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages
 import {
   buildDataResponse,
   buildPaginatedListResponse,
+  buildSuccessResponse,
 } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
+import { DeleteDebtUseCase } from "@/modules/debts/application/use-cases/delete/delete-debt.use-case";
 import { GetDebtByIdUseCase } from "@/modules/debts/application/use-cases/get/get-debt-by-id.use-case";
 import { ListDebtsUseCase } from "@/modules/debts/application/use-cases/get/list-debts.use-case";
 import { UpdateDebtDetailsUseCase } from "@/modules/debts/application/use-cases/update/update-debt-details.use-case";
 import { UpdateDebtStatusUseCase } from "@/modules/debts/application/use-cases/update/update-debt-status.use-case";
 import { CreateDebtInputDto } from "@/modules/debts/presentation/graphql/dtos/create/create-debt-input.dto";
 import { CreateDebtMutationResponseDto } from "@/modules/debts/presentation/graphql/dtos/create/create-debt-mutation-response.dto";
+import { DeleteDebtResponseDto } from "@/modules/debts/presentation/graphql/dtos/delete/delete-debt-response.dto";
 import { DebtResponseDto } from "@/modules/debts/presentation/graphql/dtos/get/debt-response.dto";
 import { GetDebtByIdInputDto } from "@/modules/debts/presentation/graphql/dtos/get/get-debt-by-id-input.dto";
 import { ListDebtsInputDto } from "@/modules/debts/presentation/graphql/dtos/get/list-debts-input.dto";
@@ -30,6 +33,7 @@ export class DebtsResolver {
     private readonly listDebtsUseCase: ListDebtsUseCase,
     private readonly updateDebtDetailsUseCase: UpdateDebtDetailsUseCase,
     private readonly updateDebtStatusUseCase: UpdateDebtStatusUseCase,
+    private readonly deleteDebtUseCase: DeleteDebtUseCase,
   ) {}
 
   @Query(() => DebtResponseDto, { name: "getDebtById" })
@@ -132,5 +136,16 @@ export class DebtsResolver {
       DebtResponseDto.fromView(updatedDebt),
       RESPONSE_MESSAGES.debts.statusUpdated,
     );
+  }
+
+  @Mutation(() => DeleteDebtResponseDto, { name: "deleteDebt" })
+  @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
+  async deleteDebt(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("idDebt") idDebt: string,
+  ) {
+    await this.deleteDebtUseCase.execute(user.idUsers, idDebt);
+
+    return buildSuccessResponse(RESPONSE_MESSAGES.debts.deleted);
   }
 }

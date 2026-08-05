@@ -7,6 +7,7 @@ import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
 import { CreditCardEntity } from "@/modules/credit-cards/infrastructure/persistence/typeorm/entities/credit-card.entity";
 import { DEBT_REPOSITORY } from "@/modules/debts/application/ports/debt-repository.port";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
+import { DeleteDebtUseCase } from "@/modules/debts/application/use-cases/delete/delete-debt.use-case";
 import { GetDebtByIdUseCase } from "@/modules/debts/application/use-cases/get/get-debt-by-id.use-case";
 import { ListDebtsUseCase } from "@/modules/debts/application/use-cases/get/list-debts.use-case";
 import { UpdateDebtDetailsUseCase } from "@/modules/debts/application/use-cases/update/update-debt-details.use-case";
@@ -38,6 +39,7 @@ import "@/modules/debts/presentation/graphql/enums/debts-graphql.enums";
     ListDebtsUseCase,
     UpdateDebtDetailsUseCase,
     UpdateDebtStatusUseCase,
+    DeleteDebtUseCase,
     DebtsResolver,
     DebtTypeormRepository,
     {

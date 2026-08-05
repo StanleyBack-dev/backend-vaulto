@@ -208,6 +208,12 @@ type CreateDebtMutationResponseDto {
   data: DebtResponseDto!
 }
 
+type DeleteDebtResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
 type ListDebtsResponseDto {
   success: Boolean!
   message: String
@@ -475,6 +481,7 @@ type Mutation {
   createDebt(input: CreateDebtInputDto!): CreateDebtMutationResponseDto!
   updateDebtDetails(input: UpdateDebtDetailsInputDto!): CreateDebtMutationResponseDto!
   updateDebtStatus(input: UpdateDebtStatusInputDto!): CreateDebtMutationResponseDto!
+  deleteDebt(idDebt: String!): DeleteDebtResponseDto!
   registerInstallmentPayment(input: RegisterInstallmentPaymentInputDto!): RegisterInstallmentPaymentMutationResponseDto!
   updateDebtPayment(input: UpdateDebtPaymentInputDto!): UpdateDebtPaymentMutationResponseDto!
   deleteDebtPayment(idDebtPayment: String!): DeleteDebtPaymentMutationResponseDto!

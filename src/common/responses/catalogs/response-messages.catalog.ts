@@ -69,6 +69,10 @@ export const RESPONSE_MESSAGES = {
       code: "DEBT_DETAILS_UPDATED",
       message: "Dados da divida atualizados com sucesso.",
     },
+    deleted: {
+      code: "DEBT_DELETED",
+      message: "Divida excluida com sucesso.",
+    },
   },
   payments: {
     registered: {

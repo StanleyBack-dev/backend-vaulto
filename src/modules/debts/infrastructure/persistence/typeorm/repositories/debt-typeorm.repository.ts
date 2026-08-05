@@ -299,6 +299,32 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
     });
   }
 
+  async delete(idUsers: string, idDebt: string): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const debtRepository = manager.getRepository(DebtEntity);
+
+      const debt = await debtRepository.findOne({
+        where: { idDebt, idUsers },
+      });
+
+      if (!debt) {
+        throw AppException.from(APP_ERRORS.debts.notFound, undefined);
+      }
+
+      // Neither the installment nor the payment table declares a DB-level
+      // foreign key relation (they're plain idtb_debts columns), so nothing
+      // cascades automatically — every related row must be removed
+      // explicitly before the debt itself, in the same transaction.
+      await manager
+        .getRepository(DebtPaymentEntity)
+        .delete({ idDebt: debt.idDebt });
+      await manager
+        .getRepository(DebtInstallmentEntity)
+        .delete({ idDebt: debt.idDebt });
+      await debtRepository.delete({ idDebt: debt.idDebt });
+    });
+  }
+
   async listByUser(
     idUsers: string,
     filters?: ListDebtsFilters,

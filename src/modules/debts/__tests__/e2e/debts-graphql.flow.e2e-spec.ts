@@ -4,6 +4,7 @@ import { CATEGORY_REPOSITORY } from "@/modules/categories/application/ports/cate
 import { CREDIT_CARD_REPOSITORY } from "@/modules/credit-cards/application/ports/credit-card-repository.port";
 import { DebtsResolver } from "@/modules/debts/presentation/graphql/resolvers/debts.resolver";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
+import { DeleteDebtUseCase } from "@/modules/debts/application/use-cases/delete/delete-debt.use-case";
 import { GetDebtByIdUseCase } from "@/modules/debts/application/use-cases/get/get-debt-by-id.use-case";
 import { ListDebtsUseCase } from "@/modules/debts/application/use-cases/get/list-debts.use-case";
 import { UpdateDebtDetailsUseCase } from "@/modules/debts/application/use-cases/update/update-debt-details.use-case";
@@ -131,6 +132,18 @@ class InMemoryDebtRepository implements DebtRepositoryPort {
     debt.updatedAt = new Date();
     return debt;
   }
+
+  async delete(idUsers: string, idDebt: string): Promise<void> {
+    const debt = this.debts.find(
+      (item) => item.idDebt === idDebt && item.idUsers === idUsers,
+    );
+
+    if (!debt) {
+      throw AppException.from(APP_ERRORS.debts.notFound, undefined);
+    }
+
+    this.debts = this.debts.filter((item) => item.idDebt !== idDebt);
+  }
 }
 
 describe("Debts GraphQL flow (create/list/update status)", () => {
@@ -143,6 +156,7 @@ describe("Debts GraphQL flow (create/list/update status)", () => {
         ListDebtsUseCase,
         UpdateDebtDetailsUseCase,
         UpdateDebtStatusUseCase,
+        DeleteDebtUseCase,
         {
           provide: AuthorizationService,
           useValue: {
@@ -209,5 +223,18 @@ describe("Debts GraphQL flow (create/list/update status)", () => {
     });
 
     expect(updated.data.status).toBe(DebtStatus.OVERDUE);
+
+    const deleted = await resolver.deleteDebt(user, created.data.idDebt);
+    expect(deleted.success).toBe(true);
+
+    const listAfterDelete = await resolver.getMyDebts(user, {
+      page: 1,
+      limit: 10,
+    });
+    expect(listAfterDelete.items).toHaveLength(0);
+
+    await expect(
+      resolver.getDebtById(user, { idDebt: created.data.idDebt }),
+    ).rejects.toBeInstanceOf(AppException);
   });
 });
