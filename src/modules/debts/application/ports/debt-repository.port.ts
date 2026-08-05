@@ -110,6 +110,7 @@ export interface DebtRepositoryPort {
     idUsers: string,
     payload: UpdateDebtDetailsPayload,
   ): Promise<DebtView>;
+  delete(idUsers: string, idDebt: string): Promise<void>;
 }
 
 export const DEBT_REPOSITORY = Symbol("DEBT_REPOSITORY");
