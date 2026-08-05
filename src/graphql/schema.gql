@@ -57,7 +57,9 @@ enum PageAccessKey {
   CATEGORIES
   DEBTS
   DEBTS_STATEMENT
+  INCOMES
   PAYMENTS
+  INCOME_RECEIPTS
   CREDIT_CARDS
   USERS
 }
@@ -71,10 +73,16 @@ type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
   name: String!
+  type: CategoryType!
   status: Boolean!
   inactivatedAt: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+enum CategoryType {
+  EXPENSE
+  INCOME
 }
 
 type CreateCategoryMutationResponseDto {
@@ -220,6 +228,114 @@ type ListDebtsResponseDto {
   message: String
   code: String
   items: [DebtResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type IncomeReceiptResponseDto {
+  idIncomeReceipt: String!
+  idIncome: String!
+  idIncomeInstallment: String
+  idUsers: String!
+  amountReceived: Float!
+  receivedAt: String!
+  createdAt: String!
+}
+
+type IncomeInstallmentResponseDto {
+  idIncomeInstallment: String!
+  idIncome: String!
+  installmentNumber: Int!
+  amountDue: Float!
+  amountReceived: Float!
+  dueDate: DateTime!
+  receivedAt: String
+  status: IncomeStatus!
+}
+
+enum IncomeStatus {
+  PENDING
+  PARTIALLY_RECEIVED
+  RECEIVED
+  OVERDUE
+}
+
+type RegisterInstallmentReceiptResponseDto {
+  idIncome: String!
+  incomeStatus: IncomeStatus!
+  receipts: [IncomeReceiptResponseDto!]!
+  installments: [IncomeInstallmentResponseDto!]!
+}
+
+type RegisterInstallmentReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type UpdateIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type DeleteIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type IncomeResponseDto {
+  idIncome: String!
+  idUsers: String!
+  idCategory: String!
+  category: String!
+  title: String!
+  description: String
+  incomeType: IncomeType!
+  totalAmount: Float!
+  dueDate: DateTime
+  endDate: DateTime
+  startDate: DateTime!
+  hasInstallments: Boolean!
+  installmentCount: Int!
+  isRecurring: Boolean!
+  status: IncomeStatus!
+  receivedAt: DateTime
+  installments: [IncomeInstallmentResponseDto!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum IncomeType {
+  FIXED
+  VARIABLE
+}
+
+type CreateIncomeMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: IncomeResponseDto!
+}
+
+type DeleteIncomeResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type ListIncomesResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [IncomeResponseDto!]!
   total: Int!
   currentPage: Int!
   limit: Int!
@@ -399,6 +515,9 @@ type Query {
   getDebtById(input: GetDebtByIdInputDto!): DebtResponseDto!
   getMyDebts(input: ListDebtsInputDto): ListDebtsResponseDto!
   getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
+  getIncomeById(input: GetIncomeByIdInputDto!): IncomeResponseDto!
+  getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
+  getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
 }
 
@@ -425,6 +544,7 @@ input ListCategoriesInputDto {
   page: Int = 1
   limit: Int = 10
   status: Boolean
+  type: CategoryType
 }
 
 input GetCategoryByIdInputDto {
@@ -450,6 +570,20 @@ input ListDebtsInputDto {
   limit: Int
   status: DebtStatus
   debtType: DebtType
+  idCategory: String
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+}
+
+input GetIncomeByIdInputDto {
+  idIncome: String!
+}
+
+input ListIncomesInputDto {
+  page: Int
+  limit: Int
+  status: IncomeStatus
+  incomeType: IncomeType
   idCategory: String
   dueDateFrom: DateTime
   dueDateTo: DateTime
@@ -486,6 +620,13 @@ type Mutation {
   registerInstallmentPayment(input: RegisterInstallmentPaymentInputDto!): RegisterInstallmentPaymentMutationResponseDto!
   updateDebtPayment(input: UpdateDebtPaymentInputDto!): UpdateDebtPaymentMutationResponseDto!
   deleteDebtPayment(idDebtPayment: String!): DeleteDebtPaymentMutationResponseDto!
+  createIncome(input: CreateIncomeInputDto!): CreateIncomeMutationResponseDto!
+  updateIncomeDetails(input: UpdateIncomeDetailsInputDto!): CreateIncomeMutationResponseDto!
+  updateIncomeStatus(input: UpdateIncomeStatusInputDto!): CreateIncomeMutationResponseDto!
+  deleteIncome(idIncome: String!): DeleteIncomeResponseDto!
+  registerInstallmentReceipt(input: RegisterInstallmentReceiptInputDto!): RegisterInstallmentReceiptMutationResponseDto!
+  updateIncomeReceipt(input: UpdateIncomeReceiptInputDto!): UpdateIncomeReceiptMutationResponseDto!
+  deleteIncomeReceipt(idIncomeReceipt: String!): DeleteIncomeReceiptMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -548,12 +689,14 @@ input UnlockUserCredentialInputDto {
 
 input CreateCategoryInputDto {
   name: String!
+  type: CategoryType
   status: Boolean
 }
 
 input UpdateCategoryInputDto {
   idCategory: String!
   name: String!
+  type: CategoryType
   status: Boolean!
 }
 
@@ -615,4 +758,46 @@ input UpdateDebtPaymentInputDto {
   idDebtPayment: String!
   amountPaid: Float
   paidAt: DateTime
+}
+
+input CreateIncomeInputDto {
+  title: String!
+  idCategory: String!
+  description: String
+  incomeType: IncomeType!
+  totalAmount: Float
+  dueDate: DateTime
+  hasInstallments: Boolean!
+  installmentCount: Int
+  installmentAmount: Float
+  isRecurring: Boolean
+}
+
+input UpdateIncomeDetailsInputDto {
+  idIncome: String!
+  title: String
+  description: String
+  idCategory: String
+  incomeType: IncomeType
+  dueDate: DateTime
+  totalAmount: Float
+  isRecurring: Boolean
+}
+
+input UpdateIncomeStatusInputDto {
+  idIncome: String!
+  status: IncomeStatus!
+}
+
+input RegisterInstallmentReceiptInputDto {
+  idIncome: String!
+  idIncomeInstallment: String!
+  amountReceived: Float!
+  receivedAt: DateTime
+}
+
+input UpdateIncomeReceiptInputDto {
+  idIncomeReceipt: String!
+  amountReceived: Float
+  receivedAt: DateTime
 }

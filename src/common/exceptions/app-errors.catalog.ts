@@ -4,6 +4,8 @@ import { authorizationErrors } from "@/common/exceptions/catalogs/authorization-
 import { categoriesErrors } from "@/common/exceptions/catalogs/categories-errors.catalog";
 import { creditCardsErrors } from "@/common/exceptions/catalogs/credit-cards-errors.catalog";
 import { debtsErrors } from "@/common/exceptions/catalogs/debts-errors.catalog";
+import { incomeReceiptsErrors } from "@/common/exceptions/catalogs/income-receipts-errors.catalog";
+import { incomesErrors } from "@/common/exceptions/catalogs/incomes-errors.catalog";
 import { mailsErrors } from "@/common/exceptions/catalogs/mails-errors.catalog";
 import { paymentsErrors } from "@/common/exceptions/catalogs/payments-errors.catalog";
 import { pdfErrors } from "@/common/exceptions/catalogs/pdf-errors.catalog";
@@ -19,6 +21,8 @@ export const APP_ERRORS = {
   users: usersErrors,
   profiles: profilesErrors,
   debts: debtsErrors,
+  incomes: incomesErrors,
+  incomeReceipts: incomeReceiptsErrors,
   payments: paymentsErrors,
   mails: mailsErrors,
   pdf: pdfErrors,

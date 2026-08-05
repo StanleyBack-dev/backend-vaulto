@@ -10,6 +10,7 @@ import { UpdateCategoryUseCase } from "@/modules/categories/application/use-case
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { CategoryTypeormRepository } from "@/modules/categories/infrastructure/persistence/typeorm/repositories/category-typeorm.repository";
 import { CategoriesResolver } from "@/modules/categories/presentation/graphql/resolvers/categories.resolver";
+import "@/modules/categories/presentation/graphql/enums/categories-graphql.enums";
 
 @Module({
   imports: [TypeOrmModule.forFeature([CategoryEntity]), AuthModule],

@@ -74,6 +74,28 @@ export const RESPONSE_MESSAGES = {
       message: "Divida excluida com sucesso.",
     },
   },
+  incomes: {
+    created: {
+      code: "INCOME_CREATED",
+      message: "Receita criada com sucesso.",
+    },
+    listed: {
+      code: "INCOMES_LISTED",
+      message: "Receitas carregadas com sucesso.",
+    },
+    detailsUpdated: {
+      code: "INCOME_DETAILS_UPDATED",
+      message: "Dados da receita atualizados com sucesso.",
+    },
+    statusUpdated: {
+      code: "INCOME_STATUS_UPDATED",
+      message: "Status da receita atualizado com sucesso.",
+    },
+    deleted: {
+      code: "INCOME_DELETED",
+      message: "Receita excluída com sucesso.",
+    },
+  },
   payments: {
     registered: {
       code: "PAYMENT_REGISTERED",
@@ -90,6 +112,24 @@ export const RESPONSE_MESSAGES = {
     deleted: {
       code: "PAYMENT_DELETED",
       message: "Pagamento excluido com sucesso.",
+    },
+  },
+  incomeReceipts: {
+    registered: {
+      code: "INCOME_RECEIPT_REGISTERED",
+      message: "Recebimento registrado com sucesso.",
+    },
+    listed: {
+      code: "INCOME_RECEIPTS_LISTED",
+      message: "Recebimentos carregados com sucesso.",
+    },
+    updated: {
+      code: "INCOME_RECEIPT_UPDATED",
+      message: "Recebimento atualizado com sucesso.",
+    },
+    deleted: {
+      code: "INCOME_RECEIPT_DELETED",
+      message: "Recebimento excluído com sucesso.",
     },
   },
   categories: {

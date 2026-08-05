@@ -1,11 +1,13 @@
 import type { CreateCategoryCommand } from "@/modules/categories/application/dto/create/create-category.command";
 import type { ListCategoriesQuery } from "@/modules/categories/application/dto/get/list-categories.query";
 import type { UpdateCategoryCommand } from "@/modules/categories/application/dto/update/update-category.command";
+import type { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 
 export type CategoryView = {
   idCategory: string;
   idUsers: string;
   name: string;
+  type: CategoryType;
   status: boolean;
   inactivatedAt?: Date;
   createdAt: Date;

@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import type { CategoryView } from "@/modules/categories/application/ports/category-repository.port";
+import { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 
 @ObjectType()
 export class CategoryResponseDto {
@@ -8,6 +9,7 @@ export class CategoryResponseDto {
     dto.idCategory = view.idCategory;
     dto.idUsers = view.idUsers;
     dto.name = view.name;
+    dto.type = view.type;
     dto.status = view.status;
     dto.inactivatedAt = view.inactivatedAt;
     dto.createdAt = view.createdAt;
@@ -23,6 +25,9 @@ export class CategoryResponseDto {
 
   @Field()
   name!: string;
+
+  @Field(() => CategoryType)
+  type!: CategoryType;
 
   @Field()
   status!: boolean;

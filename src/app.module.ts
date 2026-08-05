@@ -15,6 +15,8 @@ import { AuthModule } from "@/modules/auth/auth.module";
 import { CategoriesModule } from "@/modules/categories/categories.module";
 import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
 import { DebtsModule } from "@/modules/debts/debts.module";
+import { IncomeReceiptsModule } from "@/modules/income-receipts/income-receipts.module";
+import { IncomesModule } from "@/modules/incomes/incomes.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
@@ -44,6 +46,8 @@ import { UsersModule } from "@/modules/users/users.module";
     PdfGeneratorModule,
     DebtsModule,
     PaymentsModule,
+    IncomesModule,
+    IncomeReceiptsModule,
     ReportsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
