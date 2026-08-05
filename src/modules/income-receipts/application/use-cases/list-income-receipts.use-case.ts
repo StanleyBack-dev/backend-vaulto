@@ -24,9 +24,6 @@ export class ListIncomeReceiptsUseCase {
       AuthPermission.READ_OWN_DEBTS,
     );
 
-    return this.incomeReceiptRepository.listReceiptsForIncome(
-      userId,
-      idIncome,
-    );
+    return this.incomeReceiptRepository.listReceiptsForIncome(userId, idIncome);
   }
 }

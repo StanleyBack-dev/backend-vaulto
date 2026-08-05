@@ -24,9 +24,6 @@ export class DeleteIncomeReceiptUseCase {
       AuthPermission.MANAGE_OWN_DEBTS,
     );
 
-    return this.incomeReceiptRepository.deleteReceipt(
-      userId,
-      idIncomeReceipt,
-    );
+    return this.incomeReceiptRepository.deleteReceipt(userId, idIncomeReceipt);
   }
 }

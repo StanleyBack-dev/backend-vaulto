@@ -1,9 +1,7 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
 import { Table, TableColumn } from "typeorm";
 
-export class AddCategoryTypeAndIncomes1785959648502
-  implements MigrationInterface
-{
+export class AddCategoryTypeAndIncomes1785959648502 implements MigrationInterface {
   name = "AddCategoryTypeAndIncomes1785959648502";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

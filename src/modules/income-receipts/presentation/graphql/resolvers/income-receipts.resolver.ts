@@ -58,14 +58,11 @@ export class IncomeReceiptsResolver {
     @CurrentUser() user: AuthenticatedUser,
     @Args("input") input: UpdateIncomeReceiptInputDto,
   ) {
-    const result = await this.updateIncomeReceiptUseCase.execute(
-      user.idUsers,
-      {
-        idIncomeReceipt: input.idIncomeReceipt,
-        amountReceived: input.amountReceived,
-        receivedAt: input.receivedAt,
-      },
-    );
+    const result = await this.updateIncomeReceiptUseCase.execute(user.idUsers, {
+      idIncomeReceipt: input.idIncomeReceipt,
+      amountReceived: input.amountReceived,
+      receivedAt: input.receivedAt,
+    });
 
     return buildDataResponse(
       RegisterInstallmentReceiptResponseDto.fromResult(result),

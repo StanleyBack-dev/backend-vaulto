@@ -33,14 +33,11 @@ export class ListIncomesUseCase {
 
     const { page, limit } = resolvePagination(query?.page, query?.limit);
 
-    const { records, total } = await this.incomeRepository.listByUser(
-      userId,
-      {
-        ...query,
-        page,
-        limit,
-      },
-    );
+    const { records, total } = await this.incomeRepository.listByUser(userId, {
+      ...query,
+      page,
+      limit,
+    });
 
     return {
       items: records,

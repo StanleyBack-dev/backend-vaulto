@@ -5,9 +5,7 @@ import type { IncomeInstallmentView } from "@/modules/incomes/application/ports/
 
 @ObjectType()
 export class IncomeInstallmentResponseDto {
-  static fromView(
-    view: IncomeInstallmentView,
-  ): IncomeInstallmentResponseDto {
+  static fromView(view: IncomeInstallmentView): IncomeInstallmentResponseDto {
     const dto = new IncomeInstallmentResponseDto();
     dto.idIncomeInstallment = view.idIncomeInstallment;
     dto.idIncome = view.idIncome;

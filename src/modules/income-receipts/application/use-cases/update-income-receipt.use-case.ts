@@ -29,8 +29,7 @@ export class UpdateIncomeReceiptUseCase {
 
     if (
       command.amountReceived !== undefined &&
-      (!Number.isFinite(command.amountReceived) ||
-        command.amountReceived <= 0)
+      (!Number.isFinite(command.amountReceived) || command.amountReceived <= 0)
     ) {
       throw AppException.from(
         APP_ERRORS.incomeReceipts.invalidAmount,

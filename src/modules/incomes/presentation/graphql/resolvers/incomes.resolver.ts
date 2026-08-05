@@ -55,21 +55,18 @@ export class IncomesResolver {
     @CurrentUser() user: AuthenticatedUser,
     @Args("input") input: CreateIncomeInputDto,
   ) {
-    const createdIncome = await this.createIncomeUseCase.execute(
-      user.idUsers,
-      {
-        title: input.title,
-        idCategory: input.idCategory,
-        description: input.description,
-        incomeType: input.incomeType,
-        totalAmount: input.totalAmount,
-        dueDate: input.dueDate,
-        hasInstallments: input.hasInstallments,
-        installmentCount: input.installmentCount,
-        installmentAmount: input.installmentAmount,
-        isRecurring: input.isRecurring,
-      },
-    );
+    const createdIncome = await this.createIncomeUseCase.execute(user.idUsers, {
+      title: input.title,
+      idCategory: input.idCategory,
+      description: input.description,
+      incomeType: input.incomeType,
+      totalAmount: input.totalAmount,
+      dueDate: input.dueDate,
+      hasInstallments: input.hasInstallments,
+      installmentCount: input.installmentCount,
+      installmentAmount: input.installmentAmount,
+      isRecurring: input.isRecurring,
+    });
 
     return buildDataResponse(
       IncomeResponseDto.fromView(createdIncome),

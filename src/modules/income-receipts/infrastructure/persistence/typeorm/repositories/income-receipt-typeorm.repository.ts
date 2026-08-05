@@ -18,9 +18,7 @@ import type {
 import { IncomeReceiptEntity } from "@/modules/income-receipts/infrastructure/persistence/typeorm/entities/income-receipt.entity";
 
 @Injectable()
-export class IncomeReceiptTypeormRepository
-  implements IncomeReceiptRepositoryPort
-{
+export class IncomeReceiptTypeormRepository implements IncomeReceiptRepositoryPort {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(IncomeReceiptEntity)

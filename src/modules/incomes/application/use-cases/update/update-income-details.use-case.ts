@@ -43,10 +43,7 @@ export class UpdateIncomeDetailsUseCase {
       );
 
       if (!category || !category.status) {
-        throw AppException.from(
-          APP_ERRORS.incomes.categoryNotFound,
-          undefined,
-        );
+        throw AppException.from(APP_ERRORS.incomes.categoryNotFound, undefined);
       }
       if (category.type !== CategoryType.INCOME) {
         throw AppException.from(

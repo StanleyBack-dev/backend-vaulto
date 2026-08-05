@@ -146,11 +146,7 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
         where: { idCategory: savedIncome.idCategory },
       });
 
-      return this.mapToView(
-        savedIncome,
-        installments,
-        category?.name ?? "",
-      );
+      return this.mapToView(savedIncome, installments, category?.name ?? "");
     });
   }
 
@@ -231,11 +227,7 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
         where: { idCategory: savedIncome.idCategory },
       });
 
-      return this.mapToView(
-        savedIncome,
-        installments,
-        category?.name ?? "",
-      );
+      return this.mapToView(savedIncome, installments, category?.name ?? "");
     });
   }
 
