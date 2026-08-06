@@ -33,21 +33,23 @@ describe("CreateDebtUseCase", () => {
       }),
     };
 
+    const categoryRepository = {
+      findById: jest.fn().mockResolvedValue({
+        idCategory: "category-1",
+        status: true,
+        name: "Cartao",
+      }),
+    };
+
+    const creditCardRepository = {
+      findById: jest.fn(),
+    };
+
     const useCase = new CreateDebtUseCase(
       authorizationService as never,
-      {
-        listByUser: jest
-          .fn()
-          .mockResolvedValue([{ idAccount: "account-1", isActive: true }]),
-      } as never,
       debtRepository as never,
-      {
-        findById: jest.fn().mockResolvedValue({
-          idCategory: "category-1",
-          status: true,
-          name: "Cartao",
-        }),
-      } as never,
+      categoryRepository as never,
+      creditCardRepository as never,
     );
 
     const result = await useCase.execute("user-1", {
@@ -80,21 +82,23 @@ describe("CreateDebtUseCase", () => {
       create: jest.fn(),
     };
 
+    const categoryRepository = {
+      findById: jest.fn().mockResolvedValue({
+        idCategory: "category-1",
+        status: true,
+        name: "Geral",
+      }),
+    };
+
+    const creditCardRepository = {
+      findById: jest.fn(),
+    };
+
     const useCase = new CreateDebtUseCase(
       authorizationService as never,
-      {
-        listByUser: jest
-          .fn()
-          .mockResolvedValue([{ idAccount: "account-1", isActive: true }]),
-      } as never,
       debtRepository as never,
-      {
-        findById: jest.fn().mockResolvedValue({
-          idCategory: "category-1",
-          status: true,
-          name: "Geral",
-        }),
-      } as never,
+      categoryRepository as never,
+      creditCardRepository as never,
     );
 
     await expect(

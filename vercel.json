@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "git": {
+    "deploymentEnabled": {
+      "master": false
+    }
+  },
   "functions": {
     "api/index.js": {
       "includeFiles": "src/assets/**"
