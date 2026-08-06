@@ -291,7 +291,9 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
       const existsInstallmentInRange = this.installmentRepository
         .createQueryBuilder("ii")
         .select("1")
-        .where("ii.idIncome = CAST(income.idIncome AS varchar)");
+        .where(
+          "CAST(ii.idIncome AS varchar) = CAST(income.idIncome AS varchar)",
+        );
 
       if (filters.dueDateFrom) {
         existsInstallmentInRange.andWhere("ii.dueDate >= :dueDateFrom", {
