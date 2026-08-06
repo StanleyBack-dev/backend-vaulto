@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
+import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
 import { AuthCredentialsService } from "../auth-credentials.use-case";
 import { PasswordHasherService } from "../password-hasher.use-case";
 import { PasswordRecoveryCodesService } from "./password-recovery-codes.use-case";
@@ -11,6 +12,7 @@ export class ResetPasswordWithRecoveryService {
     private readonly passwordRecoveryCodesUseCase: PasswordRecoveryCodesService,
     private readonly authCredentialsUseCase: AuthCredentialsService,
     private readonly passwordHasherUseCase: PasswordHasherService,
+    private readonly passwordChangedEmailUseCase: PasswordChangedEmailUseCase,
   ) {}
 
   async execute(recoveryToken: string, newPassword: string): Promise<void> {
@@ -40,5 +42,10 @@ export class ResetPasswordWithRecoveryService {
       nextPasswordHash,
     );
     await this.passwordRecoveryCodesUseCase.consume(activeRecovery);
+
+    await this.passwordChangedEmailUseCase.send({
+      to: credential.user.email,
+      name: credential.user.name,
+    });
   }
 }

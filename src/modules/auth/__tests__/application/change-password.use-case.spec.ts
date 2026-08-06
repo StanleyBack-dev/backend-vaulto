@@ -27,11 +27,15 @@ function buildService(overrides?: { verifyPassword?: jest.Mock }) {
       overrides?.verifyPassword ?? jest.fn().mockResolvedValue(true),
     hashPassword: jest.fn().mockResolvedValue("new-hash"),
   };
+  const passwordChangedEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
 
   const service = new ChangePasswordService(
     authCredentialsUseCase as never,
     authorizationUseCase as never,
     passwordHasherUseCase as never,
+    passwordChangedEmailUseCase as never,
   );
 
   return {
@@ -39,6 +43,7 @@ function buildService(overrides?: { verifyPassword?: jest.Mock }) {
     authCredentialsUseCase,
     authorizationUseCase,
     passwordHasherUseCase,
+    passwordChangedEmailUseCase,
   };
 }
 
@@ -94,8 +99,12 @@ describe("ChangePasswordService", () => {
   });
 
   it("hashes and persists the new password on success", async () => {
-    const { service, passwordHasherUseCase, authCredentialsUseCase } =
-      buildService();
+    const {
+      service,
+      passwordHasherUseCase,
+      authCredentialsUseCase,
+      passwordChangedEmailUseCase,
+    } = buildService();
 
     await service.execute(authCredentialMock.idUsers, {
       currentPassword: "current-password",
@@ -109,5 +118,9 @@ describe("ChangePasswordService", () => {
       authCredentialMock,
       "new-hash",
     );
+    expect(passwordChangedEmailUseCase.send).toHaveBeenCalledWith({
+      to: authCredentialMock.user.email,
+      name: authCredentialMock.user.name,
+    });
   });
 });
