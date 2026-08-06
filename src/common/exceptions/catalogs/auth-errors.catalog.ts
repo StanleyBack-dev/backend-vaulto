@@ -113,4 +113,19 @@ export const authErrors = {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     message: "Configuracao incompleta para bootstrap do ADMIN_MASTER inicial.",
   },
+  googleLoginNotConfigured: {
+    code: "AUTH_GOOGLE_LOGIN_NOT_CONFIGURED",
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    message: "Login com Google não está configurado neste ambiente.",
+  },
+  googleTokenInvalid: {
+    code: "AUTH_GOOGLE_TOKEN_INVALID",
+    status: HttpStatus.UNAUTHORIZED,
+    message: "Não foi possível validar as credenciais do Google.",
+  },
+  googleEmailNotVerified: {
+    code: "AUTH_GOOGLE_EMAIL_NOT_VERIFIED",
+    status: HttpStatus.UNAUTHORIZED,
+    message: "O e-mail da conta Google não está verificado.",
+  },
 } as const;

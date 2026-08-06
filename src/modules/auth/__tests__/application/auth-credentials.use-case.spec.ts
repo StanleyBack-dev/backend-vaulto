@@ -156,4 +156,51 @@ describe("AuthCredentialsService", () => {
       ).rejects.toBeInstanceOf(AppException);
     });
   });
+
+  describe("findByGoogleId", () => {
+    it("looks up the credential by googleId with the user relation loaded", async () => {
+      const authCredentialRepository = {
+        findOne: jest.fn().mockResolvedValue(authCredentialMock),
+      };
+      const service = new AuthCredentialsService(
+        authCredentialRepository as never,
+        {} as never,
+      );
+
+      const result = await service.findByGoogleId("google-sub-123");
+
+      expect(authCredentialRepository.findOne).toHaveBeenCalledWith({
+        where: { googleId: "google-sub-123" },
+        relations: ["user"],
+      });
+      expect(result).toBe(authCredentialMock);
+    });
+  });
+
+  describe("linkGoogleId", () => {
+    it("persists the googleId and returns the refreshed credential", async () => {
+      const authCredentialRepository = {
+        update: jest.fn().mockResolvedValue({}),
+        findOne: jest.fn().mockResolvedValue({
+          ...authCredentialMock,
+          googleId: "google-sub-123",
+        }),
+      };
+      const service = new AuthCredentialsService(
+        authCredentialRepository as never,
+        {} as never,
+      );
+
+      const result = await service.linkGoogleId(
+        authCredentialMock,
+        "google-sub-123",
+      );
+
+      expect(authCredentialRepository.update).toHaveBeenCalledWith(
+        { idAuthCredentials: authCredentialMock.idAuthCredentials },
+        { googleId: "google-sub-123" },
+      );
+      expect(result.googleId).toBe("google-sub-123");
+    });
+  });
 });

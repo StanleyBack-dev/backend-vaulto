@@ -13,6 +13,24 @@ async function captureError(fn: () => Promise<unknown>): Promise<unknown> {
   }
 }
 
+const issuedSession = {
+  accessToken: "access-token",
+  refreshToken: "refresh-token",
+  response: {
+    authenticated: true,
+    mustChangePassword: authCredentialMock.mustChangePassword,
+    user: {
+      idUsers: authCredentialMock.user.idUsers,
+      name: authCredentialMock.user.name,
+      email: authCredentialMock.user.email,
+      username: authCredentialMock.username,
+      group: authCredentialMock.user.group,
+      status: authCredentialMock.user.status,
+      urlAvatar: authCredentialMock.user.urlAvatar,
+    },
+  },
+};
+
 function buildDeps(overrides?: {
   findByUsername?: jest.Mock;
   ensureCredentialCanAuthenticate?: jest.Mock;
@@ -26,7 +44,6 @@ function buildDeps(overrides?: {
       overrides?.ensureCredentialCanAuthenticate ??
       jest.fn().mockResolvedValue(undefined),
     registerFailedLogin: jest.fn().mockResolvedValue(undefined),
-    registerSuccessfulLogin: jest.fn().mockResolvedValue(undefined),
   };
 
   const passwordHasherUseCase = {
@@ -34,21 +51,14 @@ function buildDeps(overrides?: {
       overrides?.verifyPassword ?? jest.fn().mockResolvedValue(true),
   };
 
-  const authTokensUseCase = {
-    signAccessToken: jest.fn().mockReturnValue("access-token"),
-    signRefreshToken: jest.fn().mockReturnValue("refresh-token"),
-    getRefreshTokenMaxAgeMs: jest.fn().mockReturnValue(1000 * 60 * 60),
-  };
-
-  const createSessionUseCase = {
-    execute: jest.fn().mockResolvedValue(undefined),
+  const issueAuthSessionUseCase = {
+    execute: jest.fn().mockResolvedValue(issuedSession),
   };
 
   return {
     authCredentialsUseCase,
     passwordHasherUseCase,
-    authTokensUseCase,
-    createSessionUseCase,
+    issueAuthSessionUseCase,
   };
 }
 
@@ -60,8 +70,7 @@ describe("LoginService", () => {
     const service = new LoginService(
       deps.authCredentialsUseCase as never,
       deps.passwordHasherUseCase as never,
-      deps.authTokensUseCase as never,
-      deps.createSessionUseCase as never,
+      deps.issueAuthSessionUseCase as never,
     );
 
     const error = await captureError(() =>
@@ -76,7 +85,7 @@ describe("LoginService", () => {
       status: HttpStatus.UNAUTHORIZED,
       response: { code: APP_ERRORS.auth.invalidCredentials.code },
     });
-    expect(deps.createSessionUseCase.execute).not.toHaveBeenCalled();
+    expect(deps.issueAuthSessionUseCase.execute).not.toHaveBeenCalled();
   });
 
   it("propagates a locked/inactive credential rejection without touching the password", async () => {
@@ -90,8 +99,7 @@ describe("LoginService", () => {
     const service = new LoginService(
       deps.authCredentialsUseCase as never,
       deps.passwordHasherUseCase as never,
-      deps.authTokensUseCase as never,
-      deps.createSessionUseCase as never,
+      deps.issueAuthSessionUseCase as never,
     );
 
     const error = await captureError(() =>
@@ -112,8 +120,7 @@ describe("LoginService", () => {
     const service = new LoginService(
       deps.authCredentialsUseCase as never,
       deps.passwordHasherUseCase as never,
-      deps.authTokensUseCase as never,
-      deps.createSessionUseCase as never,
+      deps.issueAuthSessionUseCase as never,
     );
 
     const error = await captureError(() =>
@@ -130,16 +137,15 @@ describe("LoginService", () => {
     expect(
       deps.authCredentialsUseCase.registerFailedLogin,
     ).toHaveBeenCalledWith(authCredentialMock);
-    expect(deps.createSessionUseCase.execute).not.toHaveBeenCalled();
+    expect(deps.issueAuthSessionUseCase.execute).not.toHaveBeenCalled();
   });
 
-  it("issues tokens, opens a session and registers a successful login on valid credentials", async () => {
+  it("delegates session issuance on valid credentials", async () => {
     const deps = buildDeps();
     const service = new LoginService(
       deps.authCredentialsUseCase as never,
       deps.passwordHasherUseCase as never,
-      deps.authTokensUseCase as never,
-      deps.createSessionUseCase as never,
+      deps.issueAuthSessionUseCase as never,
     );
 
     const result = await service.execute(
@@ -147,16 +153,11 @@ describe("LoginService", () => {
       { ipAddress: "127.0.0.1", userAgent: "jest" },
     );
 
-    expect(result.accessToken).toBe("access-token");
-    expect(result.refreshToken).toBe("refresh-token");
-    expect(result.response.authenticated).toBe(true);
-    expect(result.response.mustChangePassword).toBe(
-      authCredentialMock.mustChangePassword,
+    expect(result).toBe(issuedSession);
+    expect(deps.issueAuthSessionUseCase.execute).toHaveBeenCalledWith(
+      authCredentialMock,
+      { ipAddress: "127.0.0.1", userAgent: "jest" },
     );
-    expect(deps.createSessionUseCase.execute).toHaveBeenCalledTimes(1);
-    expect(
-      deps.authCredentialsUseCase.registerSuccessfulLogin,
-    ).toHaveBeenCalledWith(authCredentialMock);
     expect(
       deps.authCredentialsUseCase.registerFailedLogin,
     ).not.toHaveBeenCalled();
