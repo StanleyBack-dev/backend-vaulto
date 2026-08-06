@@ -66,6 +66,10 @@ function buildDeps() {
     execute: jest.fn().mockResolvedValue(undefined),
   };
 
+  const userWelcomeEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
+
   return {
     userRepository,
     dataSource,
@@ -74,6 +78,7 @@ function buildDeps() {
     passwordHasherUseCase,
     issueAuthSessionUseCase,
     seedDefaultCategoriesUseCase,
+    userWelcomeEmailUseCase,
     transactionalUserRepository,
     transactionalCredentialRepository,
   };
@@ -88,6 +93,7 @@ function buildService(deps: ReturnType<typeof buildDeps>) {
     deps.passwordHasherUseCase as never,
     deps.issueAuthSessionUseCase as never,
     deps.seedDefaultCategoriesUseCase as never,
+    deps.userWelcomeEmailUseCase as never,
   );
 }
 
@@ -178,6 +184,10 @@ describe("LoginWithGoogleUseCase", () => {
     expect(deps.seedDefaultCategoriesUseCase.execute).toHaveBeenCalledWith(
       "new-user-id",
     );
+    expect(deps.userWelcomeEmailUseCase.send).toHaveBeenCalledWith({
+      to: googleProfile.email,
+      name: googleProfile.name,
+    });
     expect(deps.authCredentialsUseCase.findByUserId).toHaveBeenCalledWith(
       "new-user-id",
     );
@@ -186,6 +196,22 @@ describe("LoginWithGoogleUseCase", () => {
       requestInfo,
     );
     expect(result).toBe(issuedSession);
+  });
+
+  it("does not fail user creation when the welcome email fails to send", async () => {
+    const deps = buildDeps();
+    deps.authCredentialsUseCase.findByUserId.mockResolvedValue(
+      authCredentialMock,
+    );
+    deps.userWelcomeEmailUseCase.send.mockRejectedValue(
+      new Error("mail provider down"),
+    );
+    const service = buildService(deps);
+
+    const result = await service.execute("id-token", requestInfo);
+
+    expect(result).toBe(issuedSession);
+    expect(deps.issueAuthSessionUseCase.execute).toHaveBeenCalled();
   });
 
   it("propagates an ensureCredentialCanAuthenticate rejection without issuing a session", async () => {
