@@ -158,11 +158,16 @@ describe("CreateDebtUseCase", () => {
       findById: jest.fn(),
     };
 
+    const planLimitsService = {
+      assertCanCreate: jest.fn().mockResolvedValue(undefined),
+    };
+
     const useCase = new CreateDebtUseCase(
       authorizationService as never,
       debtRepository as never,
       categoryRepository as never,
       creditCardRepository as never,
+      planLimitsService as never,
     );
 
     await expect(
