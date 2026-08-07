@@ -74,14 +74,14 @@ Não reimplementar nada desta lista. Serve de base para as próximas fases.
 
 ### Infraestrutura atual (conforme informado na conversa com o ChatGPT)
 
-| Serviço | Uso hoje |
-|---|---|
-| Vercel | Frontend + Backend (plano Hobby/Free) |
-| Neon PostgreSQL | Banco de dados (Free) |
-| Upstash Redis | Rate limiting (Free) |
-| Brevo | E-mail transacional (Free) |
-| Google OAuth | Login social (sem custo) |
-| Stripe | Cogitado, ainda não integrado |
+| Serviço         | Uso hoje                              |
+| --------------- | ------------------------------------- |
+| Vercel          | Frontend + Backend (plano Hobby/Free) |
+| Neon PostgreSQL | Banco de dados (Free)                 |
+| Upstash Redis   | Rate limiting (Free)                  |
+| Brevo           | E-mail transacional (Free)            |
+| Google OAuth    | Login social (sem custo)              |
+| Stripe          | Cogitado, ainda não integrado         |
 
 ### O que **não existe ainda** (é o que este plano constrói)
 
@@ -99,14 +99,14 @@ Não reimplementar nada desta lista. Serve de base para as próximas fases.
 
 ### 2.1 Planos e preços (recomendação final da análise)
 
-| Plano | Preço | Observação |
-|---|---|---|
-| **Free** | R$ 0 | Precisa ser realmente útil (aquisição), não "capado" |
-| **Pro** | R$ 14,90/mês | Preço-âncora recomendado; validar com dados reais |
-| **Pro Anual** | R$ 149,90/ano | ≈ R$ 12,49/mês — desconto de ~16% sem corroer o ticket |
-| Trial | 7 dias grátis do Pro | Sem cobrar; ao fim, oferece assinar |
-| *(futuro)* Vaulto Family | R$ 24,90–29,90/mês | Conta compartilhada (ex.: casal), ver Fase 6 |
-| *(futuro)* Vaulto AI | R$ 24,90/mês | Upsell de IA avançada sobre o Vaulto Insights, ver Fase 6 |
+| Plano                    | Preço                | Observação                                                |
+| ------------------------ | -------------------- | --------------------------------------------------------- |
+| **Free**                 | R$ 0                 | Precisa ser realmente útil (aquisição), não "capado"      |
+| **Pro**                  | R$ 14,90/mês         | Preço-âncora recomendado; validar com dados reais         |
+| **Pro Anual**            | R$ 149,90/ano        | ≈ R$ 12,49/mês — desconto de ~16% sem corroer o ticket    |
+| Trial                    | 7 dias grátis do Pro | Sem cobrar; ao fim, oferece assinar                       |
+| _(futuro)_ Vaulto Family | R$ 24,90–29,90/mês   | Conta compartilhada (ex.: casal), ver Fase 6              |
+| _(futuro)_ Vaulto AI     | R$ 24,90/mês         | Upsell de IA avançada sobre o Vaulto Insights, ver Fase 6 |
 
 Preço não precisa ser travado agora: a estratégia recomendada é lançar Free +
 Pro R$ 14,90 com trial de 7 dias e medir (% que atinge limite do Free, % que
@@ -114,24 +114,24 @@ testa o Pro, % que converte, % que cancela) antes de reajustar.
 
 ### 2.2 Limites do Free vs recursos do Pro
 
-| Recurso | Free | Pro |
-|---|---|---|
-| Dívidas | até 5 | ilimitado |
-| Cartões de crédito | 1 | ilimitado |
-| Receitas | até 10/mês | ilimitado |
-| Pagamentos/Recebimentos | ilimitado (dentro dos limites acima) | ilimitado |
-| Categorias | básicas (predefinidas) | personalizadas + ilimitadas |
-| Extratos/histórico | últimos 3 meses | histórico completo |
-| Filtros | básicos | avançados |
-| Relatórios | básicos | avançados + comparativos |
-| Exportação (PDF/Excel) | ❌ | ✅ |
-| Lembretes | ❌ | ✅ |
-| Calendário financeiro | ❌ | ✅ |
-| Previsão financeira / "quanto posso gastar" | ❌ | ✅ |
-| Metas financeiras | ❌ | ✅ |
-| Importação de extrato (CSV/OFX) | ❌ | ✅ |
-| Vaulto Insights (IA) | ❌ | ✅ |
-| Backup | básico | completo |
+| Recurso                                     | Free                                 | Pro                         |
+| ------------------------------------------- | ------------------------------------ | --------------------------- |
+| Dívidas                                     | até 5                                | ilimitado                   |
+| Cartões de crédito                          | 1                                    | ilimitado                   |
+| Receitas                                    | até 10/mês                           | ilimitado                   |
+| Pagamentos/Recebimentos                     | ilimitado (dentro dos limites acima) | ilimitado                   |
+| Categorias                                  | básicas (predefinidas)               | personalizadas + ilimitadas |
+| Extratos/histórico                          | últimos 3 meses                      | histórico completo          |
+| Filtros                                     | básicos                              | avançados                   |
+| Relatórios                                  | básicos                              | avançados + comparativos    |
+| Exportação (PDF/Excel)                      | ❌                                   | ✅                          |
+| Lembretes                                   | ❌                                   | ✅                          |
+| Calendário financeiro                       | ❌                                   | ✅                          |
+| Previsão financeira / "quanto posso gastar" | ❌                                   | ✅                          |
+| Metas financeiras                           | ❌                                   | ✅                          |
+| Importação de extrato (CSV/OFX)             | ❌                                   | ✅                          |
+| Vaulto Insights (IA)                        | ❌                                   | ✅                          |
+| Backup                                      | básico                               | completo                    |
 
 Regra de produto: quando o usuário Free atinge um limite, mostrar um CTA
 contextual ("Você atingiu o limite de 5 dívidas. Desbloqueie o Vaulto Pro
@@ -277,30 +277,30 @@ Ordem recomendada (da conversa original, mantém o Pro "irresistível" sem
 depender só de remover limites):
 
 1. [ ] **Previsão financeira / "Quanto posso gastar?"** — saldo atual +
-   entradas previstas − saídas previstas (dívidas em aberto + faturas de
-   cartão + metas) = valor sugerido de gasto seguro no período. Feature-chave
-   sugerida como carro-chefe do Pro.
+       entradas previstas − saídas previstas (dívidas em aberto + faturas de
+       cartão + metas) = valor sugerido de gasto seguro no período. Feature-chave
+       sugerida como carro-chefe do Pro.
 2. [ ] **Calendário financeiro** — visão mensal com entradas/saídas por dia
-   (dívidas, receitas, faturas) nos próximos 30 dias.
+       (dívidas, receitas, faturas) nos próximos 30 dias.
 3. [ ] **Lembretes** — notificação (e-mail via Brevo, e futuramente
-   push/in-app) de vencimento de parcela, fatura de cartão ou receita
-   esperada.
+       push/in-app) de vencimento de parcela, fatura de cartão ou receita
+       esperada.
 4. [ ] **Metas financeiras** — valor-alvo, valor guardado, progresso e
-   estimativa de tempo para atingir a meta.
+       estimativa de tempo para atingir a meta.
 5. [ ] **Comparativos** — mês a mês e por categoria (ex.: "Alimentação -18%
-   em relação ao mês anterior").
+       em relação ao mês anterior").
 6. [ ] **Importação de extrato (CSV/OFX)** — parser + reconciliação
-   automática por categoria (heurística simples primeiro, sem IA).
+       automática por categoria (heurística simples primeiro, sem IA).
 7. [ ] **Vaulto Insights (IA)** — respostas em linguagem natural sobre os
-   próprios dados do usuário ("onde estou gastando mais?"). Não implementar
-   só "porque está na moda" — só depois que os dados estruturados acima
-   (previsão, comparativos) já existirem, pois a IA vai se apoiar neles.
+       próprios dados do usuário ("onde estou gastando mais?"). Não implementar
+       só "porque está na moda" — só depois que os dados estruturados acima
+       (previsão, comparativos) já existirem, pois a IA vai se apoiar neles.
 8. [ ] **Exportação (PDF/Excel)** — reaproveitar o módulo `pdf-generator`
-   já existente, criando um novo template de "Relatório Financeiro" (hoje só
-   existem templates de orçamento/contrato).
+       já existente, criando um novo template de "Relatório Financeiro" (hoje só
+       existem templates de orçamento/contrato).
 9. [ ] **Saúde financeira (score)** — indicador 0–100 combinando
-   comprometimento com dívidas, gastos, reservas — depende dos itens acima
-   já existirem para ter dados suficientes.
+       comprometimento com dívidas, gastos, reservas — depende dos itens acima
+       já existirem para ter dados suficientes.
 
 ### Fase 5 — Migração de infraestrutura para uso comercial
 
@@ -339,7 +339,7 @@ os limites de uso pessoal/não comercial do Vercel Hobby).
 ## 4. Observações técnicas transversais
 
 - Seguir sempre o padrão de camadas do projeto (`domain/application/
-  infrastructure/presentation`) e o padrão de mutation + webhook já usado em
+infrastructure/presentation`) e o padrão de mutation + webhook já usado em
   `mustChangePassword`/`onboardingTourCompleted` como referência de "flag de
   estado do usuário exposta na sessão".
 - Nunca confiar no frontend para liberar o plano Pro — sempre via webhook do
