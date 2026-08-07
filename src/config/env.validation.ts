@@ -106,6 +106,10 @@ export const envValidationSchema = Joi.object({
   JWT_ACCESS_EXPIRES_IN: Joi.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default("30d"),
 
+  // === GOOGLE OAUTH ===
+  GOOGLE_CLIENT_ID: Joi.string().optional(),
+  GOOGLE_CLIENT_SECRET: Joi.string().optional(),
+
   // === RATE LIMIT CONFIG ===
   RATE_LIMIT_GLOBAL_TTL: Joi.number().default(60),
   RATE_LIMIT_GLOBAL_LIMIT: Joi.number().default(100),

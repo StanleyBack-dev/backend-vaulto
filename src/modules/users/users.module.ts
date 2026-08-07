@@ -14,12 +14,14 @@ import { AdminUpdateUserAccessUseCase } from "@/modules/users/application/use-ca
 import { UnlockUserCredentialUseCase } from "@/modules/users/application/use-cases/update/unlock-user-credential.use-case";
 import { UpdateUserLoginUseCase } from "@/modules/users/application/use-cases/update/update-user-login.use-case";
 import { UpdateUserUseCase } from "@/modules/users/application/use-cases/update/update-user.use-case";
+import { LoginWithGoogleUseCase } from "@/modules/users/application/use-cases/oauth/login-with-google.use-case";
 import { CreateUserResolver } from "@/modules/users/presentation/graphql/resolvers/create/create-user.resolver";
 import { GetUsersResolver } from "@/modules/users/presentation/graphql/resolvers/get/get-users.resolver";
 import { UserPagePermissionsResolver } from "@/modules/users/presentation/graphql/resolvers/permissions/user-page-permissions.resolver";
 import { AdminUpdateUserAccessResolver } from "@/modules/users/presentation/graphql/resolvers/update/admin-update-user-access.resolver";
 import { UnlockUserCredentialResolver } from "@/modules/users/presentation/graphql/resolvers/update/unlock-user-credential.resolver";
 import { UpdateUserResolver } from "@/modules/users/presentation/graphql/resolvers/update/update-users.resolver";
+import { GoogleLoginResolver } from "@/modules/users/presentation/graphql/resolvers/oauth/google-login.resolver";
 import "@/modules/users/presentation/graphql/enums/users-graphql.enums";
 
 @Module({
@@ -42,12 +44,14 @@ import "@/modules/users/presentation/graphql/enums/users-graphql.enums";
     UnlockUserCredentialUseCase,
     UpdateUserLoginUseCase,
     UserExistsValidator,
+    LoginWithGoogleUseCase,
     CreateUserResolver,
     GetUsersResolver,
     UpdateUserResolver,
     AdminUpdateUserAccessResolver,
     UserPagePermissionsResolver,
     UnlockUserCredentialResolver,
+    GoogleLoginResolver,
   ],
   exports: [
     CreateUserUseCase,

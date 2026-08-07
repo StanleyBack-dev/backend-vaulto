@@ -21,6 +21,8 @@ import { ChangePasswordService } from "./application/use-cases/change-password.u
 import { LoginService } from "./application/use-cases/login.use-case";
 import { LogoutService } from "./application/use-cases/logout.use-case";
 import { PasswordHasherService } from "./application/use-cases/password-hasher.use-case";
+import { GoogleTokenVerifierService } from "./application/use-cases/google-token-verifier.use-case";
+import { IssueAuthSessionService } from "./application/use-cases/issue-auth-session.use-case";
 import { PasswordRecoveryCodesService } from "./application/use-cases/password-recovery/password-recovery-codes.use-case";
 import { RequestPasswordRecoveryService } from "./application/use-cases/password-recovery/request-password-recovery.use-case";
 import { ResetPasswordWithRecoveryService } from "./application/use-cases/password-recovery/reset-password-with-recovery.use-case";
@@ -53,6 +55,8 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
     LoginService,
     LogoutService,
     PasswordHasherService,
+    GoogleTokenVerifierService,
+    IssueAuthSessionService,
     PasswordRecoveryCodesService,
     RequestPasswordRecoveryService,
     ResetPasswordWithRecoveryService,
@@ -82,6 +86,9 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
     AuthorizationService,
     PasswordHasherService,
     ProvisionAuthCredentialsService,
+    AuthCookieService,
+    GoogleTokenVerifierService,
+    IssueAuthSessionService,
   ],
 })
 export class AuthModule {}

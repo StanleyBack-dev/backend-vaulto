@@ -29,6 +29,14 @@ export class AuthCredentialEntity {
   @Column({ name: "password_hash" })
   passwordHash!: string;
 
+  @Column({
+    name: "google_id",
+    type: "varchar",
+    nullable: true,
+    unique: true,
+  })
+  googleId?: string | null;
+
   @Column({ name: "must_change_password", default: true })
   mustChangePassword!: boolean;
 

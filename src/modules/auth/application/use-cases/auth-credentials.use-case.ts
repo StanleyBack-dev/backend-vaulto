@@ -35,6 +35,13 @@ export class AuthCredentialsService {
     });
   }
 
+  async findByGoogleId(googleId: string): Promise<AuthCredentialEntity | null> {
+    return this.authCredentialRepository.findOne({
+      where: { googleId },
+      relations: ["user"],
+    });
+  }
+
   async findByUserIdOrFail(idUsers: string): Promise<AuthCredentialEntity> {
     const credential = await this.findByUserId(idUsers);
 
@@ -131,6 +138,18 @@ export class AuthCredentialsService {
         lastLoginAt: new Date(),
       },
     );
+  }
+
+  async linkGoogleId(
+    credential: AuthCredentialEntity,
+    googleId: string,
+  ): Promise<AuthCredentialEntity> {
+    await this.authCredentialRepository.update(
+      { idAuthCredentials: credential.idAuthCredentials },
+      { googleId },
+    );
+
+    return (await this.findByUserId(credential.idUsers))!;
   }
 
   async updatePassword(

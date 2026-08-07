@@ -15,9 +15,11 @@ import { AuthCredentialsService } from "@/modules/auth/application/use-cases/aut
 import { AuthTokensService } from "@/modules/auth/application/use-cases/auth-tokens.use-case";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
 import { ChangePasswordService } from "@/modules/auth/application/use-cases/change-password.use-case";
+import { IssueAuthSessionService } from "@/modules/auth/application/use-cases/issue-auth-session.use-case";
 import { LoginService } from "@/modules/auth/application/use-cases/login.use-case";
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
+import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
 import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
 
@@ -212,6 +214,7 @@ describe("Auth onboarding flow", () => {
         AuthCredentialsService,
         PasswordHasherService,
         AuthTokensService,
+        IssueAuthSessionService,
         LoginService,
         ChangePasswordService,
         {
@@ -263,6 +266,10 @@ describe("Auth onboarding flow", () => {
           useValue: (userOnboardingEmailUseCase = {
             send: jest.fn().mockResolvedValue(undefined),
           }),
+        },
+        {
+          provide: PasswordChangedEmailUseCase,
+          useValue: { send: jest.fn().mockResolvedValue(undefined) },
         },
         {
           provide: UserPageAccessUseCase,

@@ -609,6 +609,7 @@ type Mutation {
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
   setUserPagePermissions(input: SetUserPagePermissionsInputDto!): SetUserPagePermissionsMutationResponseDto!
   unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
+  loginWithGoogle(input: LoginWithGoogleInputDto!): AuthSessionResponseDto!
   createCategory(input: CreateCategoryInputDto!): CreateCategoryMutationResponseDto!
   updateCategory(input: UpdateCategoryInputDto!): UpdateCategoryMutationResponseDto!
   createCreditCard(input: CreateCreditCardInputDto!): CreateCreditCardMutationResponseDto!
@@ -685,6 +686,10 @@ input SetUserPagePermissionsInputDto {
 
 input UnlockUserCredentialInputDto {
   idUsers: String!
+}
+
+input LoginWithGoogleInputDto {
+  idToken: String!
 }
 
 input CreateCategoryInputDto {

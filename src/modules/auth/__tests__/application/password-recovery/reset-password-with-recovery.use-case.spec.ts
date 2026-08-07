@@ -29,11 +29,15 @@ function buildService(overrides?: {
   const passwordHasherUseCase = {
     hashPassword: jest.fn().mockResolvedValue("new-hash"),
   };
+  const passwordChangedEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
 
   const service = new ResetPasswordWithRecoveryService(
     passwordRecoveryCodesUseCase as never,
     authCredentialsUseCase as never,
     passwordHasherUseCase as never,
+    passwordChangedEmailUseCase as never,
   );
 
   return {
@@ -41,6 +45,7 @@ function buildService(overrides?: {
     passwordRecoveryCodesUseCase,
     authCredentialsUseCase,
     passwordHasherUseCase,
+    passwordChangedEmailUseCase,
   };
 }
 
@@ -81,6 +86,7 @@ describe("ResetPasswordWithRecoveryService", () => {
       authCredentialsUseCase,
       passwordRecoveryCodesUseCase,
       passwordHasherUseCase,
+      passwordChangedEmailUseCase,
     } = buildService();
 
     await service.execute("recovery-token", "NewPassword123!");
@@ -95,5 +101,9 @@ describe("ResetPasswordWithRecoveryService", () => {
     expect(passwordRecoveryCodesUseCase.consume).toHaveBeenCalledWith(
       activeRecoveryMock,
     );
+    expect(passwordChangedEmailUseCase.send).toHaveBeenCalledWith({
+      to: authCredentialMock.user.email,
+      name: authCredentialMock.user.name,
+    });
   });
 });
