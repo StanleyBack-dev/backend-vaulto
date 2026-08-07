@@ -3,6 +3,8 @@ import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
+import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
+import { PlanLimitedResource } from "@/modules/billing/domain/enums/plan-limited-resource.enum";
 import {
   CREDIT_CARD_REPOSITORY,
   type CreditCardRepositoryPort,
@@ -16,6 +18,7 @@ export class CreateCreditCardUseCase {
     private readonly authorizationService: AuthorizationService,
     @Inject(CREDIT_CARD_REPOSITORY)
     private readonly creditCardRepository: CreditCardRepositoryPort,
+    private readonly planLimitsService: PlanLimitsService,
   ) {}
 
   async execute(
@@ -25,6 +28,14 @@ export class CreateCreditCardUseCase {
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_OWN_DEBTS,
+    );
+
+    const { total: currentCreditCardsCount } =
+      await this.creditCardRepository.listByUser(userId, { limit: 1 });
+    await this.planLimitsService.assertCanCreate(
+      userId,
+      PlanLimitedResource.CREDIT_CARDS,
+      currentCreditCardsCount,
     );
 
     const normalizedName = command.name.trim();

@@ -6,6 +6,7 @@ import { sanitizeSensitiveData } from "@/common/security/sanitize-sensitive-data
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { AuthCredentialsService } from "@/modules/auth/application/use-cases/auth-credentials.use-case";
 import { AuthSessionResponseDto } from "@/modules/auth/presentation/graphql/dtos/session/auth-session-response.dto";
+import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 import { GoogleTokenVerifierService } from "@/modules/auth/application/use-cases/google-token-verifier.use-case";
 import { IssueAuthSessionService } from "@/modules/auth/application/use-cases/issue-auth-session.use-case";
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
@@ -28,6 +29,7 @@ export class LoginWithGoogleUseCase {
     private readonly issueAuthSessionUseCase: IssueAuthSessionService,
     private readonly seedDefaultCategoriesUseCase: SeedDefaultCategoriesUseCase,
     private readonly userWelcomeEmailUseCase: UserWelcomeEmailUseCase,
+    private readonly createDefaultSubscriptionUseCase: CreateDefaultSubscriptionUseCase,
   ) {}
 
   async execute(
@@ -121,6 +123,7 @@ export class LoginWithGoogleUseCase {
     });
 
     await this.seedDefaultCategoriesUseCase.execute(savedUserId);
+    await this.createDefaultSubscriptionUseCase.execute(savedUserId);
     await this.sendWelcomeEmailSafely({
       to: profile.email,
       name: profile.name,

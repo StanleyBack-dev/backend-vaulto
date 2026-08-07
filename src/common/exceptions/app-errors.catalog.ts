@@ -1,6 +1,7 @@
 import type { AppErrorDefinition } from "@/common/exceptions/app-error-definition.type";
 import { authErrors } from "@/common/exceptions/catalogs/auth-errors.catalog";
 import { authorizationErrors } from "@/common/exceptions/catalogs/authorization-errors.catalog";
+import { billingErrors } from "@/common/exceptions/catalogs/billing-errors.catalog";
 import { categoriesErrors } from "@/common/exceptions/catalogs/categories-errors.catalog";
 import { creditCardsErrors } from "@/common/exceptions/catalogs/credit-cards-errors.catalog";
 import { debtsErrors } from "@/common/exceptions/catalogs/debts-errors.catalog";
@@ -17,6 +18,7 @@ import { validationErrors } from "@/common/exceptions/catalogs/validation-errors
 export const APP_ERRORS = {
   auth: authErrors,
   authorization: authorizationErrors,
+  billing: billingErrors,
   categories: categoriesErrors,
   creditCards: creditCardsErrors,
   users: usersErrors,

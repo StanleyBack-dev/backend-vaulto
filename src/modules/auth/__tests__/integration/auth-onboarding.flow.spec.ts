@@ -22,6 +22,7 @@ import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-case
 import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
 import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
+import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 
 describe("Auth onboarding flow", () => {
   let createUserUseCase: CreateUserUseCase;
@@ -279,6 +280,12 @@ describe("Auth onboarding flow", () => {
         },
         {
           provide: SeedDefaultCategoriesUseCase,
+          useValue: {
+            execute: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CreateDefaultSubscriptionUseCase,
           useValue: {
             execute: jest.fn().mockResolvedValue(undefined),
           },

@@ -13,6 +13,7 @@ import { AuthorizationService } from "@/modules/auth/application/use-cases/autho
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import type { IRequestInfo } from "@/common/decorators/request-info.decorator";
 import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
+import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { sanitizeSensitiveData } from "@/common/security/sanitize-sensitive-data";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
@@ -31,6 +32,7 @@ export class CreateUserUseCase {
     private readonly userOnboardingEmailUseCase: UserOnboardingEmailUseCase,
     private readonly userPageAccessUseCase: UserPageAccessUseCase,
     private readonly seedDefaultCategoriesUseCase: SeedDefaultCategoriesUseCase,
+    private readonly createDefaultSubscriptionUseCase: CreateDefaultSubscriptionUseCase,
   ) {}
 
   async execute(
@@ -98,6 +100,7 @@ export class CreateUserUseCase {
       );
 
       await this.seedDefaultCategoriesUseCase.execute(savedUser.idUsers);
+      await this.createDefaultSubscriptionUseCase.execute(savedUser.idUsers);
 
       return {
         idUsers: savedUser.idUsers,

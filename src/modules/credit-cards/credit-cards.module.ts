@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BillingModule } from "@/modules/billing/billing.module";
 import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt.entity";
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
 import { CREDIT_CARD_REPOSITORY } from "@/modules/credit-cards/application/ports/credit-card-repository.port";
@@ -20,6 +21,7 @@ import { CreditCardsResolver } from "@/modules/credit-cards/presentation/graphql
       DebtInstallmentEntity,
     ]),
     AuthModule,
+    BillingModule,
   ],
   providers: [
     CreateCreditCardUseCase,

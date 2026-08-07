@@ -70,6 +70,27 @@ type PageAccessMetadataResponseDto {
   groupDefaults: [GroupDefaultDto!]!
 }
 
+type SubscriptionResponseDto {
+  plan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  trialEndsAt: DateTime
+  currentPeriodEnd: DateTime
+  cancelAtPeriodEnd: Boolean!
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
 type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
@@ -503,6 +524,7 @@ type UpdateUserMutationResponseDto {
 
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
+  mySubscription: SubscriptionResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUserFilterOptions: [UserFilterOptionDto!]!
   getUser(input: GetUserInputDto!): GetUserResponseDto!

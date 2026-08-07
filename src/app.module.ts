@@ -15,6 +15,7 @@ import { RequestInfoInterceptor } from "@/common/interceptors/request-info.inter
 import { AppConfigModule } from "@/config/config.module";
 import { DatabaseModule } from "@/database/database.module";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BillingModule } from "@/modules/billing/billing.module";
 import { CategoriesModule } from "@/modules/categories/categories.module";
 import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
 import { DebtsModule } from "@/modules/debts/debts.module";
@@ -43,6 +44,7 @@ import { UsersModule } from "@/modules/users/users.module";
       formatError: formatGraphqlError,
     }),
     AuthModule,
+    BillingModule,
     UsersModule,
     CategoriesModule,
     CreditCardsModule,
