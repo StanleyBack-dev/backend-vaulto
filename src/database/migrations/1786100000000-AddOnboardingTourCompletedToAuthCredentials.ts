@@ -5,9 +5,7 @@ import type { MigrationInterface, QueryRunner } from "typeorm";
 // false so every existing credential is treated as "tour not seen yet" —
 // harmless, since the frontend only opens the tour once per authenticated
 // session and lets the user skip it immediately.
-export class AddOnboardingTourCompletedToAuthCredentials1786100000000
-  implements MigrationInterface
-{
+export class AddOnboardingTourCompletedToAuthCredentials1786100000000 implements MigrationInterface {
   name = "AddOnboardingTourCompletedToAuthCredentials1786100000000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
