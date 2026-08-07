@@ -2,6 +2,7 @@ import { Test } from "@nestjs/testing";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
+import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
 import { CATEGORY_REPOSITORY } from "@/modules/categories/application/ports/category-repository.port";
 import { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 import { CreateIncomeUseCase } from "@/modules/incomes/application/use-cases/create/create-income.use-case";
@@ -178,6 +179,12 @@ describe("Incomes GraphQL flow (create/list/update status/delete)", () => {
         {
           provide: INCOME_REPOSITORY,
           useClass: InMemoryIncomeRepository,
+        },
+        {
+          provide: PlanLimitsService,
+          useValue: {
+            assertCanCreate: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();
