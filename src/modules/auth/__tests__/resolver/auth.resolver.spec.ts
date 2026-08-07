@@ -5,6 +5,7 @@ import { LoginService } from "@/modules/auth/application/use-cases/login.use-cas
 import { RefreshAuthSessionService } from "@/modules/auth/application/use-cases/refresh-auth-session.use-case";
 import { LogoutService } from "@/modules/auth/application/use-cases/logout.use-case";
 import { ChangePasswordService } from "@/modules/auth/application/use-cases/change-password.use-case";
+import { CompleteOnboardingTourService } from "@/modules/auth/application/use-cases/complete-onboarding-tour.use-case";
 import { RequestPasswordRecoveryService } from "@/modules/auth/application/use-cases/password-recovery/request-password-recovery.use-case";
 import { VerifyPasswordRecoveryCodeService } from "@/modules/auth/application/use-cases/password-recovery/verify-password-recovery-code.use-case";
 import { ResetPasswordWithRecoveryService } from "@/modules/auth/application/use-cases/password-recovery/reset-password-with-recovery.use-case";
@@ -52,6 +53,10 @@ describe("AuthResolver", () => {
         },
         {
           provide: ChangePasswordService,
+          useValue: { execute: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: CompleteOnboardingTourService,
           useValue: { execute: jest.fn().mockResolvedValue(undefined) },
         },
         {

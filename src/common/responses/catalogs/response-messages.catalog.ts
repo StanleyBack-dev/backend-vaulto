@@ -21,6 +21,10 @@ export const RESPONSE_MESSAGES = {
       code: "AUTH_PASSWORD_RECOVERED",
       message: "Senha redefinida com sucesso.",
     },
+    onboardingTourCompleted: {
+      code: "AUTH_ONBOARDING_TOUR_COMPLETED",
+      message: "Tour de apresentação concluído.",
+    },
   },
   users: {
     created: {

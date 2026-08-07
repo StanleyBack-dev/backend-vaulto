@@ -38,6 +38,7 @@ describe("IssueAuthSessionService", () => {
     expect(result.response).toEqual({
       authenticated: true,
       mustChangePassword: authCredentialMock.mustChangePassword,
+      onboardingTourCompleted: authCredentialMock.onboardingTourCompleted,
       user: {
         idUsers: authCredentialMock.user.idUsers,
         name: authCredentialMock.user.name,

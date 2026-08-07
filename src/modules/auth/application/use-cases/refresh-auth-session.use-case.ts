@@ -71,6 +71,7 @@ export class RefreshAuthSessionService {
       response: {
         authenticated: true,
         mustChangePassword: credential.mustChangePassword,
+        onboardingTourCompleted: credential.onboardingTourCompleted,
         user: {
           idUsers: credential.user.idUsers,
           name: credential.user.name,

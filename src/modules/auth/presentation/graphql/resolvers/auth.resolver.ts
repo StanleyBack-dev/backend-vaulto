@@ -23,6 +23,7 @@ import { VerifyPasswordRecoveryCodeMutationResponseDto } from "@/modules/auth/pr
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { AuthCookieService } from "@/modules/auth/application/use-cases/auth-cookie.use-case";
 import { ChangePasswordService } from "@/modules/auth/application/use-cases/change-password.use-case";
+import { CompleteOnboardingTourService } from "@/modules/auth/application/use-cases/complete-onboarding-tour.use-case";
 import { LoginService } from "@/modules/auth/application/use-cases/login.use-case";
 import { LogoutService } from "@/modules/auth/application/use-cases/logout.use-case";
 import { RequestPasswordRecoveryService } from "@/modules/auth/application/use-cases/password-recovery/request-password-recovery.use-case";
@@ -47,6 +48,7 @@ export class AuthResolver {
     private readonly refreshAuthSessionUseCase: RefreshAuthSessionService,
     private readonly logoutUseCase: LogoutService,
     private readonly changePasswordUseCase: ChangePasswordService,
+    private readonly completeOnboardingTourUseCase: CompleteOnboardingTourService,
     private readonly requestPasswordRecoveryUseCase: RequestPasswordRecoveryService,
     private readonly verifyPasswordRecoveryCodeUseCase: VerifyPasswordRecoveryCodeService,
     private readonly resetPasswordWithRecoveryUseCase: ResetPasswordWithRecoveryService,
@@ -126,6 +128,18 @@ export class AuthResolver {
 
     return buildSuccessResponse(
       RESPONSE_MESSAGES.auth.passwordChanged,
+    ) as LogoutResponseDto;
+  }
+
+  @Mutation(() => LogoutResponseDto, { name: "completeOnboardingTour" })
+  @RequirePermissions(AuthPermission.MANAGE_OWN_PROFILE)
+  async completeOnboardingTour(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<LogoutResponseDto> {
+    await this.completeOnboardingTourUseCase.execute(user.idUsers);
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.onboardingTourCompleted,
     ) as LogoutResponseDto;
   }
 

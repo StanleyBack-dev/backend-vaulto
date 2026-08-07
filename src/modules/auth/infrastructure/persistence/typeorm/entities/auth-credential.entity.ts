@@ -40,6 +40,9 @@ export class AuthCredentialEntity {
   @Column({ name: "must_change_password", default: true })
   mustChangePassword!: boolean;
 
+  @Column({ name: "onboarding_tour_completed", default: false })
+  onboardingTourCompleted!: boolean;
+
   @Column({
     name: "temporary_password_created_at",
     type: "timestamptz",

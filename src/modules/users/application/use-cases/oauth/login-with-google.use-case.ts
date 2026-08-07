@@ -110,6 +110,7 @@ export class LoginWithGoogleUseCase {
         username: profile.email,
         passwordHash,
         mustChangePassword: false,
+        onboardingTourCompleted: false,
         failedLoginAttempts: 0,
         googleId: profile.googleId,
       });
