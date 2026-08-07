@@ -1,5 +1,8 @@
 import { Args, Context, Mutation, Resolver } from "@nestjs/graphql";
 import { Request, Response } from "express";
+import { extractClientIp } from "@/common/utils/extract-client-ip.util";
+import { RateLimit } from "@/common/rate-limit/rate-limit-tier.decorator";
+import { RateLimitTier } from "@/common/rate-limit/rate-limit-tier.enum";
 import { Public } from "@/common/decorators/public.decorator";
 import type { IRequestInfo } from "@/common/decorators/request-info.decorator";
 import { AuthCookieService } from "@/modules/auth/application/use-cases/auth-cookie.use-case";
@@ -20,6 +23,7 @@ export class GoogleLoginResolver {
   ) {}
 
   @Public()
+  @RateLimit(RateLimitTier.AUTH)
   @Mutation(() => AuthSessionResponseDto, { name: "loginWithGoogle" })
   async loginWithGoogle(
     @Args("input") input: LoginWithGoogleInputDto,
@@ -41,13 +45,8 @@ export class GoogleLoginResolver {
   }
 
   private extractRequestInfo(request: Request): IRequestInfo {
-    const forwardedFor = request.headers["x-forwarded-for"];
-    const ipAddress = Array.isArray(forwardedFor)
-      ? forwardedFor[0]
-      : (forwardedFor?.split(",")[0]?.trim() ?? request.socket.remoteAddress);
-
     return {
-      ipAddress,
+      ipAddress: extractClientIp(request),
       userAgent: request.headers["user-agent"] ?? undefined,
     };
   }

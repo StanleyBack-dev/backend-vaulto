@@ -10,6 +10,7 @@ import { mailsErrors } from "@/common/exceptions/catalogs/mails-errors.catalog";
 import { paymentsErrors } from "@/common/exceptions/catalogs/payments-errors.catalog";
 import { pdfErrors } from "@/common/exceptions/catalogs/pdf-errors.catalog";
 import { profilesErrors } from "@/common/exceptions/catalogs/profiles-errors.catalog";
+import { rateLimitErrors } from "@/common/exceptions/catalogs/rate-limit-errors.catalog";
 import { usersErrors } from "@/common/exceptions/catalogs/users-errors.catalog";
 import { validationErrors } from "@/common/exceptions/catalogs/validation-errors.catalog";
 
@@ -27,4 +28,5 @@ export const APP_ERRORS = {
   mails: mailsErrors,
   pdf: pdfErrors,
   validation: validationErrors,
+  rateLimit: rateLimitErrors,
 } as const satisfies Record<string, Record<string, AppErrorDefinition<never>>>;

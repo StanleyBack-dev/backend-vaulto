@@ -19,3 +19,7 @@ export type InvalidOptionParams = {
   field: string;
   options: string[];
 };
+
+export type RateLimitExceededParams = {
+  retryAfterSeconds?: number;
+};

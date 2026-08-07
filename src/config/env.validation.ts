@@ -110,22 +110,22 @@ export const envValidationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().optional(),
   GOOGLE_CLIENT_SECRET: Joi.string().optional(),
 
-  // === RATE LIMIT CONFIG ===
-  RATE_LIMIT_GLOBAL_TTL: Joi.number().default(60),
-  RATE_LIMIT_GLOBAL_LIMIT: Joi.number().default(100),
+  // === RATE LIMITING (Upstash Redis) ===
+  UPSTASH_REDIS_REST_URL: Joi.string().uri().optional(),
+  UPSTASH_REDIS_REST_TOKEN: Joi.string().optional(),
 
-  RATE_LIMIT_USERS_TTL: Joi.number().default(60),
-  RATE_LIMIT_USERS_LIMIT: Joi.number().default(200),
+  RATE_LIMIT_AUTH_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
+  RATE_LIMIT_AUTH_MAX: Joi.number().integer().min(1).default(10),
 
-  RATE_LIMIT_MAILS_TTL: Joi.number().default(3600),
-  RATE_LIMIT_MAILS_LIMIT: Joi.number().default(5),
+  RATE_LIMIT_PASSWORD_RECOVERY_WINDOW_SECONDS: Joi.number()
+    .integer()
+    .min(1)
+    .default(900),
+  RATE_LIMIT_PASSWORD_RECOVERY_MAX: Joi.number().integer().min(1).default(5),
 
-  RATE_LIMIT_CUSTOMERS_TTL: Joi.number().default(30),
-  RATE_LIMIT_CUSTOMERS_LIMIT: Joi.number().default(30),
+  RATE_LIMIT_MUTATION_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
+  RATE_LIMIT_MUTATION_MAX: Joi.number().integer().min(1).default(60),
 
-  RATE_LIMIT_HEALTH_TTL: Joi.number().default(30),
-  RATE_LIMIT_HEALTH_LIMIT: Joi.number().default(30),
-
-  RATE_LIMIT_DEFAULT_TTL: Joi.number().default(60),
-  RATE_LIMIT_DEFAULT_LIMIT: Joi.number().default(50),
+  RATE_LIMIT_QUERY_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
+  RATE_LIMIT_QUERY_MAX: Joi.number().integer().min(1).default(120),
 });

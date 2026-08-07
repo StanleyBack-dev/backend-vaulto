@@ -1,5 +1,8 @@
 import { Resolver, Mutation, Args, Context } from "@nestjs/graphql";
 import { Request, Response } from "express";
+import { extractClientIp } from "@/common/utils/extract-client-ip.util";
+import { RateLimit } from "@/common/rate-limit/rate-limit-tier.decorator";
+import { RateLimitTier } from "@/common/rate-limit/rate-limit-tier.enum";
 import { Public } from "@/common/decorators/public.decorator";
 import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
@@ -51,6 +54,7 @@ export class AuthResolver {
   ) {}
 
   @Public()
+  @RateLimit(RateLimitTier.AUTH)
   @Mutation(() => AuthSessionResponseDto, { name: "login" })
   async login(
     @Args("input") input: LoginInputDto,
@@ -126,6 +130,7 @@ export class AuthResolver {
   }
 
   @Public()
+  @RateLimit(RateLimitTier.PASSWORD_RECOVERY)
   @Mutation(() => LogoutResponseDto, { name: "requestPasswordRecovery" })
   async requestPasswordRecovery(
     @Args("input") input: RequestPasswordRecoveryInputDto,
@@ -138,6 +143,7 @@ export class AuthResolver {
   }
 
   @Public()
+  @RateLimit(RateLimitTier.PASSWORD_RECOVERY)
   @Mutation(() => VerifyPasswordRecoveryCodeMutationResponseDto, {
     name: "verifyPasswordRecoveryCode",
   })
@@ -156,6 +162,7 @@ export class AuthResolver {
   }
 
   @Public()
+  @RateLimit(RateLimitTier.PASSWORD_RECOVERY)
   @Mutation(() => LogoutResponseDto, { name: "resetPasswordWithRecovery" })
   async resetPasswordWithRecovery(
     @Args("input") input: ResetPasswordWithRecoveryInputDto,
@@ -171,13 +178,8 @@ export class AuthResolver {
   }
 
   private extractRequestInfo(request: Request): RequestInfo {
-    const forwardedFor = request.headers["x-forwarded-for"];
-    const ipAddress = Array.isArray(forwardedFor)
-      ? forwardedFor[0]
-      : (forwardedFor?.split(",")[0]?.trim() ?? request.socket.remoteAddress);
-
     return {
-      ipAddress,
+      ipAddress: extractClientIp(request),
       userAgent: request.headers["user-agent"] ?? undefined,
     };
   }

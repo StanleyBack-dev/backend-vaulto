@@ -1,5 +1,6 @@
 // LIBS
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 import { join } from "path";
@@ -8,6 +9,8 @@ import { join } from "path";
 import { AppController } from "@/app.controller";
 import { formatGraphqlError } from "@/common/exceptions/graphql-error.formatter";
 import { RateLimitGuard } from "@/common/guards/rate-limit.guard";
+import { RateLimiterService } from "@/common/rate-limit/rate-limiter.service";
+import { UpstashRedisProvider } from "@/common/rate-limit/upstash-redis.provider";
 import { RequestInfoInterceptor } from "@/common/interceptors/request-info.interceptors";
 import { AppConfigModule } from "@/config/config.module";
 import { DatabaseModule } from "@/database/database.module";
@@ -50,6 +53,14 @@ import { UsersModule } from "@/modules/users/users.module";
     IncomeReceiptsModule,
     ReportsModule,
   ],
-  providers: [RateLimitGuard, RequestInfoInterceptor],
+  providers: [
+    UpstashRedisProvider,
+    RateLimiterService,
+    RequestInfoInterceptor,
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
+  ],
 })
 export class AppModule {}
