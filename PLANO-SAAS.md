@@ -204,8 +204,9 @@ ainda (paga-se "na mão"/manual ou fica tudo Free por enquanto).
 
 ### Fase 1 — Integração com gateway de pagamento (Asaas)
 
-**Status:** Backend concluído (branch `feat/fase-1-asaas-integration`,
-a partir de `project/vaulto-saas`) — falta o BFF e o frontend
+**Status:** Concluído (backend na branch `feat/fase-1-asaas-integration`,
+frontend na branch `feat/fase-1-billing-frontend`, ambas a partir de
+`project/vaulto-saas`)
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 - [x] Criar conta Asaas (sandbox primeiro).
@@ -242,18 +243,30 @@ a partir de `project/vaulto-saas`) — falta o BFF e o frontend
       produção, erros de rede/API), o `subscribeToPro` (mensal, anual,
       reaproveitar cliente existente, já assinante, usuário não encontrado) e
       todos os eventos de webhook tratados.
-- [ ] BFF (`frontend-vaulto/server`): rotas REST `/billing/*` espelhando o
-      padrão já usado em `server/src/modules/auth` (queries.js/service.js/
-      routes.js) para expor a mutation `subscribeToPro` e a query
-      `mySubscription` ao frontend sem GraphQL direto.
-- [ ] Frontend: página "Assinatura" (`src/pages/billing/` ou dentro de
-      `Profile`), com escolha de ciclo (mensal/anual), botão "Assinar Vaulto
-      Pro", redireciona para o `checkoutUrl` da Asaas, tela de retorno de
-      sucesso/erro.
-- [ ] Frontend: exibir status da assinatura (Free/Pro/Trial/Vencida) no
-      Perfil, com botão de cancelar (chama endpoint que agenda cancelamento
-      no fim do período, `cancelAtPeriodEnd = true` — **ainda não
-      implementado no backend**, adicionar quando for construir esta tela).
+- [x] BFF (`frontend-vaulto/server`): rotas REST `/billing/*`
+      (`GET /billing`, `POST /billing/subscribe`) espelhando o padrão já
+      usado em `server/src/modules/auth` (queries.js/service.js/routes.js)
+      para expor a mutation `subscribeToPro` e a query `mySubscription` ao
+      frontend sem GraphQL direto. Também adicionada `GET /users/me`
+      (query `me` já existente no backend) para os dados de perfil.
+- [x] Frontend: nova página `/planos` (`src/pages/Plans.tsx`) comparando
+      Free vs Pro (cards de preço + tabela de recursos), com modal de
+      assinatura (`SubscribeToProModal`: escolha de ciclo mensal/anual +
+      CPF/CNPJ) que redireciona para o `checkoutUrl` hospedado da Asaas.
+      Novo `features/billing` (`BillingProvider`/`useBillingContext`)
+      espelha o padrão do `features/onboarding`.
+- [x] Frontend: página de Perfil (`src/pages/Profile.tsx`) reescrita para
+      mostrar dados reais do usuário (nome, e-mail, usuário, avatar, data
+      de criação da conta) via `ProfileSummaryCard`, e o status da
+      assinatura (Free/Pro/Trial/Vencida/Cancelada) via
+      `SubscriptionStatusCard`, com atalho para `/planos`.
+- [ ] **Adiado (decisão explícita nesta sessão):** gerenciamento de
+      assinatura (cancelar, ver próxima cobrança/data, histórico de
+      pagamentos) — hoje a tela de Perfil só exibe o status, sem ações de
+      cancelamento. Fica para um incremento futuro (endpoint de
+      cancelamento que agenda `cancelAtPeriodEnd = true` no backend +
+      tela/menu dedicado no frontend), a decidir se entra na Fase 2 ou
+      numa fase própria.
 
 ### Fase 1.5 — Pix Automático (recorrência real via Pix)
 
