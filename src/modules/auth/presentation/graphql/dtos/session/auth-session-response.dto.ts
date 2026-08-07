@@ -9,6 +9,9 @@ export class AuthSessionResponseDto {
   @Field()
   mustChangePassword!: boolean;
 
+  @Field()
+  onboardingTourCompleted!: boolean;
+
   @Field(() => AuthUserDto)
   user!: AuthUserDto;
 }

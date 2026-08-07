@@ -27,6 +27,7 @@ enum UserGroup {
 type AuthSessionResponseDto {
   authenticated: Boolean!
   mustChangePassword: Boolean!
+  onboardingTourCompleted: Boolean!
   user: AuthUserDto!
 }
 
@@ -601,6 +602,7 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
+  completeOnboardingTour: LogoutResponseDto!
   requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
   verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!

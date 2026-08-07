@@ -89,6 +89,7 @@ export class AuthCredentialsService {
       username: input.username,
       passwordHash: input.passwordHash,
       mustChangePassword: true,
+      onboardingTourCompleted: false,
       temporaryPasswordCreatedAt: new Date(),
       failedLoginAttempts: 0,
     });
@@ -150,6 +151,13 @@ export class AuthCredentialsService {
     );
 
     return (await this.findByUserId(credential.idUsers))!;
+  }
+
+  async completeOnboardingTour(idUsers: string): Promise<void> {
+    await this.authCredentialRepository.update(
+      { idUsers },
+      { onboardingTourCompleted: true },
+    );
   }
 
   async updatePassword(

@@ -18,6 +18,7 @@ import { AuthTokensService } from "./application/use-cases/auth-tokens.use-case"
 import { AuthorizationService } from "./application/use-cases/authorization.use-case";
 import { PageAccessMetadataResolver } from "./presentation/graphql/resolvers/page-access-metadata.resolver";
 import { ChangePasswordService } from "./application/use-cases/change-password.use-case";
+import { CompleteOnboardingTourService } from "./application/use-cases/complete-onboarding-tour.use-case";
 import { LoginService } from "./application/use-cases/login.use-case";
 import { LogoutService } from "./application/use-cases/logout.use-case";
 import { PasswordHasherService } from "./application/use-cases/password-hasher.use-case";
@@ -52,6 +53,7 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
     AuthCredentialsService,
     AuthTokensService,
     ChangePasswordService,
+    CompleteOnboardingTourService,
     LoginService,
     LogoutService,
     PasswordHasherService,

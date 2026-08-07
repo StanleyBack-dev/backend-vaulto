@@ -8,6 +8,7 @@ export const authCredentialMock: AuthCredentialEntity = {
   username: "mock.user",
   passwordHash: "salt:hash",
   mustChangePassword: true,
+  onboardingTourCompleted: false,
   temporaryPasswordCreatedAt: new Date("2024-04-12T00:00:00Z"),
   passwordChangedAt: undefined,
   lastLoginAt: undefined,
