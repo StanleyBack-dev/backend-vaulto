@@ -161,39 +161,46 @@ renovação automática e controle de inadimplência.
 
 ### Fase 0 — Modelagem de billing no backend
 
-**Status:** Não iniciado
+**Status:** Concluído (branch `feat/fase-0-billing-foundation`, a partir de
+`project/vaulto-saas`)
 **Repositório:** `backend-vaulto`
 
 Objetivo: ter as entidades e o esqueleto do módulo `billing`, sem gateway real
 ainda (paga-se "na mão"/manual ou fica tudo Free por enquanto).
 
-- [ ] Criar módulo `src/modules/billing` seguindo o padrão
+- [x] Criar módulo `src/modules/billing` seguindo o padrão
       `domain/application/infrastructure/presentation` do projeto.
-- [ ] Entidade `SubscriptionEntity` (`tb_subscriptions`): `idUsers` (1:1 com
+- [x] Entidade `SubscriptionEntity` (`tb_subscriptions`): `idUsers` (1:1 com
       `UserEntity`), `plan` (`FREE` | `PRO`), `status` (`ACTIVE` | `TRIALING` |
       `PAST_DUE` | `CANCELED` | `EXPIRED`), `trialEndsAt`, `currentPeriodEnd`,
       `cancelAtPeriodEnd`, `gatewayCustomerId`, `gatewaySubscriptionId`.
-- [ ] Entidade `PaymentEntity` (`tb_payments_billing` — nome livre desde que não
-      colida com o `payments` module já existente, que é sobre pagamento de
-      dívidas do usuário, não da assinatura): histórico de cobranças
-      (`amount`, `status`, `gatewayPaymentId`, `paidAt`, `idUsers`).
-- [ ] Migration criando as duas tabelas (seguir o padrão de
+- [ ] ~~Entidade `PaymentEntity`~~ — adiada para a Fase 1: sem um gateway real
+      ainda escrevendo nela, o formato exato dependeria de um payload de
+      webhook que ainda não existe. Criar junto com a integração do Asaas.
+- [x] Migration criando `tb_subscriptions` (seguindo o padrão de
       `src/database/migrations/*`, escrita manual como as últimas migrations,
       sem depender de `migration:generate` contra um banco real).
-- [ ] Ao criar um usuário (`create-user.use-case.ts` e
+- [x] Ao criar um usuário (`create-user.use-case.ts` e
       `login-with-google.use-case.ts` no fluxo de auto-cadastro), criar
       automaticamente uma `Subscription` com `plan = FREE`.
-- [ ] `PlanLimitsService` (novo, em `billing/application`): expõe
-      `assertCanCreate(idUsers, resource: "debt" | "creditCard" | "income")`
-      lançando `AppException` (novo catálogo `APP_ERRORS.billing.*`) quando o
-      limite do Free for excedido. Consultar plano ativo do usuário e contar
-      registros existentes.
-- [ ] Chamar `PlanLimitsService.assertCanCreate` dentro de
+- [x] `PlanLimitsService` (novo, em `billing/application`): expõe
+      `assertCanCreate(idUsers, resource, currentCount)` lançando
+      `AppException` (novo catálogo `APP_ERRORS.billing.*`) quando o limite do
+      Free for excedido. `currentCount` é calculado por quem chama (via
+      `listByUser(..., { limit: 1 })` de cada módulo) para o billing não
+      depender dos repositórios de debts/credit-cards/incomes e criar um ciclo
+      de módulos.
+- [x] Chamar `PlanLimitsService.assertCanCreate` dentro de
       `create-debt`, `create-credit-card` e `create-income` use cases
       (mesmo padrão de `AuthorizationService.assertPermissionForUserId` já
       usado nesses fluxos).
-- [ ] Expor query GraphQL `mySubscription` (plano atual, status, limites,
-      uso atual) para o frontend consumir.
+- [x] Expor query GraphQL `mySubscription` (plano, status, `trialEndsAt`,
+      `currentPeriodEnd`, `cancelAtPeriodEnd`) para o frontend consumir.
+- [x] Suíte de testes cobrindo `PlanLimitsService` (todos os recursos, plano
+      PRO ignorando limite, usuário sem assinatura tratado como FREE),
+      `CreateDefaultSubscriptionUseCase` e `GetMySubscriptionUseCase`, além dos
+      testes existentes de `create-debt`/`create-credit-card`/`create-income`
+      atualizados para o novo limite.
 
 ### Fase 1 — Integração com gateway de pagamento (Asaas)
 
@@ -201,6 +208,12 @@ ainda (paga-se "na mão"/manual ou fica tudo Free por enquanto).
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 - [ ] Criar conta Asaas (sandbox primeiro).
+- [ ] Entidade `PaymentEntity` (`tb_billing_payments` — nome livre desde que
+      não colida com o `payments` module já existente, que é sobre pagamento
+      de dívidas do usuário, não da assinatura) + migration: histórico de
+      cobranças (`amount`, `status`, `gatewayPaymentId`, `paidAt`, `idUsers`).
+      Movida da Fase 0 para cá, já que o formato depende do payload real do
+      webhook do Asaas.
 - [ ] Backend: `AsaasClientService` (infrastructure) encapsulando chamadas à
       API do Asaas (criar cliente, criar assinatura/cobrança recorrente,
       cancelar).
