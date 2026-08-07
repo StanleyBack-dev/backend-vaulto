@@ -21,9 +21,26 @@ export type CreateSubscriptionPayload = {
   status?: SubscriptionStatus;
 };
 
+export type UpdateSubscriptionPayload = {
+  plan?: SubscriptionPlan;
+  status?: SubscriptionStatus;
+  trialEndsAt?: Date;
+  currentPeriodEnd?: Date;
+  cancelAtPeriodEnd?: boolean;
+  gatewayCustomerId?: string;
+  gatewaySubscriptionId?: string;
+};
+
 export interface SubscriptionRepositoryPort {
   create(payload: CreateSubscriptionPayload): Promise<SubscriptionView>;
   findByUserId(idUsers: string): Promise<SubscriptionView | null>;
+  findByGatewaySubscriptionId(
+    gatewaySubscriptionId: string,
+  ): Promise<SubscriptionView | null>;
+  updateByUserId(
+    idUsers: string,
+    payload: UpdateSubscriptionPayload,
+  ): Promise<SubscriptionView>;
 }
 
 export const SUBSCRIPTION_REPOSITORY = Symbol("SUBSCRIPTION_REPOSITORY");

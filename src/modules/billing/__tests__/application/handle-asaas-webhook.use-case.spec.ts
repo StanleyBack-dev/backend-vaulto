@@ -1,0 +1,262 @@
+import { AppException } from "@/common/exceptions/app-exception";
+import { HandleAsaasWebhookUseCase } from "@/modules/billing/application/use-cases/webhook/handle-asaas-webhook.use-case";
+import { BillingPaymentStatus } from "@/modules/billing/domain/enums/billing-payment-status.enum";
+import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
+import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
+
+const WEBHOOK_TOKEN = "a".repeat(32);
+
+function subscriptionView(overrides: Record<string, unknown> = {}) {
+  return {
+    idSubscription: "subscription-1",
+    idUsers: "user-1",
+    plan: SubscriptionPlan.FREE,
+    status: SubscriptionStatus.TRIALING,
+    cancelAtPeriodEnd: false,
+    gatewaySubscriptionId: "sub_123",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function buildUseCase(
+  overrides: {
+    subscription?: Record<string, unknown> | null;
+  } = {},
+) {
+  const configService = {
+    get: jest.fn().mockReturnValue(WEBHOOK_TOKEN),
+  };
+
+  const subscriptionRepository = {
+    findByGatewaySubscriptionId: jest
+      .fn()
+      .mockResolvedValue(
+        overrides.subscription === undefined
+          ? subscriptionView()
+          : overrides.subscription,
+      ),
+    updateByUserId: jest.fn().mockResolvedValue(subscriptionView()),
+  };
+
+  const billingPaymentRepository = {
+    upsertByGatewayPaymentId: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const useCase = new HandleAsaasWebhookUseCase(
+    configService as never,
+    subscriptionRepository as never,
+    billingPaymentRepository as never,
+  );
+
+  return { useCase, subscriptionRepository, billingPaymentRepository };
+}
+
+describe("HandleAsaasWebhookUseCase", () => {
+  it("rejects when the token header does not match the configured webhook token", async () => {
+    const { useCase } = buildUseCase();
+
+    await expect(
+      useCase.execute("wrong-token", {
+        event: "PAYMENT_RECEIVED",
+        payment: {
+          id: "pay_1",
+          subscription: "sub_123",
+          value: 14.9,
+          status: "RECEIVED",
+        },
+      }),
+    ).rejects.toBeInstanceOf(AppException);
+  });
+
+  it("rejects when no webhook token is configured", async () => {
+    const useCaseWithoutToken = new HandleAsaasWebhookUseCase(
+      { get: jest.fn().mockReturnValue(undefined) } as never,
+      { findByGatewaySubscriptionId: jest.fn() } as never,
+      { upsertByGatewayPaymentId: jest.fn() } as never,
+    );
+
+    await expect(
+      useCaseWithoutToken.execute(WEBHOOK_TOKEN, {
+        event: "PAYMENT_RECEIVED",
+        payment: {
+          id: "pay_1",
+          subscription: "sub_123",
+          value: 14.9,
+          status: "RECEIVED",
+        },
+      }),
+    ).rejects.toBeInstanceOf(AppException);
+  });
+
+  it("activates the subscription and records the payment on PAYMENT_CONFIRMED", async () => {
+    const { useCase, subscriptionRepository, billingPaymentRepository } =
+      buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_1",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "CONFIRMED",
+        dueDate: "2026-08-15",
+      },
+    });
+
+    expect(
+      billingPaymentRepository.upsertByGatewayPaymentId,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idUsers: "user-1",
+        gatewayPaymentId: "pay_1",
+        amount: 14.9,
+        status: BillingPaymentStatus.CONFIRMED,
+        paidAt: expect.any(Date),
+      }),
+    );
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.ACTIVE,
+      }),
+    );
+  });
+
+  it("activates the subscription on PAYMENT_RECEIVED as well", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_RECEIVED",
+      payment: {
+        id: "pay_2",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "RECEIVED",
+      },
+    });
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.ACTIVE,
+      }),
+    );
+  });
+
+  it("marks the subscription as PAST_DUE on PAYMENT_OVERDUE", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_OVERDUE",
+      payment: {
+        id: "pay_3",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "OVERDUE",
+      },
+    });
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      { status: SubscriptionStatus.PAST_DUE },
+    );
+  });
+
+  it.each(["PAYMENT_DELETED", "PAYMENT_REFUNDED"])(
+    "downgrades the subscription to FREE/CANCELED on %s",
+    async (event) => {
+      const { useCase, subscriptionRepository } = buildUseCase();
+
+      await useCase.execute(WEBHOOK_TOKEN, {
+        event,
+        payment: {
+          id: "pay_4",
+          subscription: "sub_123",
+          value: 14.9,
+          status: event === "PAYMENT_DELETED" ? "DELETED" : "REFUNDED",
+        },
+      });
+
+      expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+        "user-1",
+        expect.objectContaining({
+          plan: SubscriptionPlan.FREE,
+          status: SubscriptionStatus.CANCELED,
+        }),
+      );
+    },
+  );
+
+  it("ignores payment events for a subscription it doesn't recognize", async () => {
+    const { useCase, subscriptionRepository, billingPaymentRepository } =
+      buildUseCase({ subscription: null });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_5",
+        subscription: "sub_unknown",
+        value: 14.9,
+        status: "CONFIRMED",
+      },
+    });
+
+    expect(
+      billingPaymentRepository.upsertByGatewayPaymentId,
+    ).not.toHaveBeenCalled();
+    expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+  });
+
+  it("ignores payment events without a subscription reference", async () => {
+    const { useCase, billingPaymentRepository } = buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_6",
+        value: 14.9,
+        status: "CONFIRMED",
+      },
+    });
+
+    expect(
+      billingPaymentRepository.upsertByGatewayPaymentId,
+    ).not.toHaveBeenCalled();
+  });
+
+  it.each(["SUBSCRIPTION_DELETED", "SUBSCRIPTION_INACTIVATED"])(
+    "downgrades the subscription to FREE/CANCELED on %s subscription-level events",
+    async (event) => {
+      const { useCase, subscriptionRepository } = buildUseCase();
+
+      await useCase.execute(WEBHOOK_TOKEN, {
+        event,
+        subscription: { id: "sub_123", status: "INACTIVE" },
+      });
+
+      expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+        "user-1",
+        {
+          plan: SubscriptionPlan.FREE,
+          status: SubscriptionStatus.CANCELED,
+          cancelAtPeriodEnd: false,
+        },
+      );
+    },
+  );
+
+  it("ignores informational subscription events like SUBSCRIPTION_UPDATED", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "SUBSCRIPTION_UPDATED",
+      subscription: { id: "sub_123", status: "ACTIVE" },
+    });
+
+    expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+  });
+});
