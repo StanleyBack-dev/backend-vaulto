@@ -686,6 +686,12 @@ input ResetPasswordWithRecoveryInputDto {
 
 input SubscribeToProInputDto {
   cpfCnpj: String!
+  billingCycle: SubscriptionBillingCycle!
+}
+
+enum SubscriptionBillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 input CreateUserInputDto {

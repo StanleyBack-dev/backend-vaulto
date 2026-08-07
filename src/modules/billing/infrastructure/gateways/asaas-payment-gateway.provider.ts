@@ -74,7 +74,7 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
           billingType: "UNDEFINED",
           value: input.value,
           nextDueDate: input.nextDueDate,
-          cycle: "MONTHLY",
+          cycle: input.cycle,
           description: input.description,
           externalReference: input.externalReference,
         },

@@ -34,6 +34,7 @@ export class BillingResolver {
   ) {
     const result = await this.subscribeToProUseCase.execute(user.idUsers, {
       cpfCnpj: input.cpfCnpj,
+      billingCycle: input.billingCycle,
     });
 
     return SubscribeToProResponseDto.fromResult(result);

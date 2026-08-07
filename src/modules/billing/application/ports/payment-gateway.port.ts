@@ -13,6 +13,7 @@ export interface CreateGatewaySubscriptionInput {
   gatewayCustomerId: string;
   value: number;
   nextDueDate: string;
+  cycle: string;
   description: string;
   externalReference: string;
 }

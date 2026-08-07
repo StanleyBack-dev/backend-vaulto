@@ -1,6 +1,7 @@
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 
@@ -86,7 +87,7 @@ function buildUseCase(
 }
 
 describe("SubscribeToProUseCase", () => {
-  it("creates a gateway customer, a subscription and updates the local subscription to TRIALING", async () => {
+  it("creates a gateway customer, a monthly subscription and updates the local subscription to TRIALING", async () => {
     const {
       useCase,
       authorizationService,
@@ -94,7 +95,10 @@ describe("SubscribeToProUseCase", () => {
       paymentGateway,
     } = buildUseCase();
 
-    const result = await useCase.execute("user-1", { cpfCnpj: "12345678900" });
+    const result = await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.MONTHLY,
+    });
 
     expect(authorizationService.assertPermissionForUserId).toHaveBeenCalledWith(
       "user-1",
@@ -112,6 +116,7 @@ describe("SubscribeToProUseCase", () => {
       expect.objectContaining({
         gatewayCustomerId: "cus_123",
         value: 14.9,
+        cycle: SubscriptionBillingCycle.MONTHLY,
         externalReference: "user-1",
       }),
     );
@@ -126,12 +131,31 @@ describe("SubscribeToProUseCase", () => {
     expect(result.checkoutUrl).toBe("https://asaas.com/i/abc123");
   });
 
+  it("charges the annual price and cycle when billingCycle is YEARLY", async () => {
+    const { useCase, paymentGateway } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.YEARLY,
+    });
+
+    expect(paymentGateway.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        value: 149.9,
+        cycle: SubscriptionBillingCycle.YEARLY,
+      }),
+    );
+  });
+
   it("reuses an existing gateway customer id instead of creating a new one", async () => {
     const { useCase, paymentGateway } = buildUseCase({
       subscription: freeSubscription({ gatewayCustomerId: "cus_existing" }),
     });
 
-    await useCase.execute("user-1", { cpfCnpj: "12345678900" });
+    await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.MONTHLY,
+    });
 
     expect(paymentGateway.createCustomer).not.toHaveBeenCalled();
     expect(paymentGateway.createSubscription).toHaveBeenCalledWith(
@@ -148,7 +172,10 @@ describe("SubscribeToProUseCase", () => {
     });
 
     await expect(
-      useCase.execute("user-1", { cpfCnpj: "12345678900" }),
+      useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      }),
     ).rejects.toBeInstanceOf(AppException);
     expect(paymentGateway.createCustomer).not.toHaveBeenCalled();
   });
@@ -158,7 +185,10 @@ describe("SubscribeToProUseCase", () => {
     userRepository.findOne.mockResolvedValue(null);
 
     await expect(
-      useCase.execute("user-1", { cpfCnpj: "12345678900" }),
+      useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      }),
     ).rejects.toBeInstanceOf(AppException);
   });
 });

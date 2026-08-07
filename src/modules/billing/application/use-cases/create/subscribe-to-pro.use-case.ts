@@ -17,9 +17,10 @@ import {
 } from "@/modules/billing/application/ports/subscription-repository.port";
 import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 import {
-  PRO_PLAN_MONTHLY_PRICE,
+  PRO_PLAN_PRICES,
   PRO_PLAN_TRIAL_DAYS,
 } from "@/modules/billing/domain/constants/pro-plan.constant";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
@@ -85,9 +86,10 @@ export class SubscribeToProUseCase {
 
     const gatewaySubscription = await this.paymentGateway.createSubscription({
       gatewayCustomerId,
-      value: PRO_PLAN_MONTHLY_PRICE,
+      value: PRO_PLAN_PRICES[command.billingCycle],
       nextDueDate: this.toDateOnly(trialEndsAt),
-      description: "Vaulto Pro - assinatura mensal",
+      cycle: command.billingCycle,
+      description: `Vaulto Pro - assinatura ${command.billingCycle === SubscriptionBillingCycle.YEARLY ? "anual" : "mensal"}`,
       externalReference: idUsers,
     });
 

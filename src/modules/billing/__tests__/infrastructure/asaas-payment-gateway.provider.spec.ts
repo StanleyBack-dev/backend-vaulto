@@ -98,6 +98,7 @@ describe("AsaasPaymentGatewayProvider", () => {
       gatewayCustomerId: "cus_123",
       value: 14.9,
       nextDueDate: "2026-08-15",
+      cycle: "MONTHLY",
       description: "Vaulto Pro",
       externalReference: "user-1",
     });
@@ -107,6 +108,13 @@ describe("AsaasPaymentGatewayProvider", () => {
       status: "ACTIVE",
       checkoutUrl: "https://asaas.com/i/abc123",
     });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://api-sandbox.asaas.com/v3/subscriptions",
+      expect.objectContaining({
+        body: expect.stringContaining('"cycle":"MONTHLY"'),
+      }),
+    );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "https://api-sandbox.asaas.com/v3/payments?subscription=sub_123&limit=1",
