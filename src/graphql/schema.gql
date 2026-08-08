@@ -91,6 +91,11 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+type SubscribeToProResponseDto {
+  subscription: SubscriptionResponseDto!
+  checkoutUrl: String
+}
+
 type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
@@ -628,6 +633,7 @@ type Mutation {
   requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
   verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
+  subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
@@ -676,6 +682,16 @@ input VerifyPasswordRecoveryCodeInputDto {
 input ResetPasswordWithRecoveryInputDto {
   recoveryToken: String!
   newPassword: String!
+}
+
+input SubscribeToProInputDto {
+  cpfCnpj: String!
+  billingCycle: SubscriptionBillingCycle!
+}
+
+enum SubscriptionBillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 input CreateUserInputDto {

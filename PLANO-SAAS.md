@@ -204,35 +204,102 @@ ainda (paga-se "na mão"/manual ou fica tudo Free por enquanto).
 
 ### Fase 1 — Integração com gateway de pagamento (Asaas)
 
+**Status:** Concluído (backend na branch `feat/fase-1-asaas-integration`,
+frontend na branch `feat/fase-1-billing-frontend`, ambas a partir de
+`project/vaulto-saas`)
+**Repositório:** `backend-vaulto` + `frontend-vaulto`
+
+- [x] Criar conta Asaas (sandbox primeiro).
+- [x] Entidade `BillingPaymentEntity` (`tb_billing_payments` — nome livre
+      desde que não colida com o `payments` module já existente, que é sobre
+      pagamento de dívidas do usuário, não da assinatura) + migration:
+      histórico de cobranças (`amount`, `status`, `gatewayPaymentId`,
+      `paidAt`, `idUsers`).
+- [x] Backend: `AsaasPaymentGatewayProvider` (infrastructure, atrás da porta
+      `PaymentGatewayPort`) encapsulando chamadas à API do Asaas via `fetch`
+      nativo do Node — sem dependência nova (criar cliente, criar
+      assinatura/cobrança recorrente).
+- [x] Mutation `subscribeToPro` (GraphQL) — cria cliente + assinatura no
+      Asaas (`billingType: UNDEFINED`, checkout hospedado — o cliente escolhe
+      Pix/Boleto/Cartão), inicia trial de 7 dias, aceita `billingCycle`
+      (`MONTHLY` R$ 14,90 ou `YEARLY` R$ 149,90), retorna `checkoutUrl`.
+      **Importante**: hoje só o Cartão de Crédito é cobrado automaticamente a
+      cada ciclo pelo checkout hospedado — Pix e Boleto exigem que o cliente
+      pague manualmente o link a cada vencimento. Pix realmente automático é
+      a Fase 1.5.
+- [x] Webhook receiver (`POST /webhooks/asaas`, REST) validando o header
+      `asaas-access-token` contra `ASAAS_WEBHOOK_TOKEN` antes de processar
+      qualquer coisa, atualizando `SubscriptionEntity.status` e registrando
+      `BillingPaymentEntity` a cada evento de cobrança (`PAYMENT_CONFIRMED`,
+      `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `PAYMENT_DELETED`,
+      `PAYMENT_REFUNDED`) e de assinatura (`SUBSCRIPTION_DELETED`,
+      `SUBSCRIPTION_INACTIVATED`). **Nunca liberar o Pro a partir de uma
+      resposta do frontend — só via webhook confirmado.**
+- [x] Configurar o webhook no painel da Asaas (URL
+      `https://api-vaulto.vercel.app/webhooks/asaas`, versão v3, "Gerar
+      Token" → copiar para `ASAAS_WEBHOOK_TOKEN`, tipo de envio Sequencial,
+      eventos: os 5 de Cobranças e os 2 de Assinaturas listados acima).
+- [x] 34 testes novos cobrindo o gateway (fetch mockado, sandbox vs.
+      produção, erros de rede/API), o `subscribeToPro` (mensal, anual,
+      reaproveitar cliente existente, já assinante, usuário não encontrado) e
+      todos os eventos de webhook tratados.
+- [x] BFF (`frontend-vaulto/server`): rotas REST `/billing/*`
+      (`GET /billing`, `POST /billing/subscribe`) espelhando o padrão já
+      usado em `server/src/modules/auth` (queries.js/service.js/routes.js)
+      para expor a mutation `subscribeToPro` e a query `mySubscription` ao
+      frontend sem GraphQL direto. Também adicionada `GET /users/me`
+      (query `me` já existente no backend) para os dados de perfil.
+- [x] Frontend: nova página `/planos` (`src/pages/Plans.tsx`) comparando
+      Free vs Pro (cards de preço + tabela de recursos), com modal de
+      assinatura (`SubscribeToProModal`: escolha de ciclo mensal/anual +
+      CPF/CNPJ) que redireciona para o `checkoutUrl` hospedado da Asaas.
+      Novo `features/billing` (`BillingProvider`/`useBillingContext`)
+      espelha o padrão do `features/onboarding`.
+- [x] Frontend: página de Perfil (`src/pages/Profile.tsx`) reescrita para
+      mostrar dados reais do usuário (nome, e-mail, usuário, avatar, data
+      de criação da conta) via `ProfileSummaryCard`, e o status da
+      assinatura (Free/Pro/Trial/Vencida/Cancelada) via
+      `SubscriptionStatusCard`, com atalho para `/planos`.
+- [ ] **Adiado (decisão explícita nesta sessão):** gerenciamento de
+      assinatura (cancelar, ver próxima cobrança/data, histórico de
+      pagamentos) — hoje a tela de Perfil só exibe o status, sem ações de
+      cancelamento. Fica para um incremento futuro (endpoint de
+      cancelamento que agenda `cancelAtPeriodEnd = true` no backend +
+      tela/menu dedicado no frontend), a decidir se entra na Fase 2 ou
+      numa fase própria.
+
+### Fase 1.5 — Pix Automático (recorrência real via Pix)
+
 **Status:** Não iniciado
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
-- [ ] Criar conta Asaas (sandbox primeiro).
-- [ ] Entidade `PaymentEntity` (`tb_billing_payments` — nome livre desde que
-      não colida com o `payments` module já existente, que é sobre pagamento
-      de dívidas do usuário, não da assinatura) + migration: histórico de
-      cobranças (`amount`, `status`, `gatewayPaymentId`, `paidAt`, `idUsers`).
-      Movida da Fase 0 para cá, já que o formato depende do payload real do
-      webhook do Asaas.
-- [ ] Backend: `AsaasClientService` (infrastructure) encapsulando chamadas à
-      API do Asaas (criar cliente, criar assinatura/cobrança recorrente,
-      cancelar).
-- [ ] Endpoint/mutation `subscribeToPro` — cria cliente + assinatura no Asaas,
-      retorna link de checkout ou dados de cobrança.
-- [ ] Webhook receiver (`presentation`, endpoint público com validação de
-      assinatura/token do Asaas) atualizando `SubscriptionEntity.status` e
-      registrando `PaymentEntity` a cada evento (`PAYMENT_CONFIRMED`,
-      `PAYMENT_OVERDUE`, `SUBSCRIPTION_CANCELED` etc.). **Nunca liberar o Pro
-      a partir de uma resposta do frontend — só via webhook confirmado.**
-- [ ] BFF (`frontend-vaulto/server`): rotas REST `/billing/*` espelhando o
-      padrão já usado em `server/src/modules/auth` (queries.js/service.js/
-      routes.js) para expor as mutations acima ao frontend sem GraphQL direto.
-- [ ] Frontend: página "Assinatura" (`src/pages/billing/` ou dentro de
-      `Profile`), botão "Assinar Vaulto Pro", redireciona para checkout Asaas,
-      tela de retorno de sucesso/erro.
-- [ ] Frontend: exibir status da assinatura (Free/Pro/Trial/Vencida) no
-      Perfil, com botão de cancelar (chama endpoint que agenda cancelamento
-      no fim do período, `cancelAtPeriodEnd = true`).
+Decisão registrada nesta sessão: adiada da Fase 1 porque é um modelo
+**paralelo e incompatível** com o de Assinaturas usado na Fase 1 — a própria
+Asaas recomenda não misturar as duas estratégias de recorrência no mesmo
+fluxo de negócio. Diferença principal: numa Assinatura comum a Asaas gera as
+cobranças sozinha; no Pix Automático é o nosso backend quem precisa criar
+cada cobrança ("instrução de pagamento") individualmente, entre 2 e 10 dias
+úteis antes do vencimento — não existe geração automática pela Asaas aqui.
+
+- [ ] Endpoint `POST /v3/pix/automatic/authorizations` (novo
+      `PaymentGatewayPort.createPixAutomaticAuthorization` ou porta
+      dedicada): cria a autorização (`frequency`, `contractId`, `startDate`,
+      `customerId`, `immediateQrCode.{expirationSeconds,originalValue}`) e
+      retorna o QR Code (`payload` + `encodedImage`) da primeira cobrança +
+      consentimento.
+- [ ] Nova entidade `PixAutomaticAuthorizationEntity` vinculada à
+      `SubscriptionEntity` (status `CREATED` | `ACTIVE` | `CANCELLED` |
+      `REFUSED` | `EXPIRED`).
+- [ ] **Agendador/cron novo no backend** (não existe hoje) que, para cada
+      autorização `ACTIVE`, cria a próxima instrução de pagamento na janela
+      de 2 a 10 dias úteis antes do vencimento.
+- [ ] Webhook: tratar os 10 eventos de
+      `PIX_AUTOMATIC_RECURRING_AUTHORIZATION_*` e
+      `PIX_AUTOMATIC_RECURRING_PAYMENT_INSTRUCTION_*` (ver
+      `docs.asaas.com/docs/eventos-para-pix-automático`).
+- [ ] Frontend: tela mostrando o QR Code de autorização e o status
+      (aguardando pagamento → ativo), no fluxo de assinatura como alternativa
+      ao checkout hospedado.
 
 ### Fase 2 — Feature gating no frontend
 

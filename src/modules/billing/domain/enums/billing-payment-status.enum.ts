@@ -1,0 +1,8 @@
+export enum BillingPaymentStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  RECEIVED = "RECEIVED",
+  OVERDUE = "OVERDUE",
+  REFUNDED = "REFUNDED",
+  DELETED = "DELETED",
+}

@@ -5,6 +5,7 @@ import type {
   CreateSubscriptionPayload,
   SubscriptionRepositoryPort,
   SubscriptionView,
+  UpdateSubscriptionPayload,
 } from "@/modules/billing/application/ports/subscription-repository.port";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
@@ -32,6 +33,30 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
   async findByUserId(idUsers: string): Promise<SubscriptionView | null> {
     const row = await this.repository.findOne({ where: { idUsers } });
     return row ? this.mapToView(row) : null;
+  }
+
+  async findByGatewaySubscriptionId(
+    gatewaySubscriptionId: string,
+  ): Promise<SubscriptionView | null> {
+    const row = await this.repository.findOne({
+      where: { gatewaySubscriptionId },
+    });
+    return row ? this.mapToView(row) : null;
+  }
+
+  async updateByUserId(
+    idUsers: string,
+    payload: UpdateSubscriptionPayload,
+  ): Promise<SubscriptionView> {
+    const current = await this.repository.findOne({ where: { idUsers } });
+    if (!current) {
+      throw new Error("Subscription not found");
+    }
+
+    Object.assign(current, payload);
+
+    const saved = await this.repository.save(current);
+    return this.mapToView(saved);
   }
 
   private mapToView(entity: SubscriptionEntity): SubscriptionView {

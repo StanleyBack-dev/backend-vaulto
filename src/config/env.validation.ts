@@ -59,6 +59,13 @@ export const envValidationSchema = Joi.object({
   BREVO_API_KEY: Joi.string().min(10).optional(),
   MAIL_FROM_EMAIL: Joi.string().email().required(),
   MAIL_FROM_NAME: Joi.string().min(2).required(),
+
+  // === PAYMENTS / ASAAS ===
+  ASAAS_API_KEY: Joi.string().min(10).optional(),
+  ASAAS_ENVIRONMENT: Joi.string()
+    .valid("sandbox", "production")
+    .default("sandbox"),
+  ASAAS_WEBHOOK_TOKEN: Joi.string().min(32).optional(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
   ASSINAFY_BASE_URL: Joi.string()

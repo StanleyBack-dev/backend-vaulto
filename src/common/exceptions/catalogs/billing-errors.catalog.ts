@@ -8,4 +8,25 @@ export const billingErrors = {
     message: ({ resource, limit }: PlanLimitParams) =>
       `Limite do plano Free atingido (${limit}) para ${resource}. Assine o Vaulto Pro para continuar sem limites.`,
   },
+  gatewayNotConfigured: {
+    code: "BILLING_GATEWAY_NOT_CONFIGURED",
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    message: "Integração de pagamento não configurada.",
+  },
+  gatewayRequestFailed: {
+    code: "BILLING_GATEWAY_REQUEST_FAILED",
+    status: HttpStatus.BAD_GATEWAY,
+    message:
+      "Não foi possível concluir a solicitação junto ao provedor de pagamento.",
+  },
+  alreadySubscribed: {
+    code: "BILLING_ALREADY_SUBSCRIBED",
+    status: HttpStatus.CONFLICT,
+    message: "Usuário já possui uma assinatura Pro ativa.",
+  },
+  invalidWebhookToken: {
+    code: "BILLING_INVALID_WEBHOOK_TOKEN",
+    status: HttpStatus.UNAUTHORIZED,
+    message: "Token de webhook inválido.",
+  },
 } as const;
