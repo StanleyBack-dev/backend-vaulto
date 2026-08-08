@@ -22,6 +22,10 @@
     {
       "path": "/internal/billing/subscription-lifecycle",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/internal/reminders/due-tomorrow",
+      "schedule": "0 9 * * *"
     }
   ]
 }

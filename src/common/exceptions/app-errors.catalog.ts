@@ -7,6 +7,7 @@ import { creditCardsErrors } from "@/common/exceptions/catalogs/credit-cards-err
 import { debtsErrors } from "@/common/exceptions/catalogs/debts-errors.catalog";
 import { incomeReceiptsErrors } from "@/common/exceptions/catalogs/income-receipts-errors.catalog";
 import { incomesErrors } from "@/common/exceptions/catalogs/incomes-errors.catalog";
+import { internalErrors } from "@/common/exceptions/catalogs/internal-errors.catalog";
 import { mailsErrors } from "@/common/exceptions/catalogs/mails-errors.catalog";
 import { paymentsErrors } from "@/common/exceptions/catalogs/payments-errors.catalog";
 import { pdfErrors } from "@/common/exceptions/catalogs/pdf-errors.catalog";
@@ -31,4 +32,5 @@ export const APP_ERRORS = {
   pdf: pdfErrors,
   validation: validationErrors,
   rateLimit: rateLimitErrors,
+  internal: internalErrors,
 } as const satisfies Record<string, Record<string, AppErrorDefinition<never>>>;
