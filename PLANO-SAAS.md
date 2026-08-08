@@ -334,19 +334,51 @@ cada cobrança ("instrução de pagamento") individualmente, entre 2 e 10 dias
 
 ### Fase 3 — Trial e ciclo de vida da assinatura
 
-**Status:** Não iniciado
-**Repositório:** `backend-vaulto` + `frontend-vaulto`
+**Status:** Concluído (branch `feat/fase-3-subscription-lifecycle`, a partir
+de `project/vaulto-saas`) — **requer 1 passo manual pós-merge**, ver abaixo
+**Repositório:** `backend-vaulto` (sem mudanças no frontend — o
+`PlanBadge`/`SubscriptionStatusCard` da Fase 1 já tratam `PAST_DUE` e
+`EXPIRED`)
 
-- [ ] Ao clicar "Assinar" pela primeira vez, iniciar `TRIALING` de 7 dias em
-      vez de cobrar imediatamente (Asaas permite agendar a primeira cobrança).
-- [ ] Job/rotina (pode reaproveitar algum agendador já existente, ou um
-      endpoint chamado por cron) para: avisar 1 dia antes do fim do trial,
-      avisar quando o trial vira cobrança, avisar em caso de `PAST_DUE`.
-- [ ] Novos templates de e-mail no módulo `mails` (Brevo já integrado):
-      "Seu trial termina amanhã", "Seu Vaulto Pro começou", "Pagamento não
-      identificado".
-- [ ] Downgrade automático para `FREE` quando a assinatura expira/cancela sem
-      renovação, reaplicando os limites da Fase 0.
+- [x] Iniciar `TRIALING` de 7 dias ao assinar — **já entregue na Fase 1**
+      (`SubscribeToProUseCase`), só confirmado/documentado aqui.
+- [x] Job/rotina para avisos e downgrade: como o backend roda como função
+      serverless na Vercel (`vercel.json`), um agendador **dentro do
+      processo** (`@nestjs/schedule`) não funcionaria de forma confiável —
+      não há processo vivo entre requisições para um timer sobreviver.
+      Implementado como endpoint `GET /internal/billing/subscription-lifecycle`
+      (`SubscriptionLifecycleController`), protegido por
+      `Authorization: Bearer $CRON_SECRET`, chamado 1x/dia por um **Vercel
+      Cron Job** configurado em `vercel.json` (`0 9 * * *`, permitido no
+      plano Hobby). Vercel injeta esse header automaticamente quando
+      `CRON_SECRET` está configurado no projeto.
+      **Passo manual pendente:** configurar a env var `CRON_SECRET` (mín. 16
+      caracteres) no painel da Vercel — sem isso o endpoint sempre rejeita
+      (403), inclusive as chamadas do próprio Cron Job.
+- [x] `RunSubscriptionLifecycleUseCase`: envia lembrete de trial terminando
+      (janela de 30h antes de `trialEndsAt`, marca `trialEndingNotifiedAt`
+      para nunca reenviar) e rebaixa para `FREE`/`EXPIRED` assinaturas
+      `PAST_DUE` há mais de `PAST_DUE_GRACE_PERIOD_DAYS` (3 dias — dá tempo
+      do cliente pagar Pix/Boleto manualmente). Rede de segurança adicional:
+      também rebaixa trials que passaram do `trialEndsAt` há mais de 3 dias
+      sem nunca terem recebido webhook de confirmação/atraso (falha de
+      entrega da Asaas).
+      Novas colunas em `tb_subscriptions`: `trial_ending_notified_at`,
+      `past_due_since` (migration
+      `1786400000000-AddLifecycleTrackingToSubscriptions`).
+- [x] Novos templates de e-mail no módulo `mails` (Brevo): "Seu trial do
+      Vaulto Pro termina amanhã" (via job), "Seu Vaulto Pro começou!"
+      (`HandleAsaasWebhookUseCase`, ao confirmar pagamento vindo de
+      `TRIALING`/`PAST_DUE` — não reenvia em toda renovação já `ACTIVE`),
+      "Pagamento não identificado" (`HandleAsaasWebhookUseCase`, ao entrar em
+      `PAYMENT_OVERDUE` — não reenvia em webhooks repetidos do mesmo atraso).
+- [x] Downgrade automático para `FREE` já cobre: cancelamento/inativação da
+      assinatura na Asaas (existia desde a Fase 1), `PAYMENT_DELETED`/
+      `PAYMENT_REFUNDED` (existia desde a Fase 1), e agora também `PAST_DUE`
+      prolongado e trial nunca confirmado (novo, via
+      `RunSubscriptionLifecycleUseCase`) — reaplicando os limites da Fase 0
+      automaticamente, já que a query `mySubscription` sempre reflete o
+      estado atual.
 
 ### Fase 4 — Funcionalidades premium (ordem de prioridade sugerida)
 

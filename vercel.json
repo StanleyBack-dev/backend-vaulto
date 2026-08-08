@@ -17,5 +17,11 @@
       "source": "/(.*)",
       "destination": "/api/index"
     }
+  ],
+  "crons": [
+    {
+      "path": "/internal/billing/subscription-lifecycle",
+      "schedule": "0 9 * * *"
+    }
   ]
 }
