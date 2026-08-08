@@ -430,6 +430,15 @@ type DeleteDebtPaymentMutationResponseDto {
   data: RegisterInstallmentPaymentResponseDto!
 }
 
+type FinancialForecastResponseDto {
+  currentBalance: Float!
+  projectedIncome: Float!
+  projectedExpenses: Float!
+  safeToSpend: Float!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+}
+
 type DebtsReportStatusCountsDto {
   open: Int!
   overdue: Int!
@@ -580,6 +589,7 @@ type Query {
   getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
+  getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -660,6 +670,12 @@ input GetDebtsReportInputDto {
   dueDateTo: DateTime
   debtType: DebtType
   idCategory: String
+}
+
+input GetFinancialForecastInputDto {
+  currentBalance: Float!
+  periodStart: DateTime
+  periodEnd: DateTime
 }
 
 type Mutation {

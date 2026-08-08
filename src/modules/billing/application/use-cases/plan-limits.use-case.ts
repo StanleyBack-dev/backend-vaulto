@@ -47,4 +47,17 @@ export class PlanLimitsService {
       });
     }
   }
+
+  // Gates a whole feature (not a per-resource count) behind the Pro plan,
+  // e.g. the financial forecast. TRIALING counts as Pro since the user
+  // already has full access during the trial window.
+  async assertProPlan(idUsers: string): Promise<void> {
+    const subscription =
+      await this.subscriptionRepository.findByUserId(idUsers);
+    const plan = subscription?.plan ?? SubscriptionPlan.FREE;
+
+    if (plan !== SubscriptionPlan.PRO) {
+      throw AppException.from(APP_ERRORS.billing.proPlanRequired, undefined);
+    }
+  }
 }

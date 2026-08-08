@@ -122,4 +122,31 @@ describe("PlanLimitsService", () => {
       expect(response.message).toContain("receitas");
     }
   });
+
+  describe("assertProPlan", () => {
+    it("should allow a PRO subscription", async () => {
+      const { service } = buildService({
+        ...freeSubscription(),
+        plan: SubscriptionPlan.PRO,
+      });
+
+      await expect(service.assertProPlan("user-1")).resolves.toBeUndefined();
+    });
+
+    it("should reject a FREE subscription", async () => {
+      const { service } = buildService(freeSubscription());
+
+      await expect(service.assertProPlan("user-1")).rejects.toBeInstanceOf(
+        AppException,
+      );
+    });
+
+    it("should treat a user with no subscription row as FREE", async () => {
+      const { service } = buildService(null);
+
+      await expect(service.assertProPlan("user-1")).rejects.toBeInstanceOf(
+        AppException,
+      );
+    });
+  });
 });

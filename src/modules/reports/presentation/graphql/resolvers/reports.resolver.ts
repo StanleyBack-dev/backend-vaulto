@@ -4,12 +4,18 @@ import { RequirePermissions } from "@/modules/auth/presentation/decorators/requi
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
+import { GetFinancialForecastUseCase } from "@/modules/reports/application/use-cases/get-financial-forecast.use-case";
+import { FinancialForecastResponseDto } from "@/modules/reports/presentation/graphql/dtos/financial-forecast-response.dto";
 import { GetDebtsReportInputDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-input.dto";
 import { DebtsReportResponseDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-response.dto";
+import { GetFinancialForecastInputDto } from "@/modules/reports/presentation/graphql/dtos/get-financial-forecast-input.dto";
 
 @Resolver()
 export class ReportsResolver {
-  constructor(private readonly getDebtsReportUseCase: GetDebtsReportUseCase) {}
+  constructor(
+    private readonly getDebtsReportUseCase: GetDebtsReportUseCase,
+    private readonly getFinancialForecastUseCase: GetFinancialForecastUseCase,
+  ) {}
 
   @Query(() => DebtsReportResponseDto, { name: "getDebtsReport" })
   @RequirePermissions(AuthPermission.READ_OWN_DEBTS)
@@ -25,5 +31,23 @@ export class ReportsResolver {
     });
 
     return DebtsReportResponseDto.fromView(result);
+  }
+
+  @Query(() => FinancialForecastResponseDto, { name: "getFinancialForecast" })
+  @RequirePermissions(AuthPermission.READ_OWN_DEBTS)
+  async getFinancialForecast(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: GetFinancialForecastInputDto,
+  ) {
+    const result = await this.getFinancialForecastUseCase.execute(
+      user.idUsers,
+      {
+        currentBalance: input.currentBalance,
+        periodStart: input.periodStart,
+        periodEnd: input.periodEnd,
+      },
+    );
+
+    return FinancialForecastResponseDto.fromView(result);
   }
 }
