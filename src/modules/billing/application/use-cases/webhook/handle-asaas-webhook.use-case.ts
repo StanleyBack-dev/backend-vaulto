@@ -20,6 +20,7 @@ import {
 } from "@/modules/billing/application/ports/subscription-repository.port";
 import { BillingPaymentStatus } from "@/modules/billing/domain/enums/billing-payment-status.enum";
 import { PAST_DUE_GRACE_PERIOD_DAYS } from "@/modules/billing/domain/constants/pro-plan.constant";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
@@ -110,7 +111,7 @@ export class HandleAsaasWebhookUseCase {
       paidAt: SETTLED_PAYMENT_EVENTS.has(event) ? new Date() : undefined,
     });
 
-    await this.applyPaymentEventToSubscription(subscription, event);
+    await this.applyPaymentEventToSubscription(subscription, event, payment);
   }
 
   private async handleSubscriptionEvent(
@@ -140,16 +141,19 @@ export class HandleAsaasWebhookUseCase {
   private async applyPaymentEventToSubscription(
     subscription: SubscriptionView,
     event: string,
+    payment: AsaasWebhookPaymentPayload,
   ): Promise<void> {
     const { idUsers } = subscription;
 
     if (SETTLED_PAYMENT_EVENTS.has(event)) {
       const wasActive = subscription.status === SubscriptionStatus.ACTIVE;
+      const currentPeriodEnd = this.computeNextPeriodEnd(subscription, payment);
 
       await this.subscriptionRepository.updateByUserId(idUsers, {
         plan: SubscriptionPlan.PRO,
         status: SubscriptionStatus.ACTIVE,
         pastDueSince: null,
+        ...(currentPeriodEnd ? { currentPeriodEnd } : {}),
       });
 
       if (!wasActive) {
@@ -178,6 +182,29 @@ export class HandleAsaasWebhookUseCase {
         pastDueSince: null,
       });
     }
+  }
+
+  // The subscription is paying for access up to the due date of the charge
+  // that was just confirmed plus one more billing cycle — that's when Asaas
+  // will generate (and attempt to charge) the next one.
+  private computeNextPeriodEnd(
+    subscription: SubscriptionView,
+    payment: AsaasWebhookPaymentPayload,
+  ): Date | undefined {
+    if (!subscription.billingCycle) {
+      return undefined;
+    }
+
+    const baseDate = payment.dueDate ? new Date(payment.dueDate) : new Date();
+    const nextPeriodEnd = new Date(baseDate);
+
+    if (subscription.billingCycle === SubscriptionBillingCycle.YEARLY) {
+      nextPeriodEnd.setFullYear(nextPeriodEnd.getFullYear() + 1);
+    } else {
+      nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
+    }
+
+    return nextPeriodEnd;
   }
 
   private async notifySubscriptionActivated(idUsers: string): Promise<void> {

@@ -1,6 +1,7 @@
 import { AppException } from "@/common/exceptions/app-exception";
 import { HandleAsaasWebhookUseCase } from "@/modules/billing/application/use-cases/webhook/handle-asaas-webhook.use-case";
 import { BillingPaymentStatus } from "@/modules/billing/domain/enums/billing-payment-status.enum";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 
@@ -164,6 +165,72 @@ describe("HandleAsaasWebhookUseCase", () => {
       to: "user@example.com",
       name: "User",
     });
+  });
+
+  it("computes currentPeriodEnd one month after the paid dueDate for a MONTHLY subscription", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase({
+      subscription: subscriptionView({
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_monthly",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "CONFIRMED",
+        dueDate: "2026-08-15",
+      },
+    });
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ currentPeriodEnd: new Date("2026-09-15") }),
+    );
+  });
+
+  it("computes currentPeriodEnd one year after the paid dueDate for a YEARLY subscription", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase({
+      subscription: subscriptionView({
+        billingCycle: SubscriptionBillingCycle.YEARLY,
+      }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_yearly",
+        subscription: "sub_123",
+        value: 149.9,
+        status: "CONFIRMED",
+        dueDate: "2026-08-15",
+      },
+    });
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ currentPeriodEnd: new Date("2027-08-15") }),
+    );
+  });
+
+  it("does not set currentPeriodEnd when the subscription has no billingCycle on record", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_legacy",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "CONFIRMED",
+        dueDate: "2026-08-15",
+      },
+    });
+
+    const [, payload] = subscriptionRepository.updateByUserId.mock.calls[0];
+    expect(payload).not.toHaveProperty("currentPeriodEnd");
   });
 
   it("activates the subscription on PAYMENT_RECEIVED as well", async () => {

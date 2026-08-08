@@ -21,10 +21,19 @@ export type UpsertBillingPaymentPayload = {
   paidAt?: Date;
 };
 
+export type ListBillingPaymentsFilters = {
+  page?: number;
+  limit?: number;
+};
+
 export interface BillingPaymentRepositoryPort {
   upsertByGatewayPaymentId(
     payload: UpsertBillingPaymentPayload,
   ): Promise<BillingPaymentView>;
+  listByUser(
+    idUsers: string,
+    filters?: ListBillingPaymentsFilters,
+  ): Promise<{ records: BillingPaymentView[]; total: number }>;
 }
 
 export const BILLING_PAYMENT_REPOSITORY = Symbol("BILLING_PAYMENT_REPOSITORY");

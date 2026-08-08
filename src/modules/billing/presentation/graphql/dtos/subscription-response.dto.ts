@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import type { SubscriptionView } from "@/modules/billing/application/ports/subscription-repository.port";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 
@@ -11,6 +12,7 @@ export class SubscriptionResponseDto {
     dto.status = view.status;
     dto.trialEndsAt = view.trialEndsAt;
     dto.currentPeriodEnd = view.currentPeriodEnd;
+    dto.billingCycle = view.billingCycle;
     dto.cancelAtPeriodEnd = view.cancelAtPeriodEnd;
     return dto;
   }
@@ -26,6 +28,9 @@ export class SubscriptionResponseDto {
 
   @Field(() => Date, { nullable: true })
   currentPeriodEnd?: Date;
+
+  @Field(() => SubscriptionBillingCycle, { nullable: true })
+  billingCycle?: SubscriptionBillingCycle;
 
   @Field()
   cancelAtPeriodEnd!: boolean;

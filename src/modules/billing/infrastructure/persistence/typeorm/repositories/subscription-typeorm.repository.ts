@@ -49,6 +49,13 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
     return rows.map((row) => this.mapToView(row));
   }
 
+  async findPendingCancellations(): Promise<SubscriptionView[]> {
+    const rows = await this.repository.find({
+      where: { plan: SubscriptionPlan.PRO, cancelAtPeriodEnd: true },
+    });
+    return rows.map((row) => this.mapToView(row));
+  }
+
   async updateByUserId(
     idUsers: string,
     payload: UpdateSubscriptionPayload,
@@ -75,6 +82,7 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
       cancelAtPeriodEnd: entity.cancelAtPeriodEnd,
       gatewayCustomerId: entity.gatewayCustomerId,
       gatewaySubscriptionId: entity.gatewaySubscriptionId,
+      billingCycle: entity.billingCycle,
       trialEndingNotifiedAt: entity.trialEndingNotifiedAt,
       pastDueSince: entity.pastDueSince,
       createdAt: entity.createdAt,
