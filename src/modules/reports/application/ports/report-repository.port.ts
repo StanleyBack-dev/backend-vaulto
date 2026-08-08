@@ -1,4 +1,5 @@
 import type { DebtType } from "@/modules/debts/domain/enums/debt-type.enum";
+import type { IncomeType } from "@/modules/incomes/domain/enums/income-type.enum";
 
 export type DebtsReportFilters = {
   dueDateFrom?: Date;
@@ -22,11 +23,37 @@ export type DebtsReportView = {
   countByStatus: DebtsReportStatusCounts;
 };
 
+export type IncomesReportFilters = {
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
+  incomeType?: IncomeType;
+  idCategory?: string;
+};
+
+export type IncomesReportStatusCounts = {
+  pending: number;
+  overdue: number;
+  partiallyReceived: number;
+  received: number;
+};
+
+export type IncomesReportView = {
+  totalAmountDue: number;
+  totalAmountReceived: number;
+  totalOutstanding: number;
+  totalCount: number;
+  countByStatus: IncomesReportStatusCounts;
+};
+
 export interface ReportRepositoryPort {
   getDebtsReport(
     idUsers: string,
     filters?: DebtsReportFilters,
   ): Promise<DebtsReportView>;
+  getIncomesReport(
+    idUsers: string,
+    filters?: IncomesReportFilters,
+  ): Promise<IncomesReportView>;
 }
 
 export const REPORT_REPOSITORY = Symbol("REPORT_REPOSITORY");

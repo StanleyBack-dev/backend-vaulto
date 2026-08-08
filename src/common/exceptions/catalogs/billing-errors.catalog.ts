@@ -29,6 +29,11 @@ export const billingErrors = {
     status: HttpStatus.CONFLICT,
     message: "Usuário não possui uma assinatura Pro ativa para cancelar.",
   },
+  proPlanRequired: {
+    code: "BILLING_PRO_PLAN_REQUIRED",
+    status: HttpStatus.FORBIDDEN,
+    message: "Este recurso é exclusivo do Vaulto Pro. Assine para liberar.",
+  },
   invalidWebhookToken: {
     code: "BILLING_INVALID_WEBHOOK_TOKEN",
     status: HttpStatus.UNAUTHORIZED,
