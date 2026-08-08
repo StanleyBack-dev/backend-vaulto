@@ -24,6 +24,7 @@ import { IncomesModule } from "@/modules/incomes/incomes.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
+import { RemindersModule } from "@/modules/reminders/reminders.module";
 import { ReportsModule } from "@/modules/reports/reports.module";
 import { UsersModule } from "@/modules/users/users.module";
 
@@ -54,6 +55,7 @@ import { UsersModule } from "@/modules/users/users.module";
     IncomesModule,
     IncomeReceiptsModule,
     ReportsModule,
+    RemindersModule,
   ],
   providers: [
     UpstashRedisProvider,

@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MAIL_PROVIDER } from "@/modules/mails/application/ports/mail-provider.token";
+import { DueTomorrowReminderEmailUseCase } from "@/modules/mails/application/use-cases/due-tomorrow-reminder-email.use-case";
 import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
 import { PasswordRecoveryEmailUseCase } from "@/modules/mails/application/use-cases/password-recovery-email.use-case";
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
@@ -22,6 +23,7 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     SubscriptionTrialEndingEmailUseCase,
     SubscriptionActivatedEmailUseCase,
     PaymentOverdueEmailUseCase,
+    DueTomorrowReminderEmailUseCase,
   ],
   exports: [
     MAIL_PROVIDER,
@@ -32,6 +34,7 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     SubscriptionTrialEndingEmailUseCase,
     SubscriptionActivatedEmailUseCase,
     PaymentOverdueEmailUseCase,
+    DueTomorrowReminderEmailUseCase,
   ],
 })
 export class MailModule {}
