@@ -23,6 +23,7 @@ function subscriptionView(overrides: Record<string, unknown> = {}) {
 function buildUseCase(
   overrides: {
     subscription?: Record<string, unknown> | null;
+    user?: Record<string, unknown> | null;
   } = {},
 ) {
   const configService = {
@@ -44,13 +45,41 @@ function buildUseCase(
     upsertByGatewayPaymentId: jest.fn().mockResolvedValue(undefined),
   };
 
+  const subscriptionActivatedEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const paymentOverdueEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const userRepository = {
+    findOne: jest
+      .fn()
+      .mockResolvedValue(
+        overrides.user === undefined
+          ? { idUsers: "user-1", email: "user@example.com", name: "User" }
+          : overrides.user,
+      ),
+  };
+
   const useCase = new HandleAsaasWebhookUseCase(
     configService as never,
     subscriptionRepository as never,
     billingPaymentRepository as never,
+    subscriptionActivatedEmailUseCase as never,
+    paymentOverdueEmailUseCase as never,
+    userRepository as never,
   );
 
-  return { useCase, subscriptionRepository, billingPaymentRepository };
+  return {
+    useCase,
+    subscriptionRepository,
+    billingPaymentRepository,
+    subscriptionActivatedEmailUseCase,
+    paymentOverdueEmailUseCase,
+    userRepository,
+  };
 }
 
 describe("HandleAsaasWebhookUseCase", () => {
@@ -75,6 +104,9 @@ describe("HandleAsaasWebhookUseCase", () => {
       { get: jest.fn().mockReturnValue(undefined) } as never,
       { findByGatewaySubscriptionId: jest.fn() } as never,
       { upsertByGatewayPaymentId: jest.fn() } as never,
+      { send: jest.fn() } as never,
+      { send: jest.fn() } as never,
+      { findOne: jest.fn() } as never,
     );
 
     await expect(
@@ -90,9 +122,13 @@ describe("HandleAsaasWebhookUseCase", () => {
     ).rejects.toBeInstanceOf(AppException);
   });
 
-  it("activates the subscription and records the payment on PAYMENT_CONFIRMED", async () => {
-    const { useCase, subscriptionRepository, billingPaymentRepository } =
-      buildUseCase();
+  it("activates the subscription, records the payment and sends the activation email on PAYMENT_CONFIRMED", async () => {
+    const {
+      useCase,
+      subscriptionRepository,
+      billingPaymentRepository,
+      subscriptionActivatedEmailUseCase,
+    } = buildUseCase();
 
     await useCase.execute(WEBHOOK_TOKEN, {
       event: "PAYMENT_CONFIRMED",
@@ -121,8 +157,13 @@ describe("HandleAsaasWebhookUseCase", () => {
       expect.objectContaining({
         plan: SubscriptionPlan.PRO,
         status: SubscriptionStatus.ACTIVE,
+        pastDueSince: null,
       }),
     );
+    expect(subscriptionActivatedEmailUseCase.send).toHaveBeenCalledWith({
+      to: "user@example.com",
+      name: "User",
+    });
   });
 
   it("activates the subscription on PAYMENT_RECEIVED as well", async () => {
@@ -147,8 +188,27 @@ describe("HandleAsaasWebhookUseCase", () => {
     );
   });
 
-  it("marks the subscription as PAST_DUE on PAYMENT_OVERDUE", async () => {
-    const { useCase, subscriptionRepository } = buildUseCase();
+  it("does not resend the activation email when the subscription was already ACTIVE", async () => {
+    const { useCase, subscriptionActivatedEmailUseCase } = buildUseCase({
+      subscription: subscriptionView({ status: SubscriptionStatus.ACTIVE }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_renewal",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "CONFIRMED",
+      },
+    });
+
+    expect(subscriptionActivatedEmailUseCase.send).not.toHaveBeenCalled();
+  });
+
+  it("marks the subscription as PAST_DUE, sets pastDueSince and sends the overdue email on PAYMENT_OVERDUE", async () => {
+    const { useCase, subscriptionRepository, paymentOverdueEmailUseCase } =
+      buildUseCase();
 
     await useCase.execute(WEBHOOK_TOKEN, {
       event: "PAYMENT_OVERDUE",
@@ -162,8 +222,37 @@ describe("HandleAsaasWebhookUseCase", () => {
 
     expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
       "user-1",
-      { status: SubscriptionStatus.PAST_DUE },
+      expect.objectContaining({
+        status: SubscriptionStatus.PAST_DUE,
+        pastDueSince: expect.any(Date),
+      }),
     );
+    expect(paymentOverdueEmailUseCase.send).toHaveBeenCalledWith(
+      expect.objectContaining({ to: "user@example.com", name: "User" }),
+    );
+  });
+
+  it("does not re-flag or re-notify a subscription that is already PAST_DUE", async () => {
+    const { useCase, subscriptionRepository, paymentOverdueEmailUseCase } =
+      buildUseCase({
+        subscription: subscriptionView({
+          status: SubscriptionStatus.PAST_DUE,
+          pastDueSince: new Date("2026-01-01"),
+        }),
+      });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_OVERDUE",
+      payment: {
+        id: "pay_3b",
+        subscription: "sub_123",
+        value: 14.9,
+        status: "OVERDUE",
+      },
+    });
+
+    expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+    expect(paymentOverdueEmailUseCase.send).not.toHaveBeenCalled();
   });
 
   it.each(["PAYMENT_DELETED", "PAYMENT_REFUNDED"])(
@@ -240,11 +329,11 @@ describe("HandleAsaasWebhookUseCase", () => {
 
       expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
         "user-1",
-        {
+        expect.objectContaining({
           plan: SubscriptionPlan.FREE,
           status: SubscriptionStatus.CANCELED,
           cancelAtPeriodEnd: false,
-        },
+        }),
       );
     },
   );

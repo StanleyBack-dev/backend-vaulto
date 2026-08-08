@@ -1,5 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
 import type {
@@ -14,10 +16,15 @@ import {
 import {
   SUBSCRIPTION_REPOSITORY,
   type SubscriptionRepositoryPort,
+  type SubscriptionView,
 } from "@/modules/billing/application/ports/subscription-repository.port";
 import { BillingPaymentStatus } from "@/modules/billing/domain/enums/billing-payment-status.enum";
+import { PAST_DUE_GRACE_PERIOD_DAYS } from "@/modules/billing/domain/constants/pro-plan.constant";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
+import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
+import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
+import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 const SETTLED_PAYMENT_EVENTS = new Set([
   "PAYMENT_CONFIRMED",
@@ -44,6 +51,10 @@ export class HandleAsaasWebhookUseCase {
     private readonly subscriptionRepository: SubscriptionRepositoryPort,
     @Inject(BILLING_PAYMENT_REPOSITORY)
     private readonly billingPaymentRepository: BillingPaymentRepositoryPort,
+    private readonly subscriptionActivatedEmailUseCase: SubscriptionActivatedEmailUseCase,
+    private readonly paymentOverdueEmailUseCase: PaymentOverdueEmailUseCase,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   async execute(
@@ -99,7 +110,7 @@ export class HandleAsaasWebhookUseCase {
       paidAt: SETTLED_PAYMENT_EVENTS.has(event) ? new Date() : undefined,
     });
 
-    await this.applyPaymentEventToSubscription(subscription.idUsers, event);
+    await this.applyPaymentEventToSubscription(subscription, event);
   }
 
   private async handleSubscriptionEvent(
@@ -122,25 +133,41 @@ export class HandleAsaasWebhookUseCase {
       plan: SubscriptionPlan.FREE,
       status: SubscriptionStatus.CANCELED,
       cancelAtPeriodEnd: false,
+      pastDueSince: null,
     });
   }
 
   private async applyPaymentEventToSubscription(
-    idUsers: string,
+    subscription: SubscriptionView,
     event: string,
   ): Promise<void> {
+    const { idUsers } = subscription;
+
     if (SETTLED_PAYMENT_EVENTS.has(event)) {
+      const wasActive = subscription.status === SubscriptionStatus.ACTIVE;
+
       await this.subscriptionRepository.updateByUserId(idUsers, {
         plan: SubscriptionPlan.PRO,
         status: SubscriptionStatus.ACTIVE,
+        pastDueSince: null,
       });
+
+      if (!wasActive) {
+        await this.notifySubscriptionActivated(idUsers);
+      }
       return;
     }
 
     if (event === "PAYMENT_OVERDUE") {
+      if (subscription.pastDueSince) {
+        return;
+      }
+
       await this.subscriptionRepository.updateByUserId(idUsers, {
         status: SubscriptionStatus.PAST_DUE,
+        pastDueSince: new Date(),
       });
+      await this.notifyPaymentOverdue(idUsers);
       return;
     }
 
@@ -148,7 +175,33 @@ export class HandleAsaasWebhookUseCase {
       await this.subscriptionRepository.updateByUserId(idUsers, {
         plan: SubscriptionPlan.FREE,
         status: SubscriptionStatus.CANCELED,
+        pastDueSince: null,
       });
     }
+  }
+
+  private async notifySubscriptionActivated(idUsers: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { idUsers } });
+    if (!user) {
+      return;
+    }
+
+    await this.subscriptionActivatedEmailUseCase.send({
+      to: user.email,
+      name: user.name,
+    });
+  }
+
+  private async notifyPaymentOverdue(idUsers: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { idUsers } });
+    if (!user) {
+      return;
+    }
+
+    await this.paymentOverdueEmailUseCase.send({
+      to: user.email,
+      name: user.name,
+      graceDays: PAST_DUE_GRACE_PERIOD_DAYS,
+    });
   }
 }

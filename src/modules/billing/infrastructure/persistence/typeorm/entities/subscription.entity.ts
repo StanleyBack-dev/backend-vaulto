@@ -47,6 +47,16 @@ export class SubscriptionEntity {
   @Column({ name: "gateway_subscription_id", type: "varchar", nullable: true })
   gatewaySubscriptionId?: string;
 
+  @Column({
+    name: "trial_ending_notified_at",
+    type: "timestamptz",
+    nullable: true,
+  })
+  trialEndingNotifiedAt?: Date;
+
+  @Column({ name: "past_due_since", type: "timestamptz", nullable: true })
+  pastDueSince?: Date;
+
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 

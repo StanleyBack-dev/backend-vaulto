@@ -66,6 +66,7 @@ export const envValidationSchema = Joi.object({
     .valid("sandbox", "production")
     .default("sandbox"),
   ASAAS_WEBHOOK_TOKEN: Joi.string().min(32).optional(),
+  CRON_SECRET: Joi.string().min(16).optional(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
   ASSINAFY_BASE_URL: Joi.string()

@@ -29,4 +29,9 @@ export const billingErrors = {
     status: HttpStatus.UNAUTHORIZED,
     message: "Token de webhook inválido.",
   },
+  invalidCronToken: {
+    code: "BILLING_INVALID_CRON_TOKEN",
+    status: HttpStatus.UNAUTHORIZED,
+    message: "Token de execução inválido.",
+  },
 } as const;
