@@ -24,9 +24,9 @@ describe("CronAuthGuard", () => {
   it("allows the request when the bearer token matches CRON_SECRET", () => {
     const guard = buildGuard();
 
-    expect(guard.canActivate(buildExecutionContext(`Bearer ${CRON_SECRET}`))).toBe(
-      true,
-    );
+    expect(
+      guard.canActivate(buildExecutionContext(`Bearer ${CRON_SECRET}`)),
+    ).toBe(true);
   });
 
   it("rejects when the bearer token does not match CRON_SECRET", () => {

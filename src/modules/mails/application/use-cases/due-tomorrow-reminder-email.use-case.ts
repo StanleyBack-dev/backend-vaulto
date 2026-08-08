@@ -42,6 +42,8 @@ export class DueTomorrowReminderEmailUseCase {
       text: emailTemplate.text,
     });
 
-    this.logger.log(`Email de lembrete de vencimentos enviado para ${input.to}`);
+    this.logger.log(
+      `Email de lembrete de vencimentos enviado para ${input.to}`,
+    );
   }
 }

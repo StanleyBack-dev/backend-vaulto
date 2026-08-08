@@ -59,7 +59,11 @@ export function buildDueTomorrowReminderEmail({
     "",
     "Você tem vencimentos para amanhã no Vaulto:",
     ...(debts.length > 0
-      ? ["", `Dívidas a pagar (${formatCurrencyBRL(totalDebts)}):`, buildListText(debts)]
+      ? [
+          "",
+          `Dívidas a pagar (${formatCurrencyBRL(totalDebts)}):`,
+          buildListText(debts),
+        ]
       : []),
     ...(incomes.length > 0
       ? [

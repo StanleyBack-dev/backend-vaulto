@@ -14,7 +14,9 @@ function reminder(
   };
 }
 
-function buildUseCase(overrides: { reminders?: DueTomorrowUserReminder[] } = {}) {
+function buildUseCase(
+  overrides: { reminders?: DueTomorrowUserReminder[] } = {},
+) {
   const remindersRepository = {
     findProUsersWithDueTomorrow: jest
       .fn()
