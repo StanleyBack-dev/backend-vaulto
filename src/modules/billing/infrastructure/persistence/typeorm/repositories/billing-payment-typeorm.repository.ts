@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import type {
   BillingPaymentRepositoryPort,
   BillingPaymentView,
+  ListBillingPaymentsFilters,
   UpsertBillingPaymentPayload,
 } from "@/modules/billing/application/ports/billing-payment-repository.port";
 import { BillingPaymentEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/billing-payment.entity";
@@ -34,6 +35,23 @@ export class BillingPaymentTypeormRepository implements BillingPaymentRepository
 
     const saved = await this.repository.save(entity);
     return this.mapToView(saved);
+  }
+
+  async listByUser(
+    idUsers: string,
+    filters?: ListBillingPaymentsFilters,
+  ): Promise<{ records: BillingPaymentView[]; total: number }> {
+    const page = filters?.page ?? 1;
+    const limit = filters?.limit ?? 10;
+
+    const [rows, total] = await this.repository.findAndCount({
+      where: { idUsers },
+      order: { createdAt: "DESC" },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { records: rows.map((row) => this.mapToView(row)), total };
   }
 
   private mapToView(entity: BillingPaymentEntity): BillingPaymentView {

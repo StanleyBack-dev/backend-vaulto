@@ -8,8 +8,10 @@ import { SUBSCRIPTION_REPOSITORY } from "@/modules/billing/application/ports/sub
 import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
 import { GetMySubscriptionUseCase } from "@/modules/billing/application/use-cases/get/get-my-subscription.use-case";
+import { ListMyBillingPaymentsUseCase } from "@/modules/billing/application/use-cases/get/list-my-billing-payments.use-case";
 import { RunSubscriptionLifecycleUseCase } from "@/modules/billing/application/use-cases/lifecycle/run-subscription-lifecycle.use-case";
 import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
+import { CancelSubscriptionUseCase } from "@/modules/billing/application/use-cases/update/cancel-subscription.use-case";
 import { HandleAsaasWebhookUseCase } from "@/modules/billing/application/use-cases/webhook/handle-asaas-webhook.use-case";
 import { AsaasPaymentGatewayProvider } from "@/modules/billing/infrastructure/gateways/asaas-payment-gateway.provider";
 import { BillingPaymentEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/billing-payment.entity";
@@ -36,8 +38,10 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
   providers: [
     CreateDefaultSubscriptionUseCase,
     GetMySubscriptionUseCase,
+    ListMyBillingPaymentsUseCase,
     PlanLimitsService,
     SubscribeToProUseCase,
+    CancelSubscriptionUseCase,
     HandleAsaasWebhookUseCase,
     RunSubscriptionLifecycleUseCase,
     BillingResolver,

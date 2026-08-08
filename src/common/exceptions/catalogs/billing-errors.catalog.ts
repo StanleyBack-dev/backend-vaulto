@@ -24,6 +24,11 @@ export const billingErrors = {
     status: HttpStatus.CONFLICT,
     message: "Usuário já possui uma assinatura Pro ativa.",
   },
+  noActiveSubscriptionToCancel: {
+    code: "BILLING_NO_ACTIVE_SUBSCRIPTION_TO_CANCEL",
+    status: HttpStatus.CONFLICT,
+    message: "Usuário não possui uma assinatura Pro ativa para cancelar.",
+  },
   invalidWebhookToken: {
     code: "BILLING_INVALID_WEBHOOK_TOKEN",
     status: HttpStatus.UNAUTHORIZED,

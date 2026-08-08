@@ -1,3 +1,4 @@
+import type { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import type { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import type { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 
@@ -8,6 +9,7 @@ export type SubscriptionView = {
   status: SubscriptionStatus;
   trialEndsAt?: Date;
   currentPeriodEnd?: Date;
+  billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
@@ -28,6 +30,7 @@ export type UpdateSubscriptionPayload = {
   status?: SubscriptionStatus;
   trialEndsAt?: Date;
   currentPeriodEnd?: Date;
+  billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd?: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
@@ -42,6 +45,7 @@ export interface SubscriptionRepositoryPort {
     gatewaySubscriptionId: string,
   ): Promise<SubscriptionView | null>;
   findByStatus(status: SubscriptionStatus): Promise<SubscriptionView[]>;
+  findPendingCancellations(): Promise<SubscriptionView[]>;
   updateByUserId(
     idUsers: string,
     payload: UpdateSubscriptionPayload,

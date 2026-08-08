@@ -97,6 +97,7 @@ export class SubscribeToProUseCase {
       await this.subscriptionRepository.updateByUserId(idUsers, {
         status: SubscriptionStatus.TRIALING,
         trialEndsAt,
+        billingCycle: command.billingCycle,
         gatewayCustomerId,
         gatewaySubscriptionId: gatewaySubscription.gatewaySubscriptionId,
       });

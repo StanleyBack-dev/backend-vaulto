@@ -31,6 +31,7 @@ export interface PaymentGatewayPort {
   createSubscription(
     input: CreateGatewaySubscriptionInput,
   ): Promise<CreateGatewaySubscriptionResult>;
+  cancelSubscription(gatewaySubscriptionId: string): Promise<void>;
 }
 
 export const PAYMENT_GATEWAY = Symbol("PAYMENT_GATEWAY");

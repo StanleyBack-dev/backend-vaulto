@@ -70,11 +70,38 @@ type PageAccessMetadataResponseDto {
   groupDefaults: [GroupDefaultDto!]!
 }
 
+type BillingPaymentResponseDto {
+  amount: Float!
+  status: BillingPaymentStatus!
+  dueDate: DateTime
+  paidAt: DateTime
+  createdAt: DateTime!
+}
+
+enum BillingPaymentStatus {
+  PENDING
+  CONFIRMED
+  RECEIVED
+  OVERDUE
+  REFUNDED
+  DELETED
+}
+
+type BillingPaymentsResponseDto {
+  items: [BillingPaymentResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type SubscriptionResponseDto {
   plan: SubscriptionPlan!
   status: SubscriptionStatus!
   trialEndsAt: DateTime
   currentPeriodEnd: DateTime
+  billingCycle: SubscriptionBillingCycle
   cancelAtPeriodEnd: Boolean!
 }
 
@@ -89,6 +116,11 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   EXPIRED
+}
+
+enum SubscriptionBillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 type SubscribeToProResponseDto {
@@ -530,6 +562,7 @@ type UpdateUserMutationResponseDto {
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
   mySubscription: SubscriptionResponseDto!
+  myBillingPayments(input: ListBillingPaymentsInputDto): BillingPaymentsResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUserFilterOptions: [UserFilterOptionDto!]!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
@@ -547,6 +580,11 @@ type Query {
   getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
+}
+
+input ListBillingPaymentsInputDto {
+  page: Int
+  limit: Int
 }
 
 input GetUsersInputDto {
@@ -634,6 +672,7 @@ type Mutation {
   verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
+  cancelSubscription: SubscriptionResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
@@ -687,11 +726,6 @@ input ResetPasswordWithRecoveryInputDto {
 input SubscribeToProInputDto {
   cpfCnpj: String!
   billingCycle: SubscriptionBillingCycle!
-}
-
-enum SubscriptionBillingCycle {
-  MONTHLY
-  YEARLY
 }
 
 input CreateUserInputDto {

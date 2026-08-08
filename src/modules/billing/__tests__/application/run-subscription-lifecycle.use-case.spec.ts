@@ -22,6 +22,7 @@ function buildUseCase(
   overrides: {
     trialing?: Record<string, unknown>[];
     pastDue?: Record<string, unknown>[];
+    pendingCancellations?: Record<string, unknown>[];
     user?: Record<string, unknown> | null;
   } = {},
 ) {
@@ -35,6 +36,9 @@ function buildUseCase(
       }
       return Promise.resolve([]);
     }),
+    findPendingCancellations: jest
+      .fn()
+      .mockResolvedValue(overrides.pendingCancellations ?? []),
     updateByUserId: jest.fn().mockResolvedValue(subscriptionView()),
   };
 
@@ -178,5 +182,48 @@ describe("RunSubscriptionLifecycleUseCase", () => {
 
     expect(subscriptionTrialEndingEmailUseCase.send).not.toHaveBeenCalled();
     expect(result.trialRemindersSent).toBe(0);
+  });
+
+  it("downgrades a pending cancellation once currentPeriodEnd has passed", async () => {
+    const currentPeriodEnd = new Date(Date.now() - 1 * HOUR_IN_MS);
+    const { useCase, subscriptionRepository } = buildUseCase({
+      pendingCancellations: [
+        subscriptionView({
+          status: SubscriptionStatus.ACTIVE,
+          cancelAtPeriodEnd: true,
+          currentPeriodEnd,
+        }),
+      ],
+    });
+
+    const result = await useCase.execute();
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      {
+        plan: SubscriptionPlan.FREE,
+        status: SubscriptionStatus.CANCELED,
+        cancelAtPeriodEnd: false,
+      },
+    );
+    expect(result.downgradedToFree).toBe(1);
+  });
+
+  it("does not downgrade a pending cancellation before currentPeriodEnd", async () => {
+    const currentPeriodEnd = new Date(Date.now() + 1 * DAY_IN_MS);
+    const { useCase, subscriptionRepository } = buildUseCase({
+      pendingCancellations: [
+        subscriptionView({
+          status: SubscriptionStatus.ACTIVE,
+          cancelAtPeriodEnd: true,
+          currentPeriodEnd,
+        }),
+      ],
+    });
+
+    const result = await useCase.execute();
+
+    expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+    expect(result.downgradedToFree).toBe(0);
   });
 });

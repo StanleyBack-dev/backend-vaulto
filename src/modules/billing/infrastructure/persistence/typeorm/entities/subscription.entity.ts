@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 
@@ -37,6 +38,14 @@ export class SubscriptionEntity {
 
   @Column({ name: "current_period_end", type: "timestamptz", nullable: true })
   currentPeriodEnd?: Date;
+
+  @Column({
+    name: "billing_cycle",
+    type: "enum",
+    enum: SubscriptionBillingCycle,
+    nullable: true,
+  })
+  billingCycle?: SubscriptionBillingCycle;
 
   @Column({ name: "cancel_at_period_end", default: false })
   cancelAtPeriodEnd!: boolean;

@@ -90,6 +90,12 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
     };
   }
 
+  async cancelSubscription(gatewaySubscriptionId: string): Promise<void> {
+    await this.request(`/subscriptions/${gatewaySubscriptionId}`, {
+      method: "DELETE",
+    });
+  }
+
   private async findFirstPaymentInvoiceUrl(
     gatewaySubscriptionId: string,
   ): Promise<string | undefined> {
@@ -103,7 +109,7 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
 
   private async request<TResponse>(
     path: string,
-    options: { method: "GET" | "POST"; body?: unknown },
+    options: { method: "GET" | "POST" | "DELETE"; body?: unknown },
   ): Promise<TResponse> {
     if (!this.apiKey) {
       throw AppException.from(

@@ -162,6 +162,22 @@ describe("AsaasPaymentGatewayProvider", () => {
     ).rejects.toBeInstanceOf(AppException);
   });
 
+  it("cancels a subscription with a DELETE request", async () => {
+    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({}));
+    global.fetch = fetchMock as never;
+
+    const provider = new AsaasPaymentGatewayProvider(
+      buildConfigService() as never,
+    );
+
+    await provider.cancelSubscription("sub_123");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api-sandbox.asaas.com/v3/subscriptions/sub_123",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
   it("rejects with a gateway error when the network request throws", async () => {
     global.fetch = jest
       .fn()

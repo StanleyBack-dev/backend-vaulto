@@ -39,7 +39,8 @@ export class RunSubscriptionLifecycleUseCase {
     const trialRemindersSent = await this.sendTrialEndingReminders();
     const downgradedToFree =
       (await this.downgradeStaleTrials()) +
-      (await this.downgradePastDueSubscriptions());
+      (await this.downgradePastDueSubscriptions()) +
+      (await this.downgradeExpiredCancellations());
 
     this.logger.log(
       `Subscription lifecycle job: ${trialRemindersSent} lembrete(s) de trial enviado(s), ${downgradedToFree} assinatura(s) rebaixada(s) para FREE.`,
@@ -139,6 +140,36 @@ export class RunSubscriptionLifecycleUseCase {
         plan: SubscriptionPlan.FREE,
         status: SubscriptionStatus.EXPIRED,
         pastDueSince: null,
+      });
+      downgraded += 1;
+    }
+
+    return downgraded;
+  }
+
+  // Covers cancelSubscription (CancelSubscriptionUseCase): the user keeps
+  // Pro until the period they already paid for ends, then this rebuilds
+  // them down to FREE without waiting for another Asaas webhook (Asaas was
+  // already told to stop generating future charges at cancellation time).
+  private async downgradeExpiredCancellations(): Promise<number> {
+    const pendingCancellations =
+      await this.subscriptionRepository.findPendingCancellations();
+    const now = new Date();
+
+    let downgraded = 0;
+
+    for (const subscription of pendingCancellations) {
+      const accessEndsAt =
+        subscription.currentPeriodEnd ?? subscription.trialEndsAt;
+
+      if (!accessEndsAt || accessEndsAt > now) {
+        continue;
+      }
+
+      await this.subscriptionRepository.updateByUserId(subscription.idUsers, {
+        plan: SubscriptionPlan.FREE,
+        status: SubscriptionStatus.CANCELED,
+        cancelAtPeriodEnd: false,
       });
       downgraded += 1;
     }

@@ -124,6 +124,7 @@ describe("SubscribeToProUseCase", () => {
       "user-1",
       expect.objectContaining({
         status: SubscriptionStatus.TRIALING,
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
         gatewayCustomerId: "cus_123",
         gatewaySubscriptionId: "sub_123",
       }),
