@@ -303,21 +303,34 @@ cada cobrança ("instrução de pagamento") individualmente, entre 2 e 10 dias
 
 ### Fase 2 — Feature gating no frontend
 
-**Status:** Não iniciado
+**Status:** Concluído (branch `feat/fase-2-feature-gating`, a partir de
+`project/vaulto-saas`)
 **Repositório:** `frontend-vaulto`
 
-- [ ] Novo `features/billing` (context `useSubscription` consumindo a query
-      `mySubscription`), mesmo padrão de `features/onboarding` criado nesta
-      sessão.
-- [ ] Componentes de UI (atomic design): `atoms/PlanBadge`,
-      `molecules/UpgradeBanner`, `organisms/UpgradeModal` — mostrados quando
-      uma ação bate no limite do Free (o backend retorna o erro de
-      `PlanLimitsService`; o frontend intercepta e abre o modal de upgrade em
-      vez de um toast de erro genérico).
-- [ ] Indicadores de uso (ex.: "3 de 5 dívidas usadas") nas telas de Dívidas,
-      Cartões e Receitas para usuários Free.
-- [ ] Página de preços (`/planos`) comparando Free vs Pro (tabela da seção
-      2.2), acessível a partir do menu e do modal de upgrade.
+- [x] `features/billing` (`BillingProvider`/`useBillingContext`) já existia
+      desde a Fase 1 (mesmo padrão de `features/onboarding`) — reaproveitado
+      aqui, sem necessidade de um novo context.
+- [x] Componentes de UI (atomic design): `atoms/PlanBadge` (Fase 1),
+      `molecules/UpgradeBanner`, `organisms/UpgradeModal` (novos) —
+      mostrados quando uma ação bate no limite do Free. O backend continua
+      sendo a única fonte de verdade: `createDebt`/`createCreditCard`/
+      `createIncome` agora reconhecem o código `BILLING_PLAN_LIMIT_REACHED`
+      da resposta e lançam um `PlanLimitReachedError` tipado, que os hooks
+      (`useDebts`/`useCreditCards`/`useIncomes`) capturam separadamente para
+      abrir o `UpgradeModal` em vez de um toast de erro genérico. O
+      front-end não duplica a regra de limite — só traduz o erro do backend
+      em UI.
+- [x] Indicadores de uso (ex.: "3 de 5 dívidas usadas") nas telas de Dívidas,
+      Cartões e Receitas para usuários Free, via `UpgradeBanner` (usa a
+      contagem real da paginação do backend, não um cálculo local).
+- [x] Botão "Nova dívida"/"Novo cartão"/"Nova receita" agora abre o
+      `UpgradeModal` direto ao clicar quando o limite já foi atingido, em
+      vez de deixar o usuário preencher o formulário inteiro para só então
+      descobrir o erro. Puramente cosmético: a validação que realmente
+      impede a gravação continua 100% no backend (`PlanLimitsService`,
+      Fase 0) e não pode ser burlada manipulando o frontend.
+- [x] Página de preços (`/planos`) comparando Free vs Pro — já entregue na
+      Fase 1 junto com a página de Perfil.
 
 ### Fase 3 — Trial e ciclo de vida da assinatura
 
