@@ -260,13 +260,25 @@ frontend na branch `feat/fase-1-billing-frontend`, ambas a partir de
       de criação da conta) via `ProfileSummaryCard`, e o status da
       assinatura (Free/Pro/Trial/Vencida/Cancelada) via
       `SubscriptionStatusCard`, com atalho para `/planos`.
-- [ ] **Adiado (decisão explícita nesta sessão):** gerenciamento de
-      assinatura (cancelar, ver próxima cobrança/data, histórico de
-      pagamentos) — hoje a tela de Perfil só exibe o status, sem ações de
-      cancelamento. Fica para um incremento futuro (endpoint de
-      cancelamento que agenda `cancelAtPeriodEnd = true` no backend +
-      tela/menu dedicado no frontend), a decidir se entra na Fase 2 ou
-      numa fase própria.
+- [x] **Gerenciamento de assinatura** (branch `feat/subscription-management`,
+      backend + frontend, a partir de `project/vaulto-saas`) — cancelar,
+      ver próxima cobrança e histórico de pagamentos. Adiado na Fase 1,
+      implementado depois da Fase 3. - Corrigido um bug pré-existente: `currentPeriodEnd` estava no
+      schema/DTO desde a Fase 0 mas nunca era preenchido, porque a
+      assinatura não guardava o `billingCycle` (mensal/anual). Agora é
+      persistido em `subscribeToPro` e o webhook calcula
+      `currentPeriodEnd` (`dueDate` pago + 1 ciclo) a cada pagamento
+      confirmado. - Mutation `cancelSubscription`: cancela a assinatura na Asaas
+      imediatamente (para futuras cobranças), mantendo o Pro ativo via
+      `cancelAtPeriodEnd = true` até `currentPeriodEnd`/`trialEndsAt` —
+      ou rebaixa na hora se esse período já tiver passado. Botão
+      "Cancelar assinatura" no `SubscriptionStatusCard`, com
+      `ConfirmDialog`. - `RunSubscriptionLifecycleUseCase` (Fase 3) estendido para rebaixar
+      automaticamente para `FREE`/`CANCELED` quando o período de uma
+      assinatura com `cancelAtPeriodEnd = true` termina. - Query `myBillingPayments` expondo o histórico de
+      `BillingPaymentEntity` (já existia desde a Fase 1, nunca era
+      consultável), com nova tabela paginada no Perfil
+      (`BillingPaymentHistoryTable`).
 
 ### Fase 1.5 — Pix Automático (recorrência real via Pix)
 
