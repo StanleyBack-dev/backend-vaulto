@@ -12,6 +12,7 @@ import { GetCategoryComparisonInputDto } from "@/modules/reports/presentation/gr
 import { GetDebtsReportInputDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-input.dto";
 import { DebtsReportResponseDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-response.dto";
 import { GetFinancialForecastInputDto } from "@/modules/reports/presentation/graphql/dtos/get-financial-forecast-input.dto";
+import "@/modules/reports/presentation/graphql/enums/reports-graphql.enums";
 
 @Resolver()
 export class ReportsResolver {
@@ -64,6 +65,7 @@ export class ReportsResolver {
     const result = await this.getCategoryComparisonUseCase.execute(
       user.idUsers,
       {
+        periodType: input?.periodType,
         referenceDate: input?.referenceDate,
         comparisonDate: input?.comparisonDate,
       },

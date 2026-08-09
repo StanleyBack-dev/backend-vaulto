@@ -1,6 +1,7 @@
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
+import { CategoryComparisonPeriodType } from "@/modules/reports/domain/enums/category-comparison-period-type.enum";
 import type { CategoryAmountRow } from "@/modules/reports/application/ports/report-repository.port";
 
 function buildUseCase(
@@ -105,6 +106,87 @@ describe("GetCategoryComparisonUseCase", () => {
     expect(previousCall[1]).toEqual({
       dueDateFrom: new Date("2025-01-01T00:00:00.000Z"),
       dueDateTo: new Date("2025-01-31T00:00:00.000Z"),
+    });
+  });
+
+  it("aligns to calendar quarters and compares against the previous quarter", async () => {
+    const { useCase, reportRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      periodType: CategoryComparisonPeriodType.QUARTER,
+      referenceDate: new Date("2026-05-15T00:00:00.000Z"),
+    });
+
+    const [currentCall, previousCall] =
+      reportRepository.getDebtsAmountByCategory.mock.calls;
+
+    expect(currentCall[1]).toEqual({
+      dueDateFrom: new Date("2026-04-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-06-30T00:00:00.000Z"),
+    });
+    expect(previousCall[1]).toEqual({
+      dueDateFrom: new Date("2026-01-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-03-31T00:00:00.000Z"),
+    });
+  });
+
+  it("aligns to calendar semesters and compares against the previous semester", async () => {
+    const { useCase, reportRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      periodType: CategoryComparisonPeriodType.SEMESTER,
+      referenceDate: new Date("2026-09-01T00:00:00.000Z"),
+    });
+
+    const [currentCall, previousCall] =
+      reportRepository.getDebtsAmountByCategory.mock.calls;
+
+    expect(currentCall[1]).toEqual({
+      dueDateFrom: new Date("2026-07-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-12-31T00:00:00.000Z"),
+    });
+    expect(previousCall[1]).toEqual({
+      dueDateFrom: new Date("2026-01-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-06-30T00:00:00.000Z"),
+    });
+  });
+
+  it("compares full calendar years when periodType is YEAR", async () => {
+    const { useCase, reportRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      periodType: CategoryComparisonPeriodType.YEAR,
+      referenceDate: new Date("2026-05-15T00:00:00.000Z"),
+    });
+
+    const [currentCall, previousCall] =
+      reportRepository.getDebtsAmountByCategory.mock.calls;
+
+    expect(currentCall[1]).toEqual({
+      dueDateFrom: new Date("2026-01-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-12-31T00:00:00.000Z"),
+    });
+    expect(previousCall[1]).toEqual({
+      dueDateFrom: new Date("2025-01-01T00:00:00.000Z"),
+      dueDateTo: new Date("2025-12-31T00:00:00.000Z"),
+    });
+  });
+
+  it("aligns an explicit comparisonDate to the same block size as the reference period", async () => {
+    const { useCase, reportRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      periodType: CategoryComparisonPeriodType.QUARTER,
+      referenceDate: new Date("2026-05-15T00:00:00.000Z"),
+      comparisonDate: new Date("2025-11-01T00:00:00.000Z"),
+    });
+
+    const [, previousCall] =
+      reportRepository.getDebtsAmountByCategory.mock.calls;
+
+    expect(previousCall[1]).toEqual({
+      dueDateFrom: new Date("2025-10-01T00:00:00.000Z"),
+      dueDateTo: new Date("2025-12-31T00:00:00.000Z"),
     });
   });
 

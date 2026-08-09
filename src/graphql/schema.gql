@@ -763,8 +763,16 @@ input GetFinancialForecastInputDto {
 }
 
 input GetCategoryComparisonInputDto {
+  periodType: CategoryComparisonPeriodType
   referenceDate: DateTime
   comparisonDate: DateTime
+}
+
+enum CategoryComparisonPeriodType {
+  MONTH
+  QUARTER
+  SEMESTER
+  YEAR
 }
 
 input GetFinancialGoalByIdInputDto {

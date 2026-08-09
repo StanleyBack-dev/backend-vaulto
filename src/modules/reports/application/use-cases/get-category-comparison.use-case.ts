@@ -7,8 +7,17 @@ import {
   type CategoryAmountRow,
   type ReportRepositoryPort,
 } from "@/modules/reports/application/ports/report-repository.port";
+import { CategoryComparisonPeriodType } from "@/modules/reports/domain/enums/category-comparison-period-type.enum";
+
+const PERIOD_LENGTH_IN_MONTHS: Record<CategoryComparisonPeriodType, number> = {
+  [CategoryComparisonPeriodType.MONTH]: 1,
+  [CategoryComparisonPeriodType.QUARTER]: 3,
+  [CategoryComparisonPeriodType.SEMESTER]: 6,
+  [CategoryComparisonPeriodType.YEAR]: 12,
+};
 
 export interface GetCategoryComparisonInput {
+  periodType?: CategoryComparisonPeriodType;
   referenceDate?: Date;
   comparisonDate?: Date;
 }
@@ -58,13 +67,25 @@ export class GetCategoryComparisonUseCase {
     );
     await this.planLimitsService.assertProPlan(userId);
 
+    const periodType = input.periodType ?? CategoryComparisonPeriodType.MONTH;
+    const periodLength = PERIOD_LENGTH_IN_MONTHS[periodType];
     const referenceDate = input.referenceDate ?? new Date();
-    const currentPeriodStart = this.startOfMonthUTC(referenceDate);
-    const currentPeriodEnd = this.endOfMonthUTC(currentPeriodStart);
+
+    const currentPeriodStart = this.startOfPeriodUTC(
+      referenceDate,
+      periodLength,
+    );
+    const currentPeriodEnd = this.endOfPeriodUTC(
+      currentPeriodStart,
+      periodLength,
+    );
     const previousPeriodStart = input.comparisonDate
-      ? this.startOfMonthUTC(input.comparisonDate)
-      : this.addMonthsUTC(currentPeriodStart, -1);
-    const previousPeriodEnd = this.endOfMonthUTC(previousPeriodStart);
+      ? this.startOfPeriodUTC(input.comparisonDate, periodLength)
+      : this.addMonthsUTC(currentPeriodStart, -periodLength);
+    const previousPeriodEnd = this.endOfPeriodUTC(
+      previousPeriodStart,
+      periodLength,
+    );
 
     const [currentExpenses, previousExpenses, currentIncome, previousIncome] =
       await Promise.all([
@@ -168,12 +189,29 @@ export class GetCategoryComparisonUseCase {
     return Number(value.toFixed(2));
   }
 
-  private startOfMonthUTC(date: Date): Date {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  /**
+   * Aligns a date to the start of its N-month block counted from January
+   * (e.g. N=3 aligns to calendar quarters, N=6 to calendar semesters),
+   * matching how "trimestral"/"semestral" are conventionally reported.
+   */
+  private startOfPeriodUTC(date: Date, periodLengthInMonths: number): Date {
+    const blockStartMonth =
+      Math.floor(date.getUTCMonth() / periodLengthInMonths) *
+      periodLengthInMonths;
+    return new Date(Date.UTC(date.getUTCFullYear(), blockStartMonth, 1));
   }
 
-  private endOfMonthUTC(date: Date): Date {
-    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0));
+  private endOfPeriodUTC(
+    periodStart: Date,
+    periodLengthInMonths: number,
+  ): Date {
+    return new Date(
+      Date.UTC(
+        periodStart.getUTCFullYear(),
+        periodStart.getUTCMonth() + periodLengthInMonths,
+        0,
+      ),
+    );
   }
 
   private addMonthsUTC(date: Date, months: number): Date {
