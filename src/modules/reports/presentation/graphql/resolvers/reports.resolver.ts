@@ -65,6 +65,7 @@ export class ReportsResolver {
       user.idUsers,
       {
         referenceDate: input?.referenceDate,
+        comparisonDate: input?.comparisonDate,
       },
     );
 

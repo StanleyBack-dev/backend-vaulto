@@ -764,6 +764,7 @@ input GetFinancialForecastInputDto {
 
 input GetCategoryComparisonInputDto {
   referenceDate: DateTime
+  comparisonDate: DateTime
 }
 
 input GetFinancialGoalByIdInputDto {

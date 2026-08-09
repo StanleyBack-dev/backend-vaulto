@@ -87,6 +87,27 @@ describe("GetCategoryComparisonUseCase", () => {
     });
   });
 
+  it("uses an explicit comparisonDate instead of the previous month when provided", async () => {
+    const { useCase, reportRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      referenceDate: new Date("2026-06-10T00:00:00.000Z"),
+      comparisonDate: new Date("2025-01-20T00:00:00.000Z"),
+    });
+
+    const [currentCall, previousCall] =
+      reportRepository.getDebtsAmountByCategory.mock.calls;
+
+    expect(currentCall[1]).toEqual({
+      dueDateFrom: new Date("2026-06-01T00:00:00.000Z"),
+      dueDateTo: new Date("2026-06-30T00:00:00.000Z"),
+    });
+    expect(previousCall[1]).toEqual({
+      dueDateFrom: new Date("2025-01-01T00:00:00.000Z"),
+      dueDateTo: new Date("2025-01-31T00:00:00.000Z"),
+    });
+  });
+
   it("merges current and previous amounts by category and computes the percent change", async () => {
     const { useCase } = buildUseCase({
       debtsByCategory: [

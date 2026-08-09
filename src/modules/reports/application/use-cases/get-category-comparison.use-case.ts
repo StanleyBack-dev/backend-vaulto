@@ -10,6 +10,7 @@ import {
 
 export interface GetCategoryComparisonInput {
   referenceDate?: Date;
+  comparisonDate?: Date;
 }
 
 export interface CategoryComparisonEntry {
@@ -60,7 +61,9 @@ export class GetCategoryComparisonUseCase {
     const referenceDate = input.referenceDate ?? new Date();
     const currentPeriodStart = this.startOfMonthUTC(referenceDate);
     const currentPeriodEnd = this.endOfMonthUTC(currentPeriodStart);
-    const previousPeriodStart = this.addMonthsUTC(currentPeriodStart, -1);
+    const previousPeriodStart = input.comparisonDate
+      ? this.startOfMonthUTC(input.comparisonDate)
+      : this.addMonthsUTC(currentPeriodStart, -1);
     const previousPeriodEnd = this.endOfMonthUTC(previousPeriodStart);
 
     const [currentExpenses, previousExpenses, currentIncome, previousIncome] =
