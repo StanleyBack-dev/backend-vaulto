@@ -382,23 +382,41 @@ de `project/vaulto-saas`) — **requer 1 passo manual pós-merge**, ver abaixo
 
 ### Fase 4 — Funcionalidades premium (ordem de prioridade sugerida)
 
-**Status:** Não iniciado
+**Status:** Em andamento (4 de 9 concluídos — Previsão financeira,
+Calendário financeiro, Lembretes e Metas financeiras)
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 Ordem recomendada (da conversa original, mantém o Pro "irresistível" sem
 depender só de remover limites):
 
-1. [ ] **Previsão financeira / "Quanto posso gastar?"** — saldo atual +
+1. [x] **Previsão financeira / "Quanto posso gastar?"** — saldo atual +
        entradas previstas − saídas previstas (dívidas em aberto + faturas de
        cartão + metas) = valor sugerido de gasto seguro no período. Feature-chave
-       sugerida como carro-chefe do Pro.
-2. [ ] **Calendário financeiro** — visão mensal com entradas/saídas por dia
-       (dívidas, receitas, faturas) nos próximos 30 dias.
-3. [ ] **Lembretes** — notificação (e-mail via Brevo, e futuramente
+       sugerida como carro-chefe do Pro. Concluído (branch
+       `feat/phase-4.1-financial-forecast` em ambos os repositórios, a partir
+       de `project/vaulto-saas`) — backend: módulo `reports`
+       (`GetFinancialForecastUseCase`); frontend: página `/previsao`.
+2. [x] **Calendário financeiro** — visão mensal com entradas/saídas por dia
+       (dívidas, receitas, faturas) nos próximos 30 dias. Concluído (branch
+       `feat/phase-4.2-financial-calendar`, só `frontend-vaulto` — reaproveita
+       as queries já existentes de dívidas/receitas/faturas, sem módulo novo
+       no backend) — página `/calendario`.
+3. [x] **Lembretes** — notificação (e-mail via Brevo, e futuramente
        push/in-app) de vencimento de parcela, fatura de cartão ou receita
-       esperada.
-4. [ ] **Metas financeiras** — valor-alvo, valor guardado, progresso e
-       estimativa de tempo para atingir a meta.
+       esperada. Concluído (branch `feat/phase-4.3-reminders` em ambos os
+       repositórios) — backend: módulo `reminders`; frontend: página
+       `/lembretes` e seção colapsável de conta na sidebar.
+4. [x] **Metas financeiras** — valor-alvo, valor guardado, progresso e
+       estimativa de tempo para atingir a meta. Concluído (branch
+       `feat/phase-4.4-financial-goals` em ambos os repositórios, a partir de
+       `project/vaulto-saas`) — recurso exclusivo do plano Pro. Backend:
+       módulo `goals` (CRUD de metas + registrar/editar/excluir
+       contribuições, com recálculo automático de `currentAmount` e
+       progresso). Frontend: página `/metas` (listagem com valor alvo, valor
+       atual, valor restante e progresso) e página separada
+       `/metas/contribuicoes` (seleciona a meta, registra/edita/exclui
+       contribuições e mostra o histórico abaixo — mesmo modelo das telas de
+       Pagamentos/Recebimentos).
 5. [ ] **Comparativos** — mês a mês e por categoria (ex.: "Alimentação -18%
        em relação ao mês anterior").
 6. [ ] **Importação de extrato (CSV/OFX)** — parser + reconciliação
