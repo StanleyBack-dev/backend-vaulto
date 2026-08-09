@@ -2,11 +2,13 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { BillingModule } from "@/modules/billing/billing.module";
+import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt.entity";
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
 import { IncomeEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income.entity";
 import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income-installment.entity";
 import { REPORT_REPOSITORY } from "@/modules/reports/application/ports/report-repository.port";
+import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
 import { GetFinancialForecastUseCase } from "@/modules/reports/application/use-cases/get-financial-forecast.use-case";
 import { ReportTypeormRepository } from "@/modules/reports/infrastructure/persistence/typeorm/repositories/report-typeorm.repository";
@@ -19,6 +21,7 @@ import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolver
       DebtInstallmentEntity,
       IncomeEntity,
       IncomeInstallmentEntity,
+      CategoryEntity,
     ]),
     AuthModule,
     BillingModule,
@@ -26,6 +29,7 @@ import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolver
   providers: [
     GetDebtsReportUseCase,
     GetFinancialForecastUseCase,
+    GetCategoryComparisonUseCase,
     ReportsResolver,
     ReportTypeormRepository,
     {
