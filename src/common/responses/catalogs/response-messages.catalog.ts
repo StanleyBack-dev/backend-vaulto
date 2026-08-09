@@ -100,6 +100,36 @@ export const RESPONSE_MESSAGES = {
       message: "Receita excluída com sucesso.",
     },
   },
+  goals: {
+    created: {
+      code: "GOAL_CREATED",
+      message: "Meta criada com sucesso.",
+    },
+    listed: {
+      code: "GOALS_LISTED",
+      message: "Metas carregadas com sucesso.",
+    },
+    updated: {
+      code: "GOAL_UPDATED",
+      message: "Meta atualizada com sucesso.",
+    },
+    deleted: {
+      code: "GOAL_DELETED",
+      message: "Meta excluída com sucesso.",
+    },
+    contributionRegistered: {
+      code: "GOAL_CONTRIBUTION_REGISTERED",
+      message: "Contribuição registrada com sucesso.",
+    },
+    contributionUpdated: {
+      code: "GOAL_CONTRIBUTION_UPDATED",
+      message: "Contribuição atualizada com sucesso.",
+    },
+    contributionDeleted: {
+      code: "GOAL_CONTRIBUTION_DELETED",
+      message: "Contribuição excluída com sucesso.",
+    },
+  },
   payments: {
     registered: {
       code: "PAYMENT_REGISTERED",

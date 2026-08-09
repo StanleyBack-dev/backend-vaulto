@@ -5,6 +5,7 @@ import { billingErrors } from "@/common/exceptions/catalogs/billing-errors.catal
 import { categoriesErrors } from "@/common/exceptions/catalogs/categories-errors.catalog";
 import { creditCardsErrors } from "@/common/exceptions/catalogs/credit-cards-errors.catalog";
 import { debtsErrors } from "@/common/exceptions/catalogs/debts-errors.catalog";
+import { goalsErrors } from "@/common/exceptions/catalogs/goals-errors.catalog";
 import { incomeReceiptsErrors } from "@/common/exceptions/catalogs/income-receipts-errors.catalog";
 import { incomesErrors } from "@/common/exceptions/catalogs/incomes-errors.catalog";
 import { internalErrors } from "@/common/exceptions/catalogs/internal-errors.catalog";
@@ -25,6 +26,7 @@ export const APP_ERRORS = {
   users: usersErrors,
   profiles: profilesErrors,
   debts: debtsErrors,
+  goals: goalsErrors,
   incomes: incomesErrors,
   incomeReceipts: incomeReceiptsErrors,
   payments: paymentsErrors,
