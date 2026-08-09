@@ -294,6 +294,61 @@ type ListDebtsResponseDto {
   hasNextPage: Boolean!
 }
 
+type GoalContributionResponseDto {
+  idGoalContribution: String!
+  idFinancialGoal: String!
+  amount: Float!
+  contributedAt: DateTime!
+  note: String
+  createdAt: DateTime!
+}
+
+type FinancialGoalResponseDto {
+  idFinancialGoal: String!
+  idUsers: String!
+  title: String!
+  description: String
+  targetAmount: Float!
+  currentAmount: Float!
+  targetDate: DateTime
+  status: FinancialGoalStatus!
+  progressPercent: Int!
+  estimatedMonthsToComplete: Int
+  contributions: [GoalContributionResponseDto!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum FinancialGoalStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+type CreateFinancialGoalMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: FinancialGoalResponseDto!
+}
+
+type DeleteFinancialGoalResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type ListFinancialGoalsResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [FinancialGoalResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type IncomeReceiptResponseDto {
   idIncomeReceipt: String!
   idIncome: String!
@@ -590,6 +645,8 @@ type Query {
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
   getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
+  getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
+  getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -678,6 +735,15 @@ input GetFinancialForecastInputDto {
   periodEnd: DateTime
 }
 
+input GetFinancialGoalByIdInputDto {
+  idFinancialGoal: String!
+}
+
+input ListFinancialGoalsInputDto {
+  page: Int
+  limit: Int
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -713,6 +779,12 @@ type Mutation {
   registerInstallmentReceipt(input: RegisterInstallmentReceiptInputDto!): RegisterInstallmentReceiptMutationResponseDto!
   updateIncomeReceipt(input: UpdateIncomeReceiptInputDto!): UpdateIncomeReceiptMutationResponseDto!
   deleteIncomeReceipt(idIncomeReceipt: String!): DeleteIncomeReceiptMutationResponseDto!
+  createFinancialGoal(input: CreateFinancialGoalInputDto!): CreateFinancialGoalMutationResponseDto!
+  updateFinancialGoal(input: UpdateFinancialGoalInputDto!): CreateFinancialGoalMutationResponseDto!
+  deleteFinancialGoal(idFinancialGoal: String!): DeleteFinancialGoalResponseDto!
+  registerGoalContribution(input: RegisterGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
+  updateGoalContribution(input: UpdateGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
+  deleteGoalContribution(idFinancialGoal: String!, idGoalContribution: String!): CreateFinancialGoalMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -895,4 +967,34 @@ input UpdateIncomeReceiptInputDto {
   idIncomeReceipt: String!
   amountReceived: Float
   receivedAt: DateTime
+}
+
+input CreateFinancialGoalInputDto {
+  title: String!
+  description: String
+  targetAmount: Float!
+  targetDate: DateTime
+}
+
+input UpdateFinancialGoalInputDto {
+  idFinancialGoal: String!
+  title: String
+  description: String
+  targetAmount: Float
+  targetDate: DateTime
+}
+
+input RegisterGoalContributionInputDto {
+  idFinancialGoal: String!
+  amount: Float!
+  contributedAt: DateTime
+  note: String
+}
+
+input UpdateGoalContributionInputDto {
+  idFinancialGoal: String!
+  idGoalContribution: String!
+  amount: Float
+  contributedAt: DateTime
+  note: String
 }

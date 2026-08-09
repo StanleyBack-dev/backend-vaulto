@@ -19,6 +19,7 @@ import { BillingModule } from "@/modules/billing/billing.module";
 import { CategoriesModule } from "@/modules/categories/categories.module";
 import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
 import { DebtsModule } from "@/modules/debts/debts.module";
+import { GoalsModule } from "@/modules/goals/goals.module";
 import { IncomeReceiptsModule } from "@/modules/income-receipts/income-receipts.module";
 import { IncomesModule } from "@/modules/incomes/incomes.module";
 import { MailModule } from "@/modules/mails/mail.module";
@@ -56,6 +57,7 @@ import { UsersModule } from "@/modules/users/users.module";
     IncomeReceiptsModule,
     ReportsModule,
     RemindersModule,
+    GoalsModule,
   ],
   providers: [
     UpstashRedisProvider,
