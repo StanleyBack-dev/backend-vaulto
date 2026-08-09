@@ -382,8 +382,8 @@ de `project/vaulto-saas`) — **requer 1 passo manual pós-merge**, ver abaixo
 
 ### Fase 4 — Funcionalidades premium (ordem de prioridade sugerida)
 
-**Status:** Em andamento (4 de 9 concluídos — Previsão financeira,
-Calendário financeiro, Lembretes e Metas financeiras)
+**Status:** Em andamento (5 de 9 concluídos — Previsão financeira,
+Calendário financeiro, Lembretes, Metas financeiras e Comparativos)
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 Ordem recomendada (da conversa original, mantém o Pro "irresistível" sem
@@ -417,8 +417,21 @@ depender só de remover limites):
        `/metas/contribuicoes` (seleciona a meta, registra/edita/exclui
        contribuições e mostra o histórico abaixo — mesmo modelo das telas de
        Pagamentos/Recebimentos).
-5. [ ] **Comparativos** — mês a mês e por categoria (ex.: "Alimentação -18%
-       em relação ao mês anterior").
+5. [x] **Comparativos** — mês a mês e por categoria (ex.: "Alimentação -18%
+       em relação ao mês anterior"). Concluído (branch
+       `feat/phase-4.5-comparisons` em ambos os repositórios, a partir de
+       `project/vaulto-saas`) — recurso exclusivo do plano Pro. Backend:
+       query `getCategoryComparison` no módulo `reports`, comparando
+       despesas e receitas por categoria entre dois períodos (valor atual,
+       valor anterior, variação e % de variação); suporta granularidade
+       mensal, trimestral, semestral ou anual (`periodType`), com os blocos
+       alinhados ao calendário (Q1-Q4, S1-S2), e permite informar
+       `comparisonDate` explícito em vez de assumir sempre o período
+       anterior. Frontend: página `/comparativos` com seletor de período
+       (Mês/Trimestre/Semestre/Ano), modo automático (compara com o
+       período anterior) ou customizado (escolhe os dois períodos
+       livremente), e ação explícita ("Comparar") em vez de buscar a cada
+       troca de campo.
 6. [ ] **Importação de extrato (CSV/OFX)** — parser + reconciliação
        automática por categoria (heurística simples primeiro, sem IA).
 7. [ ] **Vaulto Insights (IA)** — respostas em linguagem natural sobre os
