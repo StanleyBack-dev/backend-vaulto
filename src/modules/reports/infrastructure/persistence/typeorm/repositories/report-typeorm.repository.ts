@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { toDateOnlyString } from "@/common/utils/date.util";
+import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { DebtStatus } from "@/modules/debts/domain/enums/debt-status.enum";
 import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt.entity";
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
@@ -9,6 +10,8 @@ import { IncomeStatus } from "@/modules/incomes/domain/enums/income-status.enum"
 import { IncomeEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income.entity";
 import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income-installment.entity";
 import type {
+  CategoryAmountFilters,
+  CategoryAmountRow,
   DebtsReportFilters,
   DebtsReportStatusCounts,
   DebtsReportView,
@@ -32,6 +35,11 @@ type IncomesReportRawRow = {
   count: string;
 };
 
+type CategoryAmountRawRow = {
+  idCategory: string;
+  amount: string | null;
+};
+
 function round2(value: number): number {
   return Number(value.toFixed(2));
 }
@@ -43,6 +51,8 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
     private readonly installmentRepository: Repository<DebtInstallmentEntity>,
     @InjectRepository(IncomeInstallmentEntity)
     private readonly incomeInstallmentRepository: Repository<IncomeInstallmentEntity>,
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
   ) {}
 
   async getDebtsReport(
@@ -223,5 +233,81 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       totalCount,
       countByStatus,
     };
+  }
+
+  async getDebtsAmountByCategory(
+    idUsers: string,
+    filters: CategoryAmountFilters,
+  ): Promise<CategoryAmountRow[]> {
+    const rows = await this.installmentRepository
+      .createQueryBuilder("installment")
+      .innerJoin(
+        DebtEntity,
+        "debt",
+        "CAST(debt.idDebt AS varchar) = installment.idDebt",
+      )
+      .where("debt.idUsers = :idUsers", { idUsers })
+      .andWhere("installment.dueDate >= :dueDateFrom", {
+        dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+      })
+      .andWhere("installment.dueDate <= :dueDateTo", {
+        dueDateTo: toDateOnlyString(filters.dueDateTo),
+      })
+      .select("debt.idCategory", "idCategory")
+      .addSelect("SUM(installment.amountDue)", "amount")
+      .groupBy("debt.idCategory")
+      .getRawMany<CategoryAmountRawRow>();
+
+    return this.resolveCategoryNames(rows);
+  }
+
+  async getIncomesAmountByCategory(
+    idUsers: string,
+    filters: CategoryAmountFilters,
+  ): Promise<CategoryAmountRow[]> {
+    const rows = await this.incomeInstallmentRepository
+      .createQueryBuilder("installment")
+      .innerJoin(
+        IncomeEntity,
+        "income",
+        "CAST(income.idIncome AS varchar) = installment.idIncome",
+      )
+      .where("income.idUsers = :idUsers", { idUsers })
+      .andWhere("installment.dueDate >= :dueDateFrom", {
+        dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+      })
+      .andWhere("installment.dueDate <= :dueDateTo", {
+        dueDateTo: toDateOnlyString(filters.dueDateTo),
+      })
+      .select("income.idCategory", "idCategory")
+      .addSelect("SUM(installment.amountDue)", "amount")
+      .groupBy("income.idCategory")
+      .getRawMany<CategoryAmountRawRow>();
+
+    return this.resolveCategoryNames(rows);
+  }
+
+  private async resolveCategoryNames(
+    rows: CategoryAmountRawRow[],
+  ): Promise<CategoryAmountRow[]> {
+    const categoryIds = Array.from(
+      new Set(rows.map((row) => row.idCategory).filter(Boolean)),
+    );
+
+    const categories = categoryIds.length
+      ? await this.categoryRepository.find({
+          where: { idCategory: In(categoryIds) },
+        })
+      : [];
+
+    const nameById = new Map(
+      categories.map((category) => [category.idCategory, category.name]),
+    );
+
+    return rows.map((row) => ({
+      idCategory: row.idCategory,
+      categoryName: nameById.get(row.idCategory) ?? "",
+      amount: round2(Number(row.amount) || 0),
+    }));
   }
 }

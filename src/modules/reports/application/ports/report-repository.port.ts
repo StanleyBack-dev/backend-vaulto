@@ -45,6 +45,17 @@ export type IncomesReportView = {
   countByStatus: IncomesReportStatusCounts;
 };
 
+export type CategoryAmountFilters = {
+  dueDateFrom: Date;
+  dueDateTo: Date;
+};
+
+export type CategoryAmountRow = {
+  idCategory: string;
+  categoryName: string;
+  amount: number;
+};
+
 export interface ReportRepositoryPort {
   getDebtsReport(
     idUsers: string,
@@ -54,6 +65,14 @@ export interface ReportRepositoryPort {
     idUsers: string,
     filters?: IncomesReportFilters,
   ): Promise<IncomesReportView>;
+  getDebtsAmountByCategory(
+    idUsers: string,
+    filters: CategoryAmountFilters,
+  ): Promise<CategoryAmountRow[]>;
+  getIncomesAmountByCategory(
+    idUsers: string,
+    filters: CategoryAmountFilters,
+  ): Promise<CategoryAmountRow[]>;
 }
 
 export const REPORT_REPOSITORY = Symbol("REPORT_REPOSITORY");

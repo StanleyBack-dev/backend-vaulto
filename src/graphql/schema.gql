@@ -485,6 +485,32 @@ type DeleteDebtPaymentMutationResponseDto {
   data: RegisterInstallmentPaymentResponseDto!
 }
 
+type CategoryComparisonEntryDto {
+  idCategory: String!
+  categoryName: String!
+  currentAmount: Float!
+  previousAmount: Float!
+  changeAmount: Float!
+  changePercent: Int
+}
+
+type CategoryComparisonGroupDto {
+  currentTotal: Float!
+  previousTotal: Float!
+  changeAmount: Float!
+  changePercent: Int
+  categories: [CategoryComparisonEntryDto!]!
+}
+
+type CategoryComparisonResponseDto {
+  currentPeriodStart: DateTime!
+  currentPeriodEnd: DateTime!
+  previousPeriodStart: DateTime!
+  previousPeriodEnd: DateTime!
+  expenses: CategoryComparisonGroupDto!
+  income: CategoryComparisonGroupDto!
+}
+
 type FinancialForecastResponseDto {
   currentBalance: Float!
   projectedIncome: Float!
@@ -645,6 +671,7 @@ type Query {
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
   getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
+  getCategoryComparison(input: GetCategoryComparisonInputDto): CategoryComparisonResponseDto!
   getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
 }
@@ -733,6 +760,19 @@ input GetFinancialForecastInputDto {
   currentBalance: Float!
   periodStart: DateTime
   periodEnd: DateTime
+}
+
+input GetCategoryComparisonInputDto {
+  periodType: CategoryComparisonPeriodType
+  referenceDate: DateTime
+  comparisonDate: DateTime
+}
+
+enum CategoryComparisonPeriodType {
+  MONTH
+  QUARTER
+  SEMESTER
+  YEAR
 }
 
 input GetFinancialGoalByIdInputDto {
