@@ -2,7 +2,9 @@ import { AppException } from "@/common/exceptions/app-exception";
 import { RegisterGoalContributionUseCase } from "@/modules/goals/application/use-cases/contribution/register-goal-contribution.use-case";
 import type { FinancialGoalView } from "@/modules/goals/application/ports/financial-goal-repository.port";
 
-function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView {
+function goalView(
+  overrides: Partial<FinancialGoalView> = {},
+): FinancialGoalView {
   return {
     idFinancialGoal: "goal-1",
     idUsers: "user-1",
@@ -55,15 +57,12 @@ describe("RegisterGoalContributionUseCase", () => {
       amount: 100.456,
     });
 
-    expect(goalRepository.registerContribution).toHaveBeenCalledWith(
-      "user-1",
-      {
-        idFinancialGoal: "goal-1",
-        amount: 100.46,
-        contributedAt: undefined,
-        note: undefined,
-      },
-    );
+    expect(goalRepository.registerContribution).toHaveBeenCalledWith("user-1", {
+      idFinancialGoal: "goal-1",
+      amount: 100.46,
+      contributedAt: undefined,
+      note: undefined,
+    });
     expect(result.currentAmount).toBe(200);
   });
 });

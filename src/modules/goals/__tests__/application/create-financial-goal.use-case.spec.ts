@@ -2,7 +2,9 @@ import { AppException } from "@/common/exceptions/app-exception";
 import { CreateFinancialGoalUseCase } from "@/modules/goals/application/use-cases/create/create-financial-goal.use-case";
 import type { FinancialGoalView } from "@/modules/goals/application/ports/financial-goal-repository.port";
 
-function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView {
+function goalView(
+  overrides: Partial<FinancialGoalView> = {},
+): FinancialGoalView {
   return {
     idFinancialGoal: "goal-1",
     idUsers: "user-1",

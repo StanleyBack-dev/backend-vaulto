@@ -1,7 +1,9 @@
 import { ListFinancialGoalsUseCase } from "@/modules/goals/application/use-cases/get/list-financial-goals.use-case";
 import type { FinancialGoalView } from "@/modules/goals/application/ports/financial-goal-repository.port";
 
-function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView {
+function goalView(
+  overrides: Partial<FinancialGoalView> = {},
+): FinancialGoalView {
   return {
     idFinancialGoal: "goal-1",
     idUsers: "user-1",
@@ -15,7 +17,9 @@ function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView
   };
 }
 
-function buildUseCase(overrides: { records?: FinancialGoalView[]; total?: number } = {}) {
+function buildUseCase(
+  overrides: { records?: FinancialGoalView[]; total?: number } = {},
+) {
   const authorizationService = {
     assertPermissionForUserId: jest.fn().mockResolvedValue(undefined),
   };

@@ -17,9 +17,7 @@ import { FinancialGoalEntity } from "@/modules/goals/infrastructure/persistence/
 import { GoalContributionEntity } from "@/modules/goals/infrastructure/persistence/typeorm/entities/goal-contribution.entity";
 
 @Injectable()
-export class FinancialGoalTypeormRepository
-  implements FinancialGoalRepositoryPort
-{
+export class FinancialGoalTypeormRepository implements FinancialGoalRepositoryPort {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(FinancialGoalEntity)
@@ -77,10 +75,7 @@ export class FinancialGoalTypeormRepository
 
     return {
       records: rows.map((row) =>
-        this.mapToView(
-          row,
-          contributionsByGoal.get(row.idFinancialGoal) ?? [],
-        ),
+        this.mapToView(row, contributionsByGoal.get(row.idFinancialGoal) ?? []),
       ),
       total,
     };
@@ -208,10 +203,7 @@ export class FinancialGoalTypeormRepository
     });
 
     if (!contribution) {
-      throw AppException.from(
-        APP_ERRORS.goals.contributionNotFound,
-        undefined,
-      );
+      throw AppException.from(APP_ERRORS.goals.contributionNotFound, undefined);
     }
 
     if (payload.amount !== undefined) {
