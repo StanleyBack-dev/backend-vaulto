@@ -49,5 +49,6 @@ import "@/modules/debts/presentation/graphql/enums/debts-graphql.enums";
       useExisting: DebtTypeormRepository,
     },
   ],
+  exports: [DEBT_REPOSITORY],
 })
 export class DebtsModule {}

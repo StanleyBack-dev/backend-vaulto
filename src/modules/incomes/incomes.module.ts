@@ -42,5 +42,6 @@ import "@/modules/incomes/presentation/graphql/enums/incomes-graphql.enums";
       useExisting: IncomeTypeormRepository,
     },
   ],
+  exports: [INCOME_REPOSITORY],
 })
 export class IncomesModule {}
