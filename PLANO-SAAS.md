@@ -382,8 +382,9 @@ de `project/vaulto-saas`) — **requer 1 passo manual pós-merge**, ver abaixo
 
 ### Fase 4 — Funcionalidades premium (ordem de prioridade sugerida)
 
-**Status:** Em andamento (5 de 9 concluídos — Previsão financeira,
-Calendário financeiro, Lembretes, Metas financeiras e Comparativos)
+**Status:** Em andamento (6 de 9 concluídos — Previsão financeira,
+Calendário financeiro, Lembretes, Metas financeiras, Comparativos e
+Exportação PDF/Excel)
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 Ordem recomendada (da conversa original, mantém o Pro "irresistível" sem
@@ -438,9 +439,27 @@ depender só de remover limites):
        próprios dados do usuário ("onde estou gastando mais?"). Não implementar
        só "porque está na moda" — só depois que os dados estruturados acima
        (previsão, comparativos) já existirem, pois a IA vai se apoiar neles.
-8. [ ] **Exportação (PDF/Excel)** — reaproveitar o módulo `pdf-generator`
+8. [x] **Exportação (PDF/Excel)** — reaproveitar o módulo `pdf-generator`
        já existente, criando um novo template de "Relatório Financeiro" (hoje só
-       existem templates de orçamento/contrato).
+       existem templates de orçamento/contrato). Concluído (branch
+       `feat/phase-4.8-exports` em ambos os repositórios, a partir de
+       `project/vaulto-saas`) — recurso exclusivo do plano Pro. Backend: o
+       `pdf-generator` foi reconstruído do zero (os templates de
+       orçamento/contrato eram resquício de outro produto, sem uso real) em
+       torno de um motor tabular genérico único (`RenderTabularReportTemplateService`)
+       com a identidade visual do Vaulto; novo módulo `excel-generator`
+       (exceljs) espelhando o mesmo payload genérico; novo módulo `exports`
+       com um builder por recurso (Dívidas, Pagamentos, Receitas,
+       Recebimentos, Cartões, Categorias, Extrato, Metas, Contribuições),
+       cada um reaproveitando o repositório do módulo dono (sem duplicar
+       regra de negócio) e respeitando os mesmos filtros de status/tipo/
+       categoria aplicados na tela; gate de Pro via
+       `PlanLimitsService.assertProPlan`; query GraphQL `exportResource`
+       retornando `{ filename, mimeType, base64 }`. Frontend: BFF
+       (`/api/exports/<recurso>`) traduzindo REST → GraphQL → download
+       binário; componente `ExportButtons` (PDF/Excel, loading, toast de
+       sucesso/erro, CTA de upgrade quando Free) integrado nas 9 telas
+       correspondentes.
 9. [ ] **Saúde financeira (score)** — indicador 0–100 combinando
        comprometimento com dívidas, gastos, reservas — depende dos itens acima
        já existirem para ter dados suficientes.
