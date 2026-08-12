@@ -7,10 +7,12 @@ import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/e
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
 import { IncomeEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income.entity";
 import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persistence/typeorm/entities/income-installment.entity";
+import { GoalsModule } from "@/modules/goals/goals.module";
 import { REPORT_REPOSITORY } from "@/modules/reports/application/ports/report-repository.port";
 import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
 import { GetFinancialForecastUseCase } from "@/modules/reports/application/use-cases/get-financial-forecast.use-case";
+import { GetFinancialHealthScoreUseCase } from "@/modules/reports/application/use-cases/get-financial-health-score.use-case";
 import { ReportTypeormRepository } from "@/modules/reports/infrastructure/persistence/typeorm/repositories/report-typeorm.repository";
 import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolvers/reports.resolver";
 
@@ -25,11 +27,13 @@ import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolver
     ]),
     AuthModule,
     BillingModule,
+    GoalsModule,
   ],
   providers: [
     GetDebtsReportUseCase,
     GetFinancialForecastUseCase,
     GetCategoryComparisonUseCase,
+    GetFinancialHealthScoreUseCase,
     ReportsResolver,
     ReportTypeormRepository,
     {

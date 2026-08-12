@@ -526,6 +526,27 @@ type FinancialForecastResponseDto {
   periodEnd: DateTime!
 }
 
+type FinancialHealthPillarScoreDto {
+  score: Int!
+  weight: Float!
+}
+
+type FinancialHealthScoreResponseDto {
+  score: Int!
+  status: FinancialHealthStatus!
+  debtCommitment: FinancialHealthPillarScoreDto!
+  punctuality: FinancialHealthPillarScoreDto!
+  reserves: FinancialHealthPillarScoreDto
+  periodStart: DateTime!
+  periodEnd: DateTime!
+}
+
+enum FinancialHealthStatus {
+  HEALTHY
+  ATTENTION
+  CRITICAL
+}
+
 type DebtsReportStatusCountsDto {
   open: Int!
   overdue: Int!
@@ -678,6 +699,7 @@ type Query {
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
   getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
   getCategoryComparison(input: GetCategoryComparisonInputDto): CategoryComparisonResponseDto!
+  getFinancialHealthScore(input: GetFinancialHealthScoreInputDto): FinancialHealthScoreResponseDto!
   getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
   exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
@@ -780,6 +802,10 @@ enum CategoryComparisonPeriodType {
   QUARTER
   SEMESTER
   YEAR
+}
+
+input GetFinancialHealthScoreInputDto {
+  periodEnd: DateTime
 }
 
 input GetFinancialGoalByIdInputDto {
