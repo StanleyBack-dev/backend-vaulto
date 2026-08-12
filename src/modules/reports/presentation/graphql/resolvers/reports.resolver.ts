@@ -6,12 +6,15 @@ import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-to
 import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
 import { GetFinancialForecastUseCase } from "@/modules/reports/application/use-cases/get-financial-forecast.use-case";
+import { GetFinancialHealthScoreUseCase } from "@/modules/reports/application/use-cases/get-financial-health-score.use-case";
 import { CategoryComparisonResponseDto } from "@/modules/reports/presentation/graphql/dtos/get-category-comparison-response.dto";
 import { FinancialForecastResponseDto } from "@/modules/reports/presentation/graphql/dtos/financial-forecast-response.dto";
+import { FinancialHealthScoreResponseDto } from "@/modules/reports/presentation/graphql/dtos/financial-health-score-response.dto";
 import { GetCategoryComparisonInputDto } from "@/modules/reports/presentation/graphql/dtos/get-category-comparison-input.dto";
 import { GetDebtsReportInputDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-input.dto";
 import { DebtsReportResponseDto } from "@/modules/reports/presentation/graphql/dtos/get-debts-report-response.dto";
 import { GetFinancialForecastInputDto } from "@/modules/reports/presentation/graphql/dtos/get-financial-forecast-input.dto";
+import { GetFinancialHealthScoreInputDto } from "@/modules/reports/presentation/graphql/dtos/get-financial-health-score-input.dto";
 import "@/modules/reports/presentation/graphql/enums/reports-graphql.enums";
 
 @Resolver()
@@ -20,6 +23,7 @@ export class ReportsResolver {
     private readonly getDebtsReportUseCase: GetDebtsReportUseCase,
     private readonly getFinancialForecastUseCase: GetFinancialForecastUseCase,
     private readonly getCategoryComparisonUseCase: GetCategoryComparisonUseCase,
+    private readonly getFinancialHealthScoreUseCase: GetFinancialHealthScoreUseCase,
   ) {}
 
   @Query(() => DebtsReportResponseDto, { name: "getDebtsReport" })
@@ -72,5 +76,22 @@ export class ReportsResolver {
     );
 
     return CategoryComparisonResponseDto.fromView(result);
+  }
+
+  @Query(() => FinancialHealthScoreResponseDto, {
+    name: "getFinancialHealthScore",
+  })
+  @RequirePermissions(AuthPermission.READ_OWN_DEBTS)
+  async getFinancialHealthScore(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input", { nullable: true })
+    input?: GetFinancialHealthScoreInputDto,
+  ) {
+    const result = await this.getFinancialHealthScoreUseCase.execute(
+      user.idUsers,
+      { periodEnd: input?.periodEnd },
+    );
+
+    return FinancialHealthScoreResponseDto.fromView(result);
   }
 }
