@@ -144,7 +144,11 @@ export class RenderTabularWorkbookService {
 
     row.eachCell((cell, colNumber) => {
       const column = payload.columns[colNumber - 1];
-      cell.font = { bold: true, size: 9, color: { argb: EXCEL_COLORS.textMuted } };
+      cell.font = {
+        bold: true,
+        size: 9,
+        color: { argb: EXCEL_COLORS.textMuted },
+      };
       cell.fill = {
         type: "pattern",
         pattern: "solid",
@@ -205,7 +209,11 @@ export class RenderTabularWorkbookService {
 
       const valueCell = row.getCell(columnCount);
       valueCell.value = total.value;
-      valueCell.font = { bold: true, size: 10, color: { argb: EXCEL_COLORS.text } };
+      valueCell.font = {
+        bold: true,
+        size: 10,
+        color: { argb: EXCEL_COLORS.text },
+      };
       valueCell.alignment = { horizontal: "right" };
 
       for (let colNumber = 1; colNumber <= columnCount; colNumber += 1) {

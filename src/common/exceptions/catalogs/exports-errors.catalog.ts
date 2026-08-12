@@ -24,6 +24,7 @@ export const exportsErrors = {
   missingPeriodFilter: {
     code: "EXPORT_MISSING_PERIOD_FILTER",
     status: HttpStatus.BAD_REQUEST,
-    message: "Informe o período (data inicial e final) para exportar o extrato.",
+    message:
+      "Informe o período (data inicial e final) para exportar o extrato.",
   },
 };

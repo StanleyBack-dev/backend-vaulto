@@ -42,9 +42,9 @@ describe("IncomeReceiptsExportBuilder", () => {
     const incomeRepository = { findById: jest.fn() };
     const builder = new IncomeReceiptsExportBuilder(incomeRepository as never);
 
-    await expect(
-      builder.build("user-1", "Stanley", {}),
-    ).rejects.toBeInstanceOf(AppException);
+    await expect(builder.build("user-1", "Stanley", {})).rejects.toBeInstanceOf(
+      AppException,
+    );
   });
 
   it("builds one row per installment with due/received totals", async () => {

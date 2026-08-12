@@ -60,9 +60,7 @@ interface ColumnLayout extends TabularReportColumn {
 }
 
 @Injectable()
-export class RenderTabularReportTemplateService
-  implements PdfTemplateRenderer<TabularReportPayload>
-{
+export class RenderTabularReportTemplateService implements PdfTemplateRenderer<TabularReportPayload> {
   readonly templateKey = PdfTemplateKey.FINANCIAL_TABLE;
 
   async render(payload: TabularReportPayload): Promise<Buffer> {
@@ -101,9 +99,7 @@ export class RenderTabularReportTemplateService
     return Buffer.from(pdfBytes);
   }
 
-  private layoutColumns(
-    columns: TabularReportColumn[],
-  ): ColumnLayout[] {
+  private layoutColumns(columns: TabularReportColumn[]): ColumnLayout[] {
     const totalWeight = columns.reduce((sum, column) => sum + column.weight, 0);
     let x = PDF_LAYOUT.marginX;
 
@@ -301,9 +297,15 @@ export class RenderTabularReportTemplateService
         PDF_FONT_SIZES.small,
       ),
     );
-    const lineCount = Math.max(1, ...wrappedLabels.map((lines) => lines.length));
+    const lineCount = Math.max(
+      1,
+      ...wrappedLabels.map((lines) => lines.length),
+    );
 
-    return { height: lineCount * ROW_LINE_HEIGHT + ROW_PADDING_Y, wrappedLabels };
+    return {
+      height: lineCount * ROW_LINE_HEIGHT + ROW_PADDING_Y,
+      wrappedLabels,
+    };
   }
 
   private drawTableHeader(
@@ -359,7 +361,10 @@ export class RenderTabularReportTemplateService
     );
     const lineCount = Math.max(1, ...wrappedCells.map((lines) => lines.length));
 
-    return { height: lineCount * ROW_LINE_HEIGHT + ROW_PADDING_Y, wrappedCells };
+    return {
+      height: lineCount * ROW_LINE_HEIGHT + ROW_PADDING_Y,
+      wrappedCells,
+    };
   }
 
   private drawRow(

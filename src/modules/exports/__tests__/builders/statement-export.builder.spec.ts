@@ -76,12 +76,15 @@ function buildBuilder(
   incomeRecords: IncomeView[] = [incomeView()],
 ) {
   const debtRepository = {
-    listByUser: jest.fn().mockResolvedValue({ records: debtRecords, total: debtRecords.length }),
-  };
-  const incomeRepository = {
     listByUser: jest
       .fn()
-      .mockResolvedValue({ records: incomeRecords, total: incomeRecords.length }),
+      .mockResolvedValue({ records: debtRecords, total: debtRecords.length }),
+  };
+  const incomeRepository = {
+    listByUser: jest.fn().mockResolvedValue({
+      records: incomeRecords,
+      total: incomeRecords.length,
+    }),
   };
   return {
     builder: new StatementExportBuilder(
@@ -97,9 +100,9 @@ describe("StatementExportBuilder", () => {
   it("rejects when the period is not informed", async () => {
     const { builder } = buildBuilder();
 
-    await expect(
-      builder.build("user-1", "Stanley", {}),
-    ).rejects.toBeInstanceOf(AppException);
+    await expect(builder.build("user-1", "Stanley", {})).rejects.toBeInstanceOf(
+      AppException,
+    );
   });
 
   it("combines debts and incomes sorted by due date", async () => {

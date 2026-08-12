@@ -3,7 +3,9 @@ import { formatCurrencyBRL } from "@/utils/pdf";
 import type { FinancialGoalView } from "@/modules/goals/application/ports/financial-goal-repository.port";
 import { GoalContributionsExportBuilder } from "../../application/builders/goal-contributions-export.builder";
 
-function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView {
+function goalView(
+  overrides: Partial<FinancialGoalView> = {},
+): FinancialGoalView {
   return {
     idFinancialGoal: "goal-1",
     idUsers: "user-1",
@@ -38,9 +40,9 @@ describe("GoalContributionsExportBuilder", () => {
     const goalRepository = { findById: jest.fn() };
     const builder = new GoalContributionsExportBuilder(goalRepository as never);
 
-    await expect(
-      builder.build("user-1", "Stanley", {}),
-    ).rejects.toBeInstanceOf(AppException);
+    await expect(builder.build("user-1", "Stanley", {})).rejects.toBeInstanceOf(
+      AppException,
+    );
   });
 
   it("sorts contributions chronologically and totals the amount", async () => {

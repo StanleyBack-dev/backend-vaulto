@@ -32,7 +32,11 @@ describe("DebtsExportBuilder", () => {
       listByUser: jest.fn().mockResolvedValue({
         records: [
           debtView({ totalAmount: 100 }),
-          debtView({ idDebt: "debt-2", totalAmount: 250, creditCard: "Nubank" }),
+          debtView({
+            idDebt: "debt-2",
+            totalAmount: 250,
+            creditCard: "Nubank",
+          }),
         ],
         total: 2,
       }),

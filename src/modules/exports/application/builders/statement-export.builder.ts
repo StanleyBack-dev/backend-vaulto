@@ -174,14 +174,18 @@ export class StatementExportBuilder implements TabularReportBuilder {
       rows,
       totals: lines.length
         ? [
-            { label: "Total previsto", value: formatCurrencyBRL(totalExpected) },
+            {
+              label: "Total previsto",
+              value: formatCurrencyBRL(totalExpected),
+            },
             {
               label: "Total realizado",
               value: formatCurrencyBRL(totalRealized),
             },
           ]
         : [],
-      emptyStateLabel: "Nenhum lançamento encontrado para o período selecionado.",
+      emptyStateLabel:
+        "Nenhum lançamento encontrado para o período selecionado.",
       referenceCode: buildReferenceCode(this.resource),
     };
   }

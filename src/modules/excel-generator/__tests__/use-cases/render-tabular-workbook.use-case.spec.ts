@@ -40,7 +40,9 @@ describe("RenderTabularWorkbookService", () => {
     const sheet = workbook.worksheets[0];
 
     expect(sheet.name).toBe("Relatório de Dívidas");
-    const values = sheet.getRows(1, sheet.rowCount)?.map((row) => row.getCell(1).text);
+    const values = sheet
+      .getRows(1, sheet.rowCount)
+      ?.map((row) => row.getCell(1).text);
     expect(values).toContain("Cartão Nubank - parcela 3/12");
     expect(values).toContain("Total");
   });
@@ -52,7 +54,9 @@ describe("RenderTabularWorkbookService", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await workbook.xlsx.load(buffer as any);
     const sheet = workbook.worksheets[0];
-    const values = sheet.getRows(1, sheet.rowCount)?.map((row) => row.getCell(1).text);
+    const values = sheet
+      .getRows(1, sheet.rowCount)
+      ?.map((row) => row.getCell(1).text);
 
     expect(values).toContain(
       "Nenhum registro encontrado para os filtros selecionados.",

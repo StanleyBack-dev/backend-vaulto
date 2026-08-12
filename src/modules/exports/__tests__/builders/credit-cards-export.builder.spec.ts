@@ -23,7 +23,10 @@ describe("CreditCardsExportBuilder", () => {
   it("builds rows with used/available limits and status label", async () => {
     const creditCardRepository = {
       listByUser: jest.fn().mockResolvedValue({
-        records: [cardView(), cardView({ idCreditCard: "card-2", status: false })],
+        records: [
+          cardView(),
+          cardView({ idCreditCard: "card-2", status: false }),
+        ],
         total: 2,
       }),
     };

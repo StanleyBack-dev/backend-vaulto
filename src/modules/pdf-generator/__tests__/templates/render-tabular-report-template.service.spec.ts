@@ -39,9 +39,7 @@ describe("RenderTabularReportTemplateService", () => {
   });
 
   it("renders the empty state without a table when there are no rows", async () => {
-    const buffer = await service.render(
-      buildPayload({ rows: [], totals: [] }),
-    );
+    const buffer = await service.render(buildPayload({ rows: [], totals: [] }));
 
     const document = await PDFDocument.load(buffer);
     expect(document.getPageCount()).toBe(1);
@@ -56,7 +54,10 @@ describe("RenderTabularReportTemplateService", () => {
     ]);
 
     const buffer = await service.render(
-      buildPayload({ rows: manyRows, totals: [{ label: "Total", value: "R$ 8.000,00" }] }),
+      buildPayload({
+        rows: manyRows,
+        totals: [{ label: "Total", value: "R$ 8.000,00" }],
+      }),
     );
 
     const document = await PDFDocument.load(buffer);

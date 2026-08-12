@@ -80,7 +80,8 @@ export class DebtsExportBuilder implements TabularReportBuilder {
       totals: records.length
         ? [{ label: "Total", value: formatCurrencyBRL(total) }]
         : [],
-      emptyStateLabel: "Nenhuma dívida encontrada para os filtros selecionados.",
+      emptyStateLabel:
+        "Nenhuma dívida encontrada para os filtros selecionados.",
       referenceCode: buildReferenceCode(this.resource),
     };
   }

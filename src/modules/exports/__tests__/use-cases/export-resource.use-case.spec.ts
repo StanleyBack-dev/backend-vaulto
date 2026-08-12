@@ -22,7 +22,9 @@ function stubBuilder(resource: ExportResource) {
 }
 
 function buildUseCase() {
-  const planLimitsService = { assertProPlan: jest.fn().mockResolvedValue(undefined) };
+  const planLimitsService = {
+    assertProPlan: jest.fn().mockResolvedValue(undefined),
+  };
   const pdfTemplateEngine = {
     generateByTemplate: jest.fn().mockResolvedValue(Buffer.from("pdf-bytes")),
   };
@@ -37,7 +39,9 @@ function buildUseCase() {
   const categoriesBuilder = stubBuilder(ExportResource.CATEGORIES);
   const statementBuilder = stubBuilder(ExportResource.STATEMENT);
   const goalsBuilder = stubBuilder(ExportResource.GOALS);
-  const goalContributionsBuilder = stubBuilder(ExportResource.GOAL_CONTRIBUTIONS);
+  const goalContributionsBuilder = stubBuilder(
+    ExportResource.GOAL_CONTRIBUTIONS,
+  );
 
   const useCase = new ExportResourceUseCase(
     planLimitsService as never,

@@ -30,7 +30,10 @@ describe("IncomesExportBuilder", () => {
   it("builds rows and totals from the user's incomes", async () => {
     const incomeRepository = {
       listByUser: jest.fn().mockResolvedValue({
-        records: [incomeView(), incomeView({ idIncome: "income-2", totalAmount: 500 })],
+        records: [
+          incomeView(),
+          incomeView({ idIncome: "income-2", totalAmount: 500 }),
+        ],
         total: 2,
       }),
     };

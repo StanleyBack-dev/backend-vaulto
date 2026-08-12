@@ -54,7 +54,10 @@ export class GoalsExportBuilder implements TabularReportBuilder {
       ];
     });
 
-    const totalTarget = records.reduce((sum, goal) => sum + goal.targetAmount, 0);
+    const totalTarget = records.reduce(
+      (sum, goal) => sum + goal.targetAmount,
+      0,
+    );
     const totalCurrent = records.reduce(
       (sum, goal) => sum + goal.currentAmount,
       0,
@@ -75,7 +78,10 @@ export class GoalsExportBuilder implements TabularReportBuilder {
       rows,
       totals: records.length
         ? [
-            { label: "Valor alvo total", value: formatCurrencyBRL(totalTarget) },
+            {
+              label: "Valor alvo total",
+              value: formatCurrencyBRL(totalTarget),
+            },
             {
               label: "Valor guardado total",
               value: formatCurrencyBRL(totalCurrent),

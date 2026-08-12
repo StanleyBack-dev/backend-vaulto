@@ -51,9 +51,9 @@ describe("PaymentsExportBuilder", () => {
     const debtRepository = { findById: jest.fn() };
     const builder = new PaymentsExportBuilder(debtRepository as never);
 
-    await expect(
-      builder.build("user-1", "Stanley", {}),
-    ).rejects.toBeInstanceOf(AppException);
+    await expect(builder.build("user-1", "Stanley", {})).rejects.toBeInstanceOf(
+      AppException,
+    );
     expect(debtRepository.findById).not.toHaveBeenCalled();
   });
 

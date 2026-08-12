@@ -63,7 +63,10 @@ export class CreditCardsExportBuilder implements TabularReportBuilder {
       totals: records.length
         ? [
             { label: "Limite total", value: formatCurrencyBRL(totalLimit) },
-            { label: "Limite usado total", value: formatCurrencyBRL(totalUsed) },
+            {
+              label: "Limite usado total",
+              value: formatCurrencyBRL(totalUsed),
+            },
           ]
         : [],
       emptyStateLabel: "Nenhum cartão de crédito cadastrado.",

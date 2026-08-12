@@ -39,7 +39,10 @@ export class IncomeReceiptsExportBuilder implements TabularReportBuilder {
     filters: ExportResourceFilters,
   ): Promise<TabularReportPayload> {
     if (!filters.idIncome) {
-      throw AppException.from(APP_ERRORS.exports.missingIncomeFilter, undefined);
+      throw AppException.from(
+        APP_ERRORS.exports.missingIncomeFilter,
+        undefined,
+      );
     }
 
     const income = await this.incomeRepository.findById(
@@ -82,7 +85,10 @@ export class IncomeReceiptsExportBuilder implements TabularReportBuilder {
       totals: income.installments.length
         ? [
             { label: "Total devido", value: formatCurrencyBRL(totalDue) },
-            { label: "Total recebido", value: formatCurrencyBRL(totalReceived) },
+            {
+              label: "Total recebido",
+              value: formatCurrencyBRL(totalReceived),
+            },
           ]
         : [],
       emptyStateLabel: "Nenhuma parcela encontrada para esta receita.",

@@ -2,7 +2,9 @@ import { formatCurrencyBRL } from "@/utils/pdf";
 import type { FinancialGoalView } from "@/modules/goals/application/ports/financial-goal-repository.port";
 import { GoalsExportBuilder } from "../../application/builders/goals-export.builder";
 
-function goalView(overrides: Partial<FinancialGoalView> = {}): FinancialGoalView {
+function goalView(
+  overrides: Partial<FinancialGoalView> = {},
+): FinancialGoalView {
   return {
     idFinancialGoal: "goal-1",
     idUsers: "user-1",

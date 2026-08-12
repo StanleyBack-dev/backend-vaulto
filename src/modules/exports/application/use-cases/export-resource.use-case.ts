@@ -77,7 +77,9 @@ export class ExportResourceUseCase {
       goalContributionsExportBuilder,
     ];
 
-    this.registry = new Map(builders.map((builder) => [builder.resource, builder]));
+    this.registry = new Map(
+      builders.map((builder) => [builder.resource, builder]),
+    );
   }
 
   async execute(

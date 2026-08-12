@@ -78,7 +78,8 @@ export class IncomesExportBuilder implements TabularReportBuilder {
       totals: records.length
         ? [{ label: "Total", value: formatCurrencyBRL(total) }]
         : [],
-      emptyStateLabel: "Nenhuma receita encontrada para os filtros selecionados.",
+      emptyStateLabel:
+        "Nenhuma receita encontrada para os filtros selecionados.",
       referenceCode: buildReferenceCode(this.resource),
     };
   }
