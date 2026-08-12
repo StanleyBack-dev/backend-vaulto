@@ -868,7 +868,7 @@ type Mutation {
   verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
-  cancelSubscription: SubscriptionResponseDto!
+  cancelSubscription(input: CancelSubscriptionInputDto!): SubscriptionResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
@@ -928,6 +928,22 @@ input ResetPasswordWithRecoveryInputDto {
 input SubscribeToProInputDto {
   cpfCnpj: String!
   billingCycle: SubscriptionBillingCycle!
+}
+
+input CancelSubscriptionInputDto {
+  reasons: [CancellationReason!]!
+  otherReason: String
+}
+
+enum CancellationReason {
+  DOES_NOT_MEET_NEEDS
+  TOO_EXPENSIVE
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  MISSING_FEATURES
+  TEMPORARY_USE
+  TECHNICAL_ISSUES
+  OTHER
 }
 
 input CreateUserInputDto {

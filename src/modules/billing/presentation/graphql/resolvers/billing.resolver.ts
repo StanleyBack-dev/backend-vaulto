@@ -8,6 +8,7 @@ import { ListMyBillingPaymentsUseCase } from "@/modules/billing/application/use-
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
 import { CancelSubscriptionUseCase } from "@/modules/billing/application/use-cases/update/cancel-subscription.use-case";
 import { BillingPaymentsResponseDto } from "@/modules/billing/presentation/graphql/dtos/billing-payments-response.dto";
+import { CancelSubscriptionInputDto } from "@/modules/billing/presentation/graphql/dtos/cancel-subscription-input.dto";
 import { ListBillingPaymentsInputDto } from "@/modules/billing/presentation/graphql/dtos/list-billing-payments-input.dto";
 import { SubscribeToProInputDto } from "@/modules/billing/presentation/graphql/dtos/subscribe-to-pro-input.dto";
 import { SubscribeToProResponseDto } from "@/modules/billing/presentation/graphql/dtos/subscribe-to-pro-response.dto";
@@ -62,9 +63,16 @@ export class BillingResolver {
 
   @Mutation(() => SubscriptionResponseDto, { name: "cancelSubscription" })
   @RequirePermissions(AuthPermission.MANAGE_OWN_PROFILE)
-  async cancelSubscription(@CurrentUser() user: AuthenticatedUser) {
+  async cancelSubscription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: CancelSubscriptionInputDto,
+  ) {
     const subscription = await this.cancelSubscriptionUseCase.execute(
       user.idUsers,
+      {
+        reasons: input.reasons,
+        otherReason: input.otherReason,
+      },
     );
 
     return SubscriptionResponseDto.fromView(subscription);

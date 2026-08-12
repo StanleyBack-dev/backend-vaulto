@@ -36,6 +36,9 @@ export class SubscriptionEntity {
   @Column({ name: "trial_ends_at", type: "timestamptz", nullable: true })
   trialEndsAt?: Date;
 
+  @Column({ name: "pro_started_at", type: "timestamptz", nullable: true })
+  proStartedAt?: Date;
+
   @Column({ name: "current_period_end", type: "timestamptz", nullable: true })
   currentPeriodEnd?: Date;
 

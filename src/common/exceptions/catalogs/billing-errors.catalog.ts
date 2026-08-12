@@ -29,6 +29,11 @@ export const billingErrors = {
     status: HttpStatus.CONFLICT,
     message: "Usuário não possui uma assinatura Pro ativa para cancelar.",
   },
+  cancellationReasonRequired: {
+    code: "BILLING_CANCELLATION_REASON_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Selecione ao menos um motivo para cancelar a assinatura.",
+  },
   proPlanRequired: {
     code: "BILLING_PRO_PLAN_REQUIRED",
     status: HttpStatus.FORBIDDEN,

@@ -69,6 +69,7 @@ export const envValidationSchema = Joi.object({
   CRON_SECRET: Joi.string().min(16).optional(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
+  MAIL_COMPANY_NOTIFICATION_EMAIL: Joi.string().email().optional(),
   PASSWORD_RECOVERY_CODE_TTL_MINUTES: Joi.number().integer().min(1).default(10),
   PASSWORD_RECOVERY_RESET_TTL_MINUTES: Joi.number()
     .integer()

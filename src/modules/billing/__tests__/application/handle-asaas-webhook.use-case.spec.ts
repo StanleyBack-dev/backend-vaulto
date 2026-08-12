@@ -50,6 +50,10 @@ function buildUseCase(
     send: jest.fn().mockResolvedValue(undefined),
   };
 
+  const subscriptionContractedNotificationEmailUseCase = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
+
   const paymentOverdueEmailUseCase = {
     send: jest.fn().mockResolvedValue(undefined),
   };
@@ -69,6 +73,7 @@ function buildUseCase(
     subscriptionRepository as never,
     billingPaymentRepository as never,
     subscriptionActivatedEmailUseCase as never,
+    subscriptionContractedNotificationEmailUseCase as never,
     paymentOverdueEmailUseCase as never,
     userRepository as never,
   );
@@ -78,6 +83,7 @@ function buildUseCase(
     subscriptionRepository,
     billingPaymentRepository,
     subscriptionActivatedEmailUseCase,
+    subscriptionContractedNotificationEmailUseCase,
     paymentOverdueEmailUseCase,
     userRepository,
   };
@@ -107,6 +113,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       { upsertByGatewayPaymentId: jest.fn() } as never,
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
+      { send: jest.fn() } as never,
       { findOne: jest.fn() } as never,
     );
 
@@ -129,6 +136,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       subscriptionRepository,
       billingPaymentRepository,
       subscriptionActivatedEmailUseCase,
+      subscriptionContractedNotificationEmailUseCase,
     } = buildUseCase();
 
     await useCase.execute(WEBHOOK_TOKEN, {
@@ -165,6 +173,14 @@ describe("HandleAsaasWebhookUseCase", () => {
       to: "user@example.com",
       name: "User",
     });
+    expect(
+      subscriptionContractedNotificationEmailUseCase.send,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userName: "User",
+        userEmail: "user@example.com",
+      }),
+    );
   });
 
   it("computes currentPeriodEnd one month after the paid dueDate for a MONTHLY subscription", async () => {
