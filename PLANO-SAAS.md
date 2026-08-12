@@ -382,9 +382,9 @@ de `project/vaulto-saas`) — **requer 1 passo manual pós-merge**, ver abaixo
 
 ### Fase 4 — Funcionalidades premium (ordem de prioridade sugerida)
 
-**Status:** Em andamento (6 de 9 concluídos — Previsão financeira,
-Calendário financeiro, Lembretes, Metas financeiras, Comparativos e
-Exportação PDF/Excel)
+**Status:** Em andamento (7 de 9 concluídos — Previsão financeira,
+Calendário financeiro, Lembretes, Metas financeiras, Comparativos,
+Exportação PDF/Excel e Saúde financeira)
 **Repositório:** `backend-vaulto` + `frontend-vaulto`
 
 Ordem recomendada (da conversa original, mantém o Pro "irresistível" sem
@@ -460,9 +460,27 @@ depender só de remover limites):
        binário; componente `ExportButtons` (PDF/Excel, loading, toast de
        sucesso/erro, CTA de upgrade quando Free) integrado nas 9 telas
        correspondentes.
-9. [ ] **Saúde financeira (score)** — indicador 0–100 combinando
+9. [x] **Saúde financeira (score)** — indicador 0–100 combinando
        comprometimento com dívidas, gastos, reservas — depende dos itens acima
-       já existirem para ter dados suficientes.
+       já existirem para ter dados suficientes. Concluído (branch
+       `feat/phase-4.9-financial-health-score` em ambos os repositórios, a
+       partir de `project/vaulto-saas`) — recurso exclusivo do plano Pro.
+       Backend: dentro do módulo `reports` já existente, função pura de
+       domínio `computeFinancialHealthScore` combinando 3 pilares —
+       comprometimento com dívidas (peso 50%, razão entre dívidas e receitas
+       em aberto no período), pontualidade (peso 30%, proporção de dívidas
+       sem atraso) e reservas (peso 20%, progresso médio das metas
+       financeiras via `computeGoalProgress`, com o peso redistribuído entre
+       os outros dois pilares quando o usuário não tem metas cadastradas);
+       reaproveita `getDebtsReport`/`getIncomesReport` e o repositório de
+       metas (mesmo padrão de import cross-módulo do `exports`); query
+       GraphQL `getFinancialHealthScore` com período configurável (mesma
+       janela de 30 dias da Previsão, por padrão). Frontend: página
+       `/saude-financeira` com o mesmo seletor de período da Previsão
+       (7/15/30/60/90 dias ou data específica), score em destaque colorido
+       por faixa (saudável/atenção/crítico) e os 3 pilares detalhados
+       abaixo, com CTA contextual para criar uma meta quando o pilar de
+       reservas ainda não tem dados.
 
 ### Fase 5 — Migração de infraestrutura para uso comercial
 
