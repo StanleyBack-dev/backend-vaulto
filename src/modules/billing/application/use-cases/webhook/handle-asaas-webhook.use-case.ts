@@ -25,6 +25,7 @@ import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-pl
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
 import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
+import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-contracted-notification-email.use-case";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 const SETTLED_PAYMENT_EVENTS = new Set([
@@ -53,6 +54,7 @@ export class HandleAsaasWebhookUseCase {
     @Inject(BILLING_PAYMENT_REPOSITORY)
     private readonly billingPaymentRepository: BillingPaymentRepositoryPort,
     private readonly subscriptionActivatedEmailUseCase: SubscriptionActivatedEmailUseCase,
+    private readonly subscriptionContractedNotificationEmailUseCase: SubscriptionContractedNotificationEmailUseCase,
     private readonly paymentOverdueEmailUseCase: PaymentOverdueEmailUseCase,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -157,7 +159,10 @@ export class HandleAsaasWebhookUseCase {
       });
 
       if (!wasActive) {
-        await this.notifySubscriptionActivated(idUsers);
+        await this.notifySubscriptionActivated(
+          idUsers,
+          subscription.billingCycle,
+        );
       }
       return;
     }
@@ -207,7 +212,10 @@ export class HandleAsaasWebhookUseCase {
     return nextPeriodEnd;
   }
 
-  private async notifySubscriptionActivated(idUsers: string): Promise<void> {
+  private async notifySubscriptionActivated(
+    idUsers: string,
+    billingCycle?: SubscriptionBillingCycle,
+  ): Promise<void> {
     const user = await this.userRepository.findOne({ where: { idUsers } });
     if (!user) {
       return;
@@ -216,6 +224,13 @@ export class HandleAsaasWebhookUseCase {
     await this.subscriptionActivatedEmailUseCase.send({
       to: user.email,
       name: user.name,
+    });
+
+    await this.subscriptionContractedNotificationEmailUseCase.send({
+      userName: user.name,
+      userEmail: user.email,
+      billingCycle,
+      confirmedAt: new Date(),
     });
   }
 

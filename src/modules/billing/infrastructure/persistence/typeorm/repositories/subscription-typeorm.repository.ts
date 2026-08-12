@@ -78,6 +78,7 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
       plan: entity.plan,
       status: entity.status,
       trialEndsAt: entity.trialEndsAt,
+      proStartedAt: entity.proStartedAt,
       currentPeriodEnd: entity.currentPeriodEnd,
       cancelAtPeriodEnd: entity.cancelAtPeriodEnd,
       gatewayCustomerId: entity.gatewayCustomerId,

@@ -8,6 +8,7 @@ export type SubscriptionView = {
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
   trialEndsAt?: Date;
+  proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd: boolean;
@@ -29,6 +30,7 @@ export type UpdateSubscriptionPayload = {
   plan?: SubscriptionPlan;
   status?: SubscriptionStatus;
   trialEndsAt?: Date;
+  proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd?: boolean;
