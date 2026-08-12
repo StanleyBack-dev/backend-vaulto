@@ -1,4 +1,3 @@
 export enum PdfTemplateKey {
-  BUDGETS = "budgets",
-  CONTRACTS = "contracts",
+  FINANCIAL_TABLE = "financial_table",
 }

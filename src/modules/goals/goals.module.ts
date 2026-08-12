@@ -38,5 +38,6 @@ import { FinancialGoalsResolver } from "@/modules/goals/presentation/graphql/res
       useExisting: FinancialGoalTypeormRepository,
     },
   ],
+  exports: [FINANCIAL_GOAL_REPOSITORY],
 })
 export class GoalsModule {}

@@ -349,16 +349,6 @@ type ListFinancialGoalsResponseDto {
   hasNextPage: Boolean!
 }
 
-type IncomeReceiptResponseDto {
-  idIncomeReceipt: String!
-  idIncome: String!
-  idIncomeInstallment: String
-  idUsers: String!
-  amountReceived: Float!
-  receivedAt: String!
-  createdAt: String!
-}
-
 type IncomeInstallmentResponseDto {
   idIncomeInstallment: String!
   idIncome: String!
@@ -375,34 +365,6 @@ enum IncomeStatus {
   PARTIALLY_RECEIVED
   RECEIVED
   OVERDUE
-}
-
-type RegisterInstallmentReceiptResponseDto {
-  idIncome: String!
-  incomeStatus: IncomeStatus!
-  receipts: [IncomeReceiptResponseDto!]!
-  installments: [IncomeInstallmentResponseDto!]!
-}
-
-type RegisterInstallmentReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
-}
-
-type UpdateIncomeReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
-}
-
-type DeleteIncomeReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
 }
 
 type IncomeResponseDto {
@@ -455,6 +417,50 @@ type ListIncomesResponseDto {
   limit: Int!
   totalPages: Int!
   hasNextPage: Boolean!
+}
+
+type ExportResourceResponseDto {
+  filename: String!
+  mimeType: String!
+  base64: String!
+}
+
+type IncomeReceiptResponseDto {
+  idIncomeReceipt: String!
+  idIncome: String!
+  idIncomeInstallment: String
+  idUsers: String!
+  amountReceived: Float!
+  receivedAt: String!
+  createdAt: String!
+}
+
+type RegisterInstallmentReceiptResponseDto {
+  idIncome: String!
+  incomeStatus: IncomeStatus!
+  receipts: [IncomeReceiptResponseDto!]!
+  installments: [IncomeInstallmentResponseDto!]!
+}
+
+type RegisterInstallmentReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type UpdateIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type DeleteIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
 }
 
 type RegisterInstallmentPaymentResponseDto {
@@ -674,6 +680,7 @@ type Query {
   getCategoryComparison(input: GetCategoryComparisonInputDto): CategoryComparisonResponseDto!
   getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
+  exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -782,6 +789,47 @@ input GetFinancialGoalByIdInputDto {
 input ListFinancialGoalsInputDto {
   page: Int
   limit: Int
+}
+
+input ExportResourceInputDto {
+  resource: ExportResource!
+  format: ExportFormat!
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+  idDebt: String
+  idIncome: String
+  idFinancialGoal: String
+  statementScope: StatementScope
+  debtStatus: DebtStatus
+  debtType: DebtType
+  incomeStatus: IncomeStatus
+  incomeType: IncomeType
+  idCategory: String
+  categoryType: CategoryType
+  activeOnly: Boolean
+}
+
+enum ExportResource {
+  DEBTS
+  PAYMENTS
+  INCOMES
+  INCOME_RECEIPTS
+  CREDIT_CARDS
+  CATEGORIES
+  STATEMENT
+  GOALS
+  GOAL_CONTRIBUTIONS
+}
+
+enum ExportFormat {
+  PDF
+  XLSX
+}
+
+enum StatementScope {
+  DEBTS
+  INCOMES
+  BOTH
 }
 
 type Mutation {

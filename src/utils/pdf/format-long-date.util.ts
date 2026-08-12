@@ -1,4 +1,11 @@
+const SAO_PAULO_TIME_ZONE = "America/Sao_Paulo";
+
+// Represents a real instant (e.g. "now"), so it must read the Brazil
+// wall-clock calendar day explicitly rather than the ambient server
+// timezone (which is UTC on Vercel) — see format-date.util.ts for the
+// analogous fix on UTC-midnight-aligned date-only values.
 const LONG_DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: SAO_PAULO_TIME_ZONE,
   day: "numeric",
   month: "long",
   year: "numeric",
