@@ -31,6 +31,6 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.PAYMENTS,
     PageAccessKey.INCOME_RECEIPTS,
     PageAccessKey.CREDIT_CARDS,
-    PageAccessKey.USERS,
+    PageAccessKey.ADMIN,
   ],
 };

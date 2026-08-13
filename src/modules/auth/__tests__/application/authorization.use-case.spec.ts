@@ -138,8 +138,6 @@ describe("AuthorizationService", () => {
         userPageAccessRepository as never,
       );
 
-      // USER group's default page access includes DASHBOARD but not USERS
-      // (see group-page-access.constant.ts).
       await expect(
         service.assertPageAccessForUserId(
           userMock.idUsers,
@@ -150,7 +148,7 @@ describe("AuthorizationService", () => {
       await expect(
         service.assertPageAccessForUserId(
           userMock.idUsers,
-          PageAccessKey.USERS,
+          PageAccessKey.ADMIN,
         ),
       ).rejects.toBeInstanceOf(AppException);
     });
@@ -193,7 +191,7 @@ describe("AuthorizationService", () => {
       };
       const userPageAccessRepository = {
         findOne: jest.fn().mockResolvedValue({
-          pageKey: PageAccessKey.USERS,
+          pageKey: PageAccessKey.ADMIN,
           allowed: true,
         }),
       };
@@ -205,7 +203,7 @@ describe("AuthorizationService", () => {
       await expect(
         service.assertPageAccessForUserId(
           userMock.idUsers,
-          PageAccessKey.USERS,
+          PageAccessKey.ADMIN,
         ),
       ).resolves.toBeUndefined();
     });

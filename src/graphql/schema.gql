@@ -63,12 +63,43 @@ enum PageAccessKey {
   PAYMENTS
   INCOME_RECEIPTS
   CREDIT_CARDS
-  USERS
+  ADMIN
 }
 
 type PageAccessMetadataResponseDto {
   allKeys: [PageAccessKey!]!
   groupDefaults: [GroupDefaultDto!]!
+}
+
+type UsersByGroupCountDto {
+  group: UserGroup!
+  count: Int!
+}
+
+type SubscriptionsByStatusCountDto {
+  status: SubscriptionStatus!
+  count: Int!
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+type AdminDashboardStatsResponseDto {
+  totalUsers: Int!
+  usersByGroup: [UsersByGroupCountDto!]!
+  totalSubscriptions: Int!
+  freeSubscriptions: Int!
+  activeProSubscriptions: Int!
+  subscriptionsByStatus: [SubscriptionsByStatusCountDto!]!
+  estimatedMonthlyRecurringRevenue: Float!
+  totalSupportTickets: Int!
+  openSupportTickets: Int!
+  resolvedSupportTickets: Int!
 }
 
 type BillingPaymentResponseDto {
@@ -109,14 +140,6 @@ type SubscriptionResponseDto {
 enum SubscriptionPlan {
   FREE
   PRO
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  CANCELED
-  EXPIRED
 }
 
 enum SubscriptionBillingCycle {
@@ -569,9 +592,18 @@ type DebtsReportResponseDto {
   countByStatus: DebtsReportStatusCountsDto!
 }
 
-type SupportMessageResponseDto {
+type SupportTicketResponseDto {
+  idSupportMessage: String!
+  protocolNumber: Int!
+  userName: String!
+  userEmail: String!
   category: SupportCategory!
   message: String!
+  status: SupportTicketStatus!
+  adminReply: String
+  repliedAt: DateTime
+  finalizedAt: DateTime
+  finalizedByName: String
   createdAt: DateTime!
 }
 
@@ -581,6 +613,27 @@ enum SupportCategory {
   SUGGESTION
   BILLING
   OTHER
+}
+
+enum SupportTicketStatus {
+  OPEN
+  ANSWERED
+  RESOLVED
+}
+
+type SupportTicketsResponseDto {
+  items: [SupportTicketResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type SupportMessageResponseDto {
+  category: SupportCategory!
+  message: String!
+  createdAt: DateTime!
 }
 
 type SupportMessageStatusResponseDto {
@@ -730,7 +783,10 @@ type Query {
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
   exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
   mySupportMessageStatus: SupportMessageStatusResponseDto!
+  listSupportTickets(input: ListSupportTicketsInputDto): SupportTicketsResponseDto!
+  getSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
+  adminDashboardStats: AdminDashboardStatsResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -886,6 +942,13 @@ enum StatementScope {
   BOTH
 }
 
+input ListSupportTicketsInputDto {
+  page: Int
+  limit: Int
+  status: SupportTicketStatus
+  category: SupportCategory
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -928,6 +991,8 @@ type Mutation {
   updateGoalContribution(input: UpdateGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
   deleteGoalContribution(idFinancialGoal: String!, idGoalContribution: String!): CreateFinancialGoalMutationResponseDto!
   sendSupportMessage(input: SendSupportMessageInputDto!): SupportMessageResponseDto!
+  replyToSupportTicket(input: ReplyToSupportTicketInputDto!): SupportTicketResponseDto!
+  finalizeSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   acceptTermsOfUse: LogoutResponseDto!
 }
 
@@ -1162,4 +1227,9 @@ input UpdateGoalContributionInputDto {
 input SendSupportMessageInputDto {
   category: SupportCategory!
   message: String!
+}
+
+input ReplyToSupportTicketInputDto {
+  idSupportMessage: String!
+  reply: String!
 }
