@@ -1,4 +1,18 @@
 export const RESPONSE_MESSAGES = {
+  accountLifecycle: {
+    deactivated: {
+      code: "ACCOUNT_DEACTIVATED",
+      message: "Conta inativada com sucesso.",
+    },
+    deletionRequested: {
+      code: "ACCOUNT_DELETION_REQUESTED",
+      message: "Solicitação de exclusão de conta registrada com sucesso.",
+    },
+    deletionCancelled: {
+      code: "ACCOUNT_DELETION_CANCELLED",
+      message: "Solicitação de exclusão de conta cancelada com sucesso.",
+    },
+  },
   auth: {
     logout: {
       code: "AUTH_LOGOUT_SUCCESS",

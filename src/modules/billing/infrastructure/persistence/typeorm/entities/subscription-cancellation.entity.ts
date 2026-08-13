@@ -15,6 +15,9 @@ export class SubscriptionCancellationEntity {
   @Column({ name: "idtb_users" })
   idUsers!: string;
 
+  @Column({ nullable: true })
+  email?: string;
+
   @Column({ type: "varchar", array: true })
   reasons!: CancellationReason[];
 

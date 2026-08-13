@@ -1,5 +1,9 @@
 import { Module } from "@nestjs/common";
 import { MAIL_PROVIDER } from "@/modules/mails/application/ports/mail-provider.token";
+import { AccountDeactivationConfirmationEmailUseCase } from "@/modules/mails/application/use-cases/account-deactivation-confirmation-email.use-case";
+import { AccountReactivationWelcomeBackEmailUseCase } from "@/modules/mails/application/use-cases/account-reactivation-welcome-back-email.use-case";
+import { AccountDeletionRequestedEmailUseCase } from "@/modules/mails/application/use-cases/account-deletion-requested-email.use-case";
+import { AccountDeletionCancelledEmailUseCase } from "@/modules/mails/application/use-cases/account-deletion-cancelled-email.use-case";
 import { DueTomorrowReminderEmailUseCase } from "@/modules/mails/application/use-cases/due-tomorrow-reminder-email.use-case";
 import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
 import { PasswordRecoveryEmailUseCase } from "@/modules/mails/application/use-cases/password-recovery-email.use-case";
@@ -36,6 +40,10 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     SupportMessageConfirmationEmailUseCase,
     SupportTicketReplyEmailUseCase,
     SupportTicketFinalizedEmailUseCase,
+    AccountDeactivationConfirmationEmailUseCase,
+    AccountReactivationWelcomeBackEmailUseCase,
+    AccountDeletionRequestedEmailUseCase,
+    AccountDeletionCancelledEmailUseCase,
   ],
   exports: [
     MAIL_PROVIDER,
@@ -53,6 +61,10 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     SupportMessageConfirmationEmailUseCase,
     SupportTicketReplyEmailUseCase,
     SupportTicketFinalizedEmailUseCase,
+    AccountDeactivationConfirmationEmailUseCase,
+    AccountReactivationWelcomeBackEmailUseCase,
+    AccountDeletionRequestedEmailUseCase,
+    AccountDeletionCancelledEmailUseCase,
   ],
 })
 export class MailModule {}

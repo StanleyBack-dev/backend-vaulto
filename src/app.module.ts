@@ -14,6 +14,7 @@ import { UpstashRedisProvider } from "@/common/rate-limit/upstash-redis.provider
 import { RequestInfoInterceptor } from "@/common/interceptors/request-info.interceptors";
 import { AppConfigModule } from "@/config/config.module";
 import { DatabaseModule } from "@/database/database.module";
+import { AccountLifecycleModule } from "@/modules/account-lifecycle/account-lifecycle.module";
 import { AdminModule } from "@/modules/admin/admin.module";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { BillingModule } from "@/modules/billing/billing.module";
@@ -68,6 +69,7 @@ import { UsersModule } from "@/modules/users/users.module";
     SupportModule,
     LegalModule,
     AdminModule,
+    AccountLifecycleModule,
   ],
   providers: [
     UpstashRedisProvider,

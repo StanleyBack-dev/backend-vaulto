@@ -3,6 +3,7 @@ import type { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/su
 
 export type CreateSubscriptionCancellationPayload = {
   idUsers: string;
+  email?: string;
   reasons: CancellationReason[];
   otherReason?: string;
   billingCycle?: SubscriptionBillingCycle;

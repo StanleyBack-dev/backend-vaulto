@@ -1,4 +1,5 @@
 import type { AppErrorDefinition } from "@/common/exceptions/app-error-definition.type";
+import { accountLifecycleErrors } from "@/common/exceptions/catalogs/account-lifecycle-errors.catalog";
 import { authErrors } from "@/common/exceptions/catalogs/auth-errors.catalog";
 import { authorizationErrors } from "@/common/exceptions/catalogs/authorization-errors.catalog";
 import { billingErrors } from "@/common/exceptions/catalogs/billing-errors.catalog";
@@ -20,6 +21,7 @@ import { usersErrors } from "@/common/exceptions/catalogs/users-errors.catalog";
 import { validationErrors } from "@/common/exceptions/catalogs/validation-errors.catalog";
 
 export const APP_ERRORS = {
+  accountLifecycle: accountLifecycleErrors,
   auth: authErrors,
   authorization: authorizationErrors,
   billing: billingErrors,

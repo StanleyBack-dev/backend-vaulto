@@ -71,37 +71,6 @@ type PageAccessMetadataResponseDto {
   groupDefaults: [GroupDefaultDto!]!
 }
 
-type UsersByGroupCountDto {
-  group: UserGroup!
-  count: Int!
-}
-
-type SubscriptionsByStatusCountDto {
-  status: SubscriptionStatus!
-  count: Int!
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  CANCELED
-  EXPIRED
-}
-
-type AdminDashboardStatsResponseDto {
-  totalUsers: Int!
-  usersByGroup: [UsersByGroupCountDto!]!
-  totalSubscriptions: Int!
-  freeSubscriptions: Int!
-  activeProSubscriptions: Int!
-  subscriptionsByStatus: [SubscriptionsByStatusCountDto!]!
-  estimatedMonthlyRecurringRevenue: Float!
-  totalSupportTickets: Int!
-  openSupportTickets: Int!
-  resolvedSupportTickets: Int!
-}
-
 type BillingPaymentResponseDto {
   amount: Float!
   status: BillingPaymentStatus!
@@ -142,6 +111,14 @@ enum SubscriptionPlan {
   PRO
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
 enum SubscriptionBillingCycle {
   MONTHLY
   YEARLY
@@ -150,6 +127,47 @@ enum SubscriptionBillingCycle {
 type SubscribeToProResponseDto {
   subscription: SubscriptionResponseDto!
   checkoutUrl: String
+}
+
+type CancelAccountDeletionResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type DeactivateAccountResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type RequestAccountDeletionResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type UsersByGroupCountDto {
+  group: UserGroup!
+  count: Int!
+}
+
+type SubscriptionsByStatusCountDto {
+  status: SubscriptionStatus!
+  count: Int!
+}
+
+type AdminDashboardStatsResponseDto {
+  totalUsers: Int!
+  usersByGroup: [UsersByGroupCountDto!]!
+  totalSubscriptions: Int!
+  freeSubscriptions: Int!
+  activeProSubscriptions: Int!
+  subscriptionsByStatus: [SubscriptionsByStatusCountDto!]!
+  estimatedMonthlyRecurringRevenue: Float!
+  totalSupportTickets: Int!
+  openSupportTickets: Int!
+  resolvedSupportTickets: Int!
 }
 
 type CategoryResponseDto {
@@ -650,6 +668,7 @@ type GetUserResponseDto {
   status: Boolean!
   group: UserGroup!
   inactivatedAt: String
+  deletionRequestedAt: String
   mustChangePassword: Boolean
   lastLoginAt: String
   failedLoginAttempts: Int
@@ -996,6 +1015,9 @@ type Mutation {
   replyToSupportTicket(input: ReplyToSupportTicketInputDto!): SupportTicketResponseDto!
   finalizeSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   acceptTermsOfUse: LogoutResponseDto!
+  deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
+  requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
+  cancelAccountDeletion: CancelAccountDeletionResponseDto!
 }
 
 input LoginInputDto {
@@ -1234,4 +1256,32 @@ input SendSupportMessageInputDto {
 input ReplyToSupportTicketInputDto {
   idSupportMessage: String!
   reply: String!
+}
+
+input DeactivateAccountInputDto {
+  reasons: [AccountDeactivationReason!]!
+  otherReason: String
+}
+
+enum AccountDeactivationReason {
+  NOT_USING_ANYMORE
+  TAKING_A_BREAK
+  TOO_MANY_NOTIFICATIONS
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  OTHER
+}
+
+input RequestAccountDeletionInputDto {
+  reasons: [AccountDeletionReason!]!
+  otherReason: String
+}
+
+enum AccountDeletionReason {
+  NOT_USING_ANYMORE
+  PRIVACY_CONCERNS
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  TECHNICAL_ISSUES
+  OTHER
 }

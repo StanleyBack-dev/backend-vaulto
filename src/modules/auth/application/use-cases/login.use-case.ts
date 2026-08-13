@@ -36,9 +36,7 @@ export class LoginService {
       throw AppException.from(APP_ERRORS.auth.invalidCredentials, undefined);
     }
 
-    await this.authCredentialsUseCase.ensureCredentialCanAuthenticate(
-      credential,
-    );
+    await this.authCredentialsUseCase.assertNotLocked(credential);
 
     const passwordMatches = await this.passwordHasherUseCase.verifyPassword(
       input.password,
@@ -49,6 +47,12 @@ export class LoginService {
       await this.authCredentialsUseCase.registerFailedLogin(credential);
       throw AppException.from(APP_ERRORS.auth.invalidCredentials, undefined);
     }
+
+    // Only after the password is confirmed can a self-deactivated account
+    // be safely reactivated — see ensureAccountActiveOrReactivate.
+    await this.authCredentialsUseCase.ensureAccountActiveOrReactivate(
+      credential,
+    );
 
     return this.issueAuthSessionUseCase.execute(credential, requestInfo);
   }
