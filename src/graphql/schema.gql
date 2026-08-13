@@ -562,6 +562,25 @@ type DebtsReportResponseDto {
   countByStatus: DebtsReportStatusCountsDto!
 }
 
+type SupportMessageResponseDto {
+  category: SupportCategory!
+  message: String!
+  createdAt: DateTime!
+}
+
+enum SupportCategory {
+  DOUBT
+  TECHNICAL_ISSUE
+  SUGGESTION
+  BILLING
+  OTHER
+}
+
+type SupportMessageStatusResponseDto {
+  canSend: Boolean!
+  nextAllowedAt: DateTime
+}
+
 type GetUserResponseDto {
   idUsers: String!
   name: String!
@@ -703,6 +722,7 @@ type Query {
   getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
   exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
+  mySupportMessageStatus: SupportMessageStatusResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -899,6 +919,7 @@ type Mutation {
   registerGoalContribution(input: RegisterGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
   updateGoalContribution(input: UpdateGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
   deleteGoalContribution(idFinancialGoal: String!, idGoalContribution: String!): CreateFinancialGoalMutationResponseDto!
+  sendSupportMessage(input: SendSupportMessageInputDto!): SupportMessageResponseDto!
 }
 
 input LoginInputDto {
@@ -1127,4 +1148,9 @@ input UpdateGoalContributionInputDto {
   amount: Float
   contributedAt: DateTime
   note: String
+}
+
+input SendSupportMessageInputDto {
+  category: SupportCategory!
+  message: String!
 }

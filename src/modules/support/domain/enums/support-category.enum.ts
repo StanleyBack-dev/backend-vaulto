@@ -1,0 +1,7 @@
+export enum SupportCategory {
+  DOUBT = "DOUBT",
+  TECHNICAL_ISSUE = "TECHNICAL_ISSUE",
+  SUGGESTION = "SUGGESTION",
+  BILLING = "BILLING",
+  OTHER = "OTHER",
+}

@@ -29,6 +29,7 @@ import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
 import { RemindersModule } from "@/modules/reminders/reminders.module";
 import { ReportsModule } from "@/modules/reports/reports.module";
+import { SupportModule } from "@/modules/support/support.module";
 import { UsersModule } from "@/modules/users/users.module";
 
 @Module({
@@ -62,6 +63,7 @@ import { UsersModule } from "@/modules/users/users.module";
     RemindersModule,
     GoalsModule,
     ExportsModule,
+    SupportModule,
   ],
   providers: [
     UpstashRedisProvider,
