@@ -1,7 +1,9 @@
 import { Args, Query, Resolver } from "@nestjs/graphql";
 import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
@@ -27,6 +29,7 @@ export class ReportsResolver {
   ) {}
 
   @Query(() => DebtsReportResponseDto, { name: "getDebtsReport" })
+  @RequirePageAccess(PageAccessKey.DASHBOARD)
   @RequirePermissions(AuthPermission.READ_OWN_DEBTS)
   async getDebtsReport(
     @CurrentUser() user: AuthenticatedUser,

@@ -3,7 +3,9 @@ import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
 import { buildDataResponse } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { ListIncomeReceiptsUseCase } from "@/modules/income-receipts/application/use-cases/list-income-receipts.use-case";
 import { RegisterInstallmentReceiptUseCase } from "@/modules/income-receipts/application/use-cases/register-installment-receipt.use-case";
@@ -18,6 +20,7 @@ import { UpdateIncomeReceiptMutationResponseDto } from "@/modules/income-receipt
 import { DeleteIncomeReceiptMutationResponseDto } from "@/modules/income-receipts/presentation/graphql/dtos/delete-income-receipt-mutation-response.dto";
 
 @Resolver()
+@RequirePageAccess(PageAccessKey.INCOME_RECEIPTS)
 export class IncomeReceiptsResolver {
   constructor(
     private readonly registerInstallmentReceiptUseCase: RegisterInstallmentReceiptUseCase,

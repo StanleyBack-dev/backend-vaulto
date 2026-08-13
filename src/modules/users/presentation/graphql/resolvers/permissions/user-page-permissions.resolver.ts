@@ -5,7 +5,9 @@ import { buildDataResponse } from "@/common/responses/helpers/response.helper";
 import { AllowBeforeTermsAcceptance } from "@/modules/auth/presentation/decorators/allow-before-terms-acceptance.decorator";
 import { AllowFirstAccess } from "@/modules/auth/presentation/decorators/allow-first-access.decorator";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
 import { GetUserPagePermissionsInputDto } from "@/modules/users/presentation/graphql/dtos/permissions/get-user-page-permissions-input.dto";
@@ -20,6 +22,7 @@ export class UserPagePermissionsResolver {
   @Query(() => UserPagePermissionsResponseDto, {
     name: "getUserPagePermissions",
   })
+  @RequirePageAccess(PageAccessKey.ADMIN)
   @RequirePermissions(AuthPermission.MANAGE_USERS)
   async getUserPagePermissions(
     @CurrentUser() user: AuthenticatedUser,
@@ -42,6 +45,7 @@ export class UserPagePermissionsResolver {
   }
 
   @Mutation(() => SetUserPagePermissionsMutationResponseDto)
+  @RequirePageAccess(PageAccessKey.ADMIN)
   @RequirePermissions(AuthPermission.MANAGE_USERS)
   async setUserPagePermissions(
     @CurrentUser() user: AuthenticatedUser,

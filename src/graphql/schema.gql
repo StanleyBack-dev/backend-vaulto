@@ -767,8 +767,10 @@ type Query {
   getMyPagePermissions: UserPagePermissionsResponseDto!
   getMyCategories(input: ListCategoriesInputDto): ListCategoriesResponseDto!
   getCategoryById(input: GetCategoryByIdInputDto!): CategoryResponseDto!
+  getMyCategoryOptions(input: ListCategoriesInputDto): ListCategoriesResponseDto!
   getMyCreditCards(input: ListCreditCardsInputDto): ListCreditCardsResponseDto!
   getCreditCardById(input: GetCreditCardByIdInputDto!): CreditCardResponseDto!
+  getMyCreditCardOptions(input: ListCreditCardsInputDto): ListCreditCardsResponseDto!
   getDebtById(input: GetDebtByIdInputDto!): DebtResponseDto!
   getMyDebts(input: ListDebtsInputDto): ListDebtsResponseDto!
   getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
