@@ -160,6 +160,13 @@ export class AuthCredentialsService {
     );
   }
 
+  async acceptTermsOfUse(idUsers: string, acceptedAt: Date): Promise<void> {
+    await this.authCredentialRepository.update(
+      { idUsers },
+      { termsAcceptedAt: acceptedAt },
+    );
+  }
+
   async updatePassword(
     credential: AuthCredentialEntity,
     passwordHash: string,

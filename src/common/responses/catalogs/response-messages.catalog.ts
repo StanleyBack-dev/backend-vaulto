@@ -200,4 +200,10 @@ export const RESPONSE_MESSAGES = {
       message: "Cartoes de credito carregados com sucesso.",
     },
   },
+  legal: {
+    termsAccepted: {
+      code: "LEGAL_TERMS_ACCEPTED",
+      message: "Termos de Uso e Política de Privacidade aceitos com sucesso.",
+    },
+  },
 } as const;

@@ -39,6 +39,7 @@ describe("IssueAuthSessionService", () => {
       authenticated: true,
       mustChangePassword: authCredentialMock.mustChangePassword,
       onboardingTourCompleted: authCredentialMock.onboardingTourCompleted,
+      termsAccepted: false,
       user: {
         idUsers: authCredentialMock.user.idUsers,
         name: authCredentialMock.user.name,

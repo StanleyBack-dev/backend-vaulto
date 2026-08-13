@@ -71,6 +71,12 @@ export const authErrors = {
     status: HttpStatus.FORBIDDEN,
     message: "Primeiro acesso pendente. Altere sua senha para continuar.",
   },
+  termsAcceptancePending: {
+    code: "AUTH_TERMS_ACCEPTANCE_PENDING",
+    status: HttpStatus.FORBIDDEN,
+    message:
+      "É necessário aceitar os Termos de Uso e a Política de Privacidade para continuar.",
+  },
   credentialNotFoundForUser: {
     code: "AUTH_CREDENTIAL_NOT_FOUND_FOR_USER",
     status: HttpStatus.NOT_FOUND,

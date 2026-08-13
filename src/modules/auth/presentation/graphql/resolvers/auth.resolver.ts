@@ -8,6 +8,7 @@ import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
 import { buildDataResponse } from "@/common/responses/helpers/response.helper";
 import { buildSuccessResponse } from "@/common/responses/helpers/response.helper";
+import { AllowBeforeTermsAcceptance } from "@/modules/auth/presentation/decorators/allow-before-terms-acceptance.decorator";
 import { AllowFirstAccess } from "@/modules/auth/presentation/decorators/allow-first-access.decorator";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
 import { REFRESH_TOKEN_COOKIE_NAME } from "@/config/cookie.config";
@@ -103,6 +104,7 @@ export class AuthResolver {
 
   @Mutation(() => LogoutResponseDto, { name: "logout" })
   @AllowFirstAccess()
+  @AllowBeforeTermsAcceptance()
   @RequirePermissions(AuthPermission.LOGOUT)
   async logout(@Context() context: GraphqlContext): Promise<LogoutResponseDto> {
     const refreshToken = context.req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] as
@@ -119,6 +121,7 @@ export class AuthResolver {
 
   @Mutation(() => LogoutResponseDto, { name: "changeMyPassword" })
   @AllowFirstAccess()
+  @AllowBeforeTermsAcceptance()
   @RequirePermissions(AuthPermission.CHANGE_OWN_PASSWORD)
   async changeMyPassword(
     @CurrentUser() user: AuthenticatedUser,

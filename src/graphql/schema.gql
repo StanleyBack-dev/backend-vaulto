@@ -28,6 +28,7 @@ type AuthSessionResponseDto {
   authenticated: Boolean!
   mustChangePassword: Boolean!
   onboardingTourCompleted: Boolean!
+  termsAccepted: Boolean!
   user: AuthUserDto!
 }
 
@@ -463,6 +464,12 @@ type DeleteIncomeReceiptMutationResponseDto {
   data: RegisterInstallmentReceiptResponseDto!
 }
 
+type TermsAcceptanceStatusResponseDto {
+  accepted: Boolean!
+  acceptedAt: DateTime
+  termsVersion: String
+}
+
 type RegisterInstallmentPaymentResponseDto {
   idDebt: String!
   debtStatus: DebtStatus!
@@ -723,6 +730,7 @@ type Query {
   getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
   exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
   mySupportMessageStatus: SupportMessageStatusResponseDto!
+  myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -920,6 +928,7 @@ type Mutation {
   updateGoalContribution(input: UpdateGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
   deleteGoalContribution(idFinancialGoal: String!, idGoalContribution: String!): CreateFinancialGoalMutationResponseDto!
   sendSupportMessage(input: SendSupportMessageInputDto!): SupportMessageResponseDto!
+  acceptTermsOfUse: LogoutResponseDto!
 }
 
 input LoginInputDto {
