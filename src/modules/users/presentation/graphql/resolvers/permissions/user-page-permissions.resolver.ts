@@ -2,6 +2,7 @@ import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
 import { buildDataResponse } from "@/common/responses/helpers/response.helper";
+import { AllowBeforeTermsAcceptance } from "@/modules/auth/presentation/decorators/allow-before-terms-acceptance.decorator";
 import { AllowFirstAccess } from "@/modules/auth/presentation/decorators/allow-first-access.decorator";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
@@ -32,6 +33,7 @@ export class UserPagePermissionsResolver {
 
   @Query(() => UserPagePermissionsResponseDto, { name: "getMyPagePermissions" })
   @AllowFirstAccess()
+  @AllowBeforeTermsAcceptance()
   @RequirePermissions(AuthPermission.READ_OWN_USER)
   async getMyPagePermissions(
     @CurrentUser() user: AuthenticatedUser,

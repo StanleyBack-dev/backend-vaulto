@@ -1,6 +1,6 @@
 // LIBS
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 import { join } from "path";
@@ -24,6 +24,7 @@ import { ExportsModule } from "@/modules/exports/exports.module";
 import { GoalsModule } from "@/modules/goals/goals.module";
 import { IncomeReceiptsModule } from "@/modules/income-receipts/income-receipts.module";
 import { IncomesModule } from "@/modules/incomes/incomes.module";
+import { LegalModule } from "@/modules/legal/legal.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
@@ -64,6 +65,7 @@ import { UsersModule } from "@/modules/users/users.module";
     GoalsModule,
     ExportsModule,
     SupportModule,
+    LegalModule,
   ],
   providers: [
     UpstashRedisProvider,
@@ -72,6 +74,10 @@ import { UsersModule } from "@/modules/users/users.module";
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestInfoInterceptor,
     },
   ],
 })

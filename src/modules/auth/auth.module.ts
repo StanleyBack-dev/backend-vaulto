@@ -9,6 +9,7 @@ import { AuthResolver } from "./presentation/graphql/resolvers/auth.resolver";
 import { AuthPermissionsGuard } from "./presentation/guards/auth-permissions.guard";
 import { FirstAccessGuard } from "./presentation/guards/first-access.guard";
 import { PageAccessGuard } from "./presentation/guards/page-access.guard";
+import { TermsAcceptanceGuard } from "./presentation/guards/terms-acceptance.guard";
 import { AuthCredentialEntity } from "./infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { AuthVerificationCodeEntity } from "./infrastructure/persistence/typeorm/entities/auth-verification-code.entity";
 import { UserPageAccessEntity } from "./infrastructure/persistence/typeorm/entities/user-page-access.entity";
@@ -80,6 +81,10 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
     {
       provide: APP_GUARD,
       useClass: FirstAccessGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TermsAcceptanceGuard,
     },
   ],
   exports: [
