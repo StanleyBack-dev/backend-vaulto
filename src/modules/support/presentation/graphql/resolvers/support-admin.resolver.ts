@@ -1,7 +1,9 @@
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { CurrentUser } from "@/common/decorators/current-user.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { FinalizeSupportTicketUseCase } from "@/modules/support/application/use-cases/finalize-support-ticket.use-case";
 import { GetSupportTicketUseCase } from "@/modules/support/application/use-cases/get-support-ticket.use-case";
@@ -13,6 +15,7 @@ import { SupportTicketResponseDto } from "@/modules/support/presentation/graphql
 import { SupportTicketsResponseDto } from "@/modules/support/presentation/graphql/dtos/support-tickets-response.dto";
 
 @Resolver()
+@RequirePageAccess(PageAccessKey.ADMIN)
 export class SupportAdminResolver {
   constructor(
     private readonly listSupportTicketsUseCase: ListSupportTicketsUseCase,

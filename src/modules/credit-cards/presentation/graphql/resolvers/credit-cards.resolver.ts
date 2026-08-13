@@ -6,7 +6,9 @@ import {
   buildPaginatedListResponse,
 } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateCreditCardUseCase } from "@/modules/credit-cards/application/use-cases/create/create-credit-card.use-case";
 import { GetCreditCardByIdUseCase } from "@/modules/credit-cards/application/use-cases/get/get-credit-card-by-id.use-case";
@@ -22,6 +24,7 @@ import { UpdateCreditCardInputDto } from "@/modules/credit-cards/presentation/gr
 import { UpdateCreditCardMutationResponseDto } from "@/modules/credit-cards/presentation/graphql/dtos/update/update-credit-card-mutation-response.dto";
 
 @Resolver()
+@RequirePageAccess(PageAccessKey.CREDIT_CARDS)
 export class CreditCardsResolver {
   constructor(
     private readonly createCreditCardUseCase: CreateCreditCardUseCase,

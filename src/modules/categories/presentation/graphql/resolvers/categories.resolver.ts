@@ -6,7 +6,9 @@ import {
   buildPaginatedListResponse,
 } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateCategoryUseCase } from "@/modules/categories/application/use-cases/create/create-category.use-case";
 import { GetCategoryByIdUseCase } from "@/modules/categories/application/use-cases/get/get-category-by-id.use-case";
@@ -22,6 +24,7 @@ import { UpdateCategoryInputDto } from "@/modules/categories/presentation/graphq
 import { UpdateCategoryMutationResponseDto } from "@/modules/categories/presentation/graphql/dtos/update/update-category-mutation-response.dto";
 
 @Resolver()
+@RequirePageAccess(PageAccessKey.CATEGORIES)
 export class CategoriesResolver {
   constructor(
     private readonly createCategoryUseCase: CreateCategoryUseCase,

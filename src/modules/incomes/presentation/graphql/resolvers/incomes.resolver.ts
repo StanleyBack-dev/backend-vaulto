@@ -7,7 +7,9 @@ import {
   buildSuccessResponse,
 } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateIncomeUseCase } from "@/modules/incomes/application/use-cases/create/create-income.use-case";
 import { DeleteIncomeUseCase } from "@/modules/incomes/application/use-cases/delete/delete-income.use-case";
@@ -50,6 +52,7 @@ export class IncomesResolver {
   }
 
   @Mutation(() => CreateIncomeMutationResponseDto, { name: "createIncome" })
+  @RequirePageAccess(PageAccessKey.INCOMES)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async createIncome(
     @CurrentUser() user: AuthenticatedUser,
@@ -94,6 +97,7 @@ export class IncomesResolver {
   @Mutation(() => CreateIncomeMutationResponseDto, {
     name: "updateIncomeDetails",
   })
+  @RequirePageAccess(PageAccessKey.INCOMES)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async updateIncomeDetails(
     @CurrentUser() user: AuthenticatedUser,
@@ -122,6 +126,7 @@ export class IncomesResolver {
   @Mutation(() => CreateIncomeMutationResponseDto, {
     name: "updateIncomeStatus",
   })
+  @RequirePageAccess(PageAccessKey.INCOMES)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async updateIncomeStatus(
     @CurrentUser() user: AuthenticatedUser,
@@ -142,6 +147,7 @@ export class IncomesResolver {
   }
 
   @Mutation(() => DeleteIncomeResponseDto, { name: "deleteIncome" })
+  @RequirePageAccess(PageAccessKey.INCOMES)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async deleteIncome(
     @CurrentUser() user: AuthenticatedUser,

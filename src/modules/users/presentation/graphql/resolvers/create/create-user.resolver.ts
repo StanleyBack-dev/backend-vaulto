@@ -7,13 +7,16 @@ import {
 import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages.catalog";
 import { buildDataResponse } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateUserUseCase } from "@/modules/users/application/use-cases/create/create-user.use-case";
 import { CreateUserInputDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-input.dto";
 import { CreateUserMutationResponseDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-mutation-response.dto";
 
 @Resolver(() => CreateUserMutationResponseDto)
+@RequirePageAccess(PageAccessKey.ADMIN)
 export class CreateUserResolver {
   constructor(private readonly createUserUseCase: CreateUserUseCase) {}
 

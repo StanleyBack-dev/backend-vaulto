@@ -7,7 +7,9 @@ import {
   buildSuccessResponse,
 } from "@/common/responses/helpers/response.helper";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
 import { DeleteDebtUseCase } from "@/modules/debts/application/use-cases/delete/delete-debt.use-case";
@@ -50,6 +52,7 @@ export class DebtsResolver {
   }
 
   @Mutation(() => CreateDebtMutationResponseDto, { name: "createDebt" })
+  @RequirePageAccess(PageAccessKey.DEBTS)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async createDebt(
     @CurrentUser() user: AuthenticatedUser,
@@ -93,6 +96,7 @@ export class DebtsResolver {
   }
 
   @Mutation(() => CreateDebtMutationResponseDto, { name: "updateDebtDetails" })
+  @RequirePageAccess(PageAccessKey.DEBTS)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async updateDebtDetails(
     @CurrentUser() user: AuthenticatedUser,
@@ -119,6 +123,7 @@ export class DebtsResolver {
   }
 
   @Mutation(() => CreateDebtMutationResponseDto, { name: "updateDebtStatus" })
+  @RequirePageAccess(PageAccessKey.DEBTS)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async updateDebtStatus(
     @CurrentUser() user: AuthenticatedUser,
@@ -139,6 +144,7 @@ export class DebtsResolver {
   }
 
   @Mutation(() => DeleteDebtResponseDto, { name: "deleteDebt" })
+  @RequirePageAccess(PageAccessKey.DEBTS)
   @RequirePermissions(AuthPermission.MANAGE_OWN_DEBTS)
   async deleteDebt(
     @CurrentUser() user: AuthenticatedUser,

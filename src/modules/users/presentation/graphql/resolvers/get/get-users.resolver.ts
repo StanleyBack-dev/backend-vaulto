@@ -4,7 +4,9 @@ import { RESPONSE_MESSAGES } from "@/common/responses/catalogs/response-messages
 import { buildPaginatedListResponse } from "@/common/responses/helpers/response.helper";
 import { AllowFirstAccess } from "@/modules/auth/presentation/decorators/allow-first-access.decorator";
 import { RequirePermissions } from "@/modules/auth/presentation/decorators/require-permissions.decorator";
+import { RequirePageAccess } from "@/modules/auth/presentation/decorators/require-page-access.decorator";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
+import { PageAccessKey } from "@/modules/auth/domain/enums/page-access-key.enum";
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { GetUsersUseCase } from "@/modules/users/application/use-cases/get/get-users.use-case";
 import { GetUserInputDto } from "@/modules/users/presentation/graphql/dtos/get/get-user-input.dto";
@@ -18,6 +20,7 @@ export class GetUsersResolver {
   constructor(private readonly getUsersUseCase: GetUsersUseCase) {}
 
   @Query(() => GetUsersListResponseDto, { name: "getUsers" })
+  @RequirePageAccess(PageAccessKey.ADMIN)
   @RequirePermissions(AuthPermission.READ_USERS)
   async getUsers(
     @CurrentUser() user: AuthenticatedUser,
@@ -29,6 +32,7 @@ export class GetUsersResolver {
   }
 
   @Query(() => [UserFilterOptionDto], { name: "getUserFilterOptions" })
+  @RequirePageAccess(PageAccessKey.ADMIN)
   @RequirePermissions(AuthPermission.READ_USERS)
   async getUserFilterOptions(
     @CurrentUser() user: AuthenticatedUser,
@@ -37,6 +41,7 @@ export class GetUsersResolver {
   }
 
   @Query(() => GetUserResponseDto, { name: "getUser" })
+  @RequirePageAccess(PageAccessKey.ADMIN)
   @RequirePermissions(AuthPermission.READ_USERS)
   async getUser(
     @CurrentUser() user: AuthenticatedUser,
