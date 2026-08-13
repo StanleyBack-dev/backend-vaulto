@@ -10,6 +10,8 @@ import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/
 import { SubscriptionTrialEndingEmailUseCase } from "@/modules/mails/application/use-cases/subscription-trial-ending-email.use-case";
 import { SupportMessageConfirmationEmailUseCase } from "@/modules/mails/application/use-cases/support-message-confirmation-email.use-case";
 import { SupportMessageNotificationEmailUseCase } from "@/modules/mails/application/use-cases/support-message-notification-email.use-case";
+import { SupportTicketFinalizedEmailUseCase } from "@/modules/mails/application/use-cases/support-ticket-finalized-email.use-case";
+import { SupportTicketReplyEmailUseCase } from "@/modules/mails/application/use-cases/support-ticket-reply-email.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { UserWelcomeEmailUseCase } from "@/modules/mails/application/use-cases/user-welcome-email.use-case";
 import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brevo-mail.provider";
@@ -32,6 +34,8 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     DueTomorrowReminderEmailUseCase,
     SupportMessageNotificationEmailUseCase,
     SupportMessageConfirmationEmailUseCase,
+    SupportTicketReplyEmailUseCase,
+    SupportTicketFinalizedEmailUseCase,
   ],
   exports: [
     MAIL_PROVIDER,
@@ -47,6 +51,8 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     DueTomorrowReminderEmailUseCase,
     SupportMessageNotificationEmailUseCase,
     SupportMessageConfirmationEmailUseCase,
+    SupportTicketReplyEmailUseCase,
+    SupportTicketFinalizedEmailUseCase,
   ],
 })
 export class MailModule {}
