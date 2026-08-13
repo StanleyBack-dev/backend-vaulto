@@ -31,7 +31,14 @@ export class UserEntity {
   group!: UserGroup;
 
   @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
-  inactivatedAt?: Date;
+  inactivatedAt?: Date | null;
+
+  @Column({
+    name: "deletion_requested_at",
+    type: "timestamptz",
+    nullable: true,
+  })
+  deletionRequestedAt?: Date | null;
 
   @Column({ name: "ip_address", nullable: true })
   ipAddress?: string;

@@ -1,9 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
+import { AccountAuditEvent } from "@/modules/account-lifecycle/domain/enums/account-audit-event.enum";
+import { AccountAuditLogEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-audit-log.entity";
+import { AccountDeactivationEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-deactivation.entity";
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
+import { AccountReactivationWelcomeBackEmailUseCase } from "@/modules/mails/application/use-cases/account-reactivation-welcome-back-email.use-case";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 interface ProvisionCredentialInput {
@@ -19,6 +23,11 @@ export class AuthCredentialsService {
     private readonly authCredentialRepository: Repository<AuthCredentialEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(AccountDeactivationEntity)
+    private readonly accountDeactivationRepository: Repository<AccountDeactivationEntity>,
+    @InjectRepository(AccountAuditLogEntity)
+    private readonly accountAuditLogRepository: Repository<AccountAuditLogEntity>,
+    private readonly accountReactivationWelcomeBackEmailUseCase: AccountReactivationWelcomeBackEmailUseCase,
   ) {}
 
   async findByUsername(username: string): Promise<AuthCredentialEntity | null> {
@@ -97,16 +106,85 @@ export class AuthCredentialsService {
     return this.authCredentialRepository.save(credential);
   }
 
+  // Kept for callers (e.g. Google login) where identity is already proven
+  // by the time this runs, so reactivating a self-deactivated account here
+  // is safe.
   async ensureCredentialCanAuthenticate(
     credential: AuthCredentialEntity,
   ): Promise<void> {
-    if (!credential.user.status || credential.user.inactivatedAt) {
-      throw AppException.from(APP_ERRORS.auth.inactiveUser, undefined);
-    }
+    await this.assertNotLocked(credential);
+    await this.ensureAccountActiveOrReactivate(credential);
+  }
 
+  async assertNotLocked(credential: AuthCredentialEntity): Promise<void> {
     if (credential.lockUntil && credential.lockUntil > new Date()) {
       throw AppException.from(APP_ERRORS.auth.credentialLocked, undefined);
     }
+  }
+
+  // Only call this AFTER the caller has proven the requester owns the
+  // account (password verified, or an OAuth provider already vouched for
+  // them) — a self-deactivated account is reactivated automatically here,
+  // and that must never happen from an unauthenticated probe. Accounts
+  // deactivated by an admin (no open AccountDeactivationEntity row) stay
+  // blocked either way.
+  async ensureAccountActiveOrReactivate(
+    credential: AuthCredentialEntity,
+  ): Promise<void> {
+    const { user } = credential;
+
+    if (user.status && !user.inactivatedAt) {
+      return;
+    }
+
+    const reactivated = await this.tryReactivateSelfDeactivation(user);
+    if (!reactivated) {
+      throw AppException.from(APP_ERRORS.auth.inactiveUser, undefined);
+    }
+  }
+
+  private async tryReactivateSelfDeactivation(
+    user: UserEntity,
+  ): Promise<boolean> {
+    const openDeactivation = await this.accountDeactivationRepository.findOne({
+      where: { idUsers: user.idUsers, reactivatedAt: IsNull() },
+      order: { deactivatedAt: "DESC" },
+    });
+
+    if (!openDeactivation) {
+      return false;
+    }
+
+    const reactivatedAt = new Date();
+
+    await this.userRepository.update(
+      { idUsers: user.idUsers },
+      { status: true, inactivatedAt: null },
+    );
+    // The caller (LoginService) issues the session from this same in-memory
+    // `user` object right after — without this, the response would still
+    // report the pre-reactivation status even though the DB is correct.
+    user.status = true;
+    user.inactivatedAt = null;
+    await this.accountDeactivationRepository.update(
+      { idAccountDeactivation: openDeactivation.idAccountDeactivation },
+      { reactivatedAt },
+    );
+    await this.accountAuditLogRepository.save(
+      this.accountAuditLogRepository.create({
+        idUsers: user.idUsers,
+        email: user.email,
+        name: user.name,
+        event: AccountAuditEvent.REACTIVATED,
+      }),
+    );
+
+    await this.accountReactivationWelcomeBackEmailUseCase.send({
+      to: user.email,
+      name: user.name,
+    });
+
+    return true;
   }
 
   async registerFailedLogin(credential: AuthCredentialEntity): Promise<void> {

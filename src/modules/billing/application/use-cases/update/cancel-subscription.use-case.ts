@@ -79,9 +79,11 @@ export class CancelSubscriptionUseCase {
       subscription.currentPeriodEnd ?? subscription.trialEndsAt;
     const alreadyLapsed = !accessEndsAt || accessEndsAt <= requestedAt;
     const effectiveCancellationAt = alreadyLapsed ? requestedAt : accessEndsAt;
+    const user = await this.userRepository.findOne({ where: { idUsers } });
 
     await this.subscriptionCancellationRepository.create({
       idUsers,
+      email: user?.email,
       reasons: command.reasons,
       otherReason: command.otherReason,
       billingCycle: subscription.billingCycle,
@@ -106,20 +108,22 @@ export class CancelSubscriptionUseCase {
           cancelAtPeriodEnd: true,
         });
 
-    await this.notifyCompanyOfCancellation(idUsers, {
-      reasons: command.reasons,
-      otherReason: command.otherReason,
-      billingCycle: subscription.billingCycle,
-      proStartedAt: subscription.proStartedAt,
-      requestedAt,
-      effectiveCancellationAt,
-    });
+    if (user) {
+      await this.notifyCompanyOfCancellation(user, {
+        reasons: command.reasons,
+        otherReason: command.otherReason,
+        billingCycle: subscription.billingCycle,
+        proStartedAt: subscription.proStartedAt,
+        requestedAt,
+        effectiveCancellationAt,
+      });
+    }
 
     return updatedSubscription;
   }
 
   private async notifyCompanyOfCancellation(
-    idUsers: string,
+    user: UserEntity,
     survey: {
       reasons: CancellationReason[];
       otherReason?: string;
@@ -129,11 +133,6 @@ export class CancelSubscriptionUseCase {
       effectiveCancellationAt: Date;
     },
   ): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { idUsers } });
-    if (!user) {
-      return;
-    }
-
     await this.subscriptionCanceledNotificationEmailUseCase.send({
       userName: user.name,
       userEmail: user.email,

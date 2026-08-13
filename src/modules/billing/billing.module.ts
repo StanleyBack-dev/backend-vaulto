@@ -74,6 +74,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     SUBSCRIPTION_REPOSITORY,
     CreateDefaultSubscriptionUseCase,
     PlanLimitsService,
+    CancelSubscriptionUseCase,
   ],
 })
 export class BillingModule {}

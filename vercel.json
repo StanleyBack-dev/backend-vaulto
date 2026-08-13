@@ -26,6 +26,10 @@
     {
       "path": "/internal/reminders/due-tomorrow",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/internal/users/process-account-deletions",
+      "schedule": "0 9 * * *"
     }
   ]
 }

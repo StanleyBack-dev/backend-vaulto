@@ -9,6 +9,8 @@ import { GetUsersUseCase } from "@/modules/users/application/use-cases/get/get-u
 import { UserExistsValidator } from "@/modules/users/application/validators/user-exists.validator";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 import { UserGroup } from "@/modules/users/domain/enums/user-group.enum";
+import { AccountAuditLogEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-audit-log.entity";
+import { AccountDeactivationEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-deactivation.entity";
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { UserPageAccessEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/user-page-access.entity";
 import { AuthCredentialsService } from "@/modules/auth/application/use-cases/auth-credentials.use-case";
@@ -20,6 +22,7 @@ import { LoginService } from "@/modules/auth/application/use-cases/login.use-cas
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cases/password-changed-email.use-case";
+import { AccountReactivationWelcomeBackEmailUseCase } from "@/modules/mails/application/use-cases/account-reactivation-welcome-back-email.use-case";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
 import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
 import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
@@ -248,6 +251,24 @@ describe("Auth onboarding flow", () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(null),
           },
+        },
+        {
+          provide: getRepositoryToken(AccountDeactivationEntity),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
+            update: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: getRepositoryToken(AccountAuditLogEntity),
+          useValue: {
+            create: jest.fn((value: unknown) => value),
+            save: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: AccountReactivationWelcomeBackEmailUseCase,
+          useValue: { send: jest.fn().mockResolvedValue(undefined) },
         },
         {
           provide: DataSource,

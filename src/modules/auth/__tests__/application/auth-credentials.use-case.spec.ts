@@ -5,13 +5,75 @@ import { AuthCredentialsService } from "@/modules/auth/application/use-cases/aut
 import { authCredentialMock } from "@/modules/auth/__mocks__/auth-credential.mock";
 import { userMock } from "@/modules/users/__mocks__/user.mock";
 
+function buildService(overrides?: {
+  authCredentialRepository?: unknown;
+  userRepository?: unknown;
+  accountDeactivationRepository?: unknown;
+  accountAuditLogRepository?: unknown;
+  accountReactivationWelcomeBackEmailUseCase?: unknown;
+}) {
+  return new AuthCredentialsService(
+    (overrides?.authCredentialRepository ?? {}) as never,
+    (overrides?.userRepository ?? {}) as never,
+    (overrides?.accountDeactivationRepository ?? {
+      findOne: jest.fn().mockResolvedValue(null),
+    }) as never,
+    (overrides?.accountAuditLogRepository ?? {}) as never,
+    (overrides?.accountReactivationWelcomeBackEmailUseCase ?? {
+      send: jest.fn().mockResolvedValue(undefined),
+    }) as never,
+  );
+}
+
 describe("AuthCredentialsService", () => {
-  describe("ensureCredentialCanAuthenticate", () => {
-    it("rejects an inactive user", async () => {
-      const service = new AuthCredentialsService({} as never, {} as never);
+  describe("assertNotLocked", () => {
+    it("rejects a credential locked until a future date", async () => {
+      const service = buildService();
+      const lockUntil = new Date(Date.now() + 60_000);
 
       await expect(
-        service.ensureCredentialCanAuthenticate({
+        service.assertNotLocked({ ...authCredentialMock, lockUntil }),
+      ).rejects.toMatchObject({
+        status: HttpStatus.UNAUTHORIZED,
+        response: { code: APP_ERRORS.auth.credentialLocked.code },
+      });
+    });
+
+    it("allows a credential whose lock has already expired", async () => {
+      const service = buildService();
+      const lockUntil = new Date(Date.now() - 60_000);
+
+      await expect(
+        service.assertNotLocked({ ...authCredentialMock, lockUntil }),
+      ).resolves.toBeUndefined();
+    });
+
+    it("allows an unlocked credential", async () => {
+      const service = buildService();
+
+      await expect(
+        service.assertNotLocked(authCredentialMock),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("ensureAccountActiveOrReactivate", () => {
+    it("allows an active user", async () => {
+      const service = buildService();
+
+      await expect(
+        service.ensureAccountActiveOrReactivate(authCredentialMock),
+      ).resolves.toBeUndefined();
+    });
+
+    it("rejects an inactive user with no open self-deactivation record (admin-deactivated)", async () => {
+      const accountDeactivationRepository = {
+        findOne: jest.fn().mockResolvedValue(null),
+      };
+      const service = buildService({ accountDeactivationRepository });
+
+      await expect(
+        service.ensureAccountActiveOrReactivate({
           ...authCredentialMock,
           user: { ...userMock, status: false },
         }),
@@ -21,11 +83,14 @@ describe("AuthCredentialsService", () => {
       });
     });
 
-    it("rejects a user with an inactivatedAt date even if status is still true", async () => {
-      const service = new AuthCredentialsService({} as never, {} as never);
+    it("rejects a user with an inactivatedAt date even if status is still true, when there's no open self-deactivation record", async () => {
+      const accountDeactivationRepository = {
+        findOne: jest.fn().mockResolvedValue(null),
+      };
+      const service = buildService({ accountDeactivationRepository });
 
       await expect(
-        service.ensureCredentialCanAuthenticate({
+        service.ensureAccountActiveOrReactivate({
           ...authCredentialMock,
           user: { ...userMock, status: true, inactivatedAt: new Date() },
         }),
@@ -34,39 +99,56 @@ describe("AuthCredentialsService", () => {
       });
     });
 
-    it("rejects a credential locked until a future date", async () => {
-      const service = new AuthCredentialsService({} as never, {} as never);
-      const lockUntil = new Date(Date.now() + 60_000);
-
-      await expect(
-        service.ensureCredentialCanAuthenticate({
-          ...authCredentialMock,
-          lockUntil,
-        }),
-      ).rejects.toMatchObject({
-        status: HttpStatus.UNAUTHORIZED,
-        response: { code: APP_ERRORS.auth.credentialLocked.code },
+    it("reactivates the account when there's an open self-deactivation record", async () => {
+      const openDeactivation = {
+        idAccountDeactivation: "deactivation-1",
+        reactivatedAt: null,
+      };
+      const userRepository = { update: jest.fn().mockResolvedValue({}) };
+      const accountDeactivationRepository = {
+        findOne: jest.fn().mockResolvedValue(openDeactivation),
+        update: jest.fn().mockResolvedValue({}),
+      };
+      const accountAuditLogRepository = {
+        create: jest.fn().mockImplementation((payload) => payload),
+        save: jest.fn().mockResolvedValue({}),
+      };
+      const accountReactivationWelcomeBackEmailUseCase = {
+        send: jest.fn().mockResolvedValue(undefined),
+      };
+      const service = buildService({
+        userRepository,
+        accountDeactivationRepository,
+        accountAuditLogRepository,
+        accountReactivationWelcomeBackEmailUseCase,
       });
-    });
-
-    it("allows a credential whose lock has already expired", async () => {
-      const service = new AuthCredentialsService({} as never, {} as never);
-      const lockUntil = new Date(Date.now() - 60_000);
-
-      await expect(
-        service.ensureCredentialCanAuthenticate({
-          ...authCredentialMock,
-          lockUntil,
-        }),
-      ).resolves.toBeUndefined();
-    });
-
-    it("allows an active, unlocked credential", async () => {
-      const service = new AuthCredentialsService({} as never, {} as never);
+      const credential = {
+        ...authCredentialMock,
+        user: { ...userMock, status: false, inactivatedAt: new Date() },
+      };
 
       await expect(
-        service.ensureCredentialCanAuthenticate(authCredentialMock),
+        service.ensureAccountActiveOrReactivate(credential),
       ).resolves.toBeUndefined();
+
+      expect(userRepository.update).toHaveBeenCalledWith(
+        { idUsers: userMock.idUsers },
+        { status: true, inactivatedAt: null },
+      );
+      expect(accountDeactivationRepository.update).toHaveBeenCalledWith(
+        { idAccountDeactivation: "deactivation-1" },
+        { reactivatedAt: expect.any(Date) },
+      );
+      expect(accountAuditLogRepository.save).toHaveBeenCalled();
+      expect(
+        accountReactivationWelcomeBackEmailUseCase.send,
+      ).toHaveBeenCalledWith({ to: userMock.email, name: userMock.name });
+
+      // The in-memory user object must also flip, since LoginService issues
+      // the session from this same reference right after — a DB-only
+      // update would leave the login response reporting a stale status.
+      expect(credential.user.status).toBe(true);
+      expect(credential.user.inactivatedAt).toBeNull();
     });
   });
 
@@ -75,10 +157,7 @@ describe("AuthCredentialsService", () => {
       const authCredentialRepository = {
         update: jest.fn().mockResolvedValue({}),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       await service.registerFailedLogin({
         ...authCredentialMock,
@@ -95,10 +174,7 @@ describe("AuthCredentialsService", () => {
       const authCredentialRepository = {
         update: jest.fn().mockResolvedValue({}),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       const before = Date.now();
       await service.registerFailedLogin({
@@ -127,10 +203,7 @@ describe("AuthCredentialsService", () => {
       const authCredentialRepository = {
         update: jest.fn().mockResolvedValue({}),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       await service.registerSuccessfulLogin(authCredentialMock);
 
@@ -146,10 +219,7 @@ describe("AuthCredentialsService", () => {
       const authCredentialRepository = {
         findOne: jest.fn().mockResolvedValue(null),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       await expect(
         service.findByUserIdOrFail("missing-user"),
@@ -162,10 +232,7 @@ describe("AuthCredentialsService", () => {
       const authCredentialRepository = {
         findOne: jest.fn().mockResolvedValue(authCredentialMock),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       const result = await service.findByGoogleId("google-sub-123");
 
@@ -186,10 +253,7 @@ describe("AuthCredentialsService", () => {
           googleId: "google-sub-123",
         }),
       };
-      const service = new AuthCredentialsService(
-        authCredentialRepository as never,
-        {} as never,
-      );
+      const service = buildService({ authCredentialRepository });
 
       const result = await service.linkGoogleId(
         authCredentialMock,
