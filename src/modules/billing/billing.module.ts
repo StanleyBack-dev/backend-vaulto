@@ -25,6 +25,10 @@ import { AsaasWebhookController } from "@/modules/billing/presentation/rest/cont
 import { SubscriptionLifecycleController } from "@/modules/billing/presentation/rest/controllers/subscription-lifecycle.controller";
 import { BillingResolver } from "@/modules/billing/presentation/graphql/resolvers/billing.resolver";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
+import { REFERRAL_REWARD_REPOSITORY } from "@/modules/referrals/application/ports/referral-reward-repository.port";
+import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
+import { ReferralRewardEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-reward.entity";
+import { ReferralRewardTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-reward-typeorm.repository";
 import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
 
 @Module({
@@ -34,6 +38,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
       SubscriptionCancellationEntity,
       BillingPaymentEntity,
       UserEntity,
+      ReferralRewardEntity,
     ]),
     AuthModule,
     MailModule,
@@ -53,6 +58,8 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     SubscriptionCancellationTypeormRepository,
     BillingPaymentTypeormRepository,
     AsaasPaymentGatewayProvider,
+    QualifyReferralUseCase,
+    ReferralRewardTypeormRepository,
     {
       provide: SUBSCRIPTION_REPOSITORY,
       useExisting: SubscriptionTypeormRepository,
@@ -68,6 +75,10 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     {
       provide: PAYMENT_GATEWAY,
       useExisting: AsaasPaymentGatewayProvider,
+    },
+    {
+      provide: REFERRAL_REWARD_REPOSITORY,
+      useExisting: ReferralRewardTypeormRepository,
     },
   ],
   exports: [

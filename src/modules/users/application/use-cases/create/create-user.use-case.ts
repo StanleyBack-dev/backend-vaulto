@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
+import { generateUniqueReferralCode } from "@/common/utils/referral-code.util";
 import { CreateUserInputDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-input.dto";
 import { CreateUserResponseDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-response.dto";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
@@ -55,6 +56,11 @@ export class CreateUserUseCase {
       this.passwordHasherService.generateTemporaryPassword();
     const passwordHash =
       await this.passwordHasherService.hashPassword(temporaryPassword);
+    const referralCode = await generateUniqueReferralCode((candidate) =>
+      this.repo
+        .count({ where: { referralCode: candidate } })
+        .then((count) => count > 0),
+    );
 
     const createdUser = await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity);
@@ -77,6 +83,7 @@ export class CreateUserUseCase {
         group: input.group,
         ipAddress: requestInfo?.ipAddress,
         userAgent: requestInfo?.userAgent,
+        referralCode,
       });
 
       const savedUser = await userRepository.save(user);

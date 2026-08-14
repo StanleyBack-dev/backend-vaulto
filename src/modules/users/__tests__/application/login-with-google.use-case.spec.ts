@@ -16,6 +16,7 @@ const issuedSession = { accessToken: "a", refreshToken: "r", response: {} };
 function buildDeps() {
   const userRepository = {
     findOne: jest.fn().mockResolvedValue(null),
+    count: jest.fn().mockResolvedValue(0),
   };
 
   const transactionalUserRepository = {

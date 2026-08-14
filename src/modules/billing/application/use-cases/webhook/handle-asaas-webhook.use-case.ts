@@ -26,6 +26,7 @@ import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
 import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
 import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-contracted-notification-email.use-case";
+import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 const SETTLED_PAYMENT_EVENTS = new Set([
@@ -56,6 +57,7 @@ export class HandleAsaasWebhookUseCase {
     private readonly subscriptionActivatedEmailUseCase: SubscriptionActivatedEmailUseCase,
     private readonly subscriptionContractedNotificationEmailUseCase: SubscriptionContractedNotificationEmailUseCase,
     private readonly paymentOverdueEmailUseCase: PaymentOverdueEmailUseCase,
+    private readonly qualifyReferralUseCase: QualifyReferralUseCase,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
   ) {}
@@ -163,6 +165,7 @@ export class HandleAsaasWebhookUseCase {
           idUsers,
           subscription.billingCycle,
         );
+        await this.qualifyReferralUseCase.execute(idUsers);
       }
       return;
     }

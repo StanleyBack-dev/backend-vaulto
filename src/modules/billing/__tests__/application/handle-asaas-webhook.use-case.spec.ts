@@ -58,6 +58,10 @@ function buildUseCase(
     send: jest.fn().mockResolvedValue(undefined),
   };
 
+  const qualifyReferralUseCase = {
+    execute: jest.fn().mockResolvedValue(undefined),
+  };
+
   const userRepository = {
     findOne: jest
       .fn()
@@ -75,6 +79,7 @@ function buildUseCase(
     subscriptionActivatedEmailUseCase as never,
     subscriptionContractedNotificationEmailUseCase as never,
     paymentOverdueEmailUseCase as never,
+    qualifyReferralUseCase as never,
     userRepository as never,
   );
 
@@ -85,6 +90,7 @@ function buildUseCase(
     subscriptionActivatedEmailUseCase,
     subscriptionContractedNotificationEmailUseCase,
     paymentOverdueEmailUseCase,
+    qualifyReferralUseCase,
     userRepository,
   };
 }
@@ -114,6 +120,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
+      { execute: jest.fn() } as never,
       { findOne: jest.fn() } as never,
     );
 
@@ -137,6 +144,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       billingPaymentRepository,
       subscriptionActivatedEmailUseCase,
       subscriptionContractedNotificationEmailUseCase,
+      qualifyReferralUseCase,
     } = buildUseCase();
 
     await useCase.execute(WEBHOOK_TOKEN, {
@@ -181,6 +189,7 @@ describe("HandleAsaasWebhookUseCase", () => {
         userEmail: "user@example.com",
       }),
     );
+    expect(qualifyReferralUseCase.execute).toHaveBeenCalledWith("user-1");
   });
 
   it("computes currentPeriodEnd one month after the paid dueDate for a MONTHLY subscription", async () => {
@@ -272,7 +281,11 @@ describe("HandleAsaasWebhookUseCase", () => {
   });
 
   it("does not resend the activation email when the subscription was already ACTIVE", async () => {
-    const { useCase, subscriptionActivatedEmailUseCase } = buildUseCase({
+    const {
+      useCase,
+      subscriptionActivatedEmailUseCase,
+      qualifyReferralUseCase,
+    } = buildUseCase({
       subscription: subscriptionView({ status: SubscriptionStatus.ACTIVE }),
     });
 
@@ -287,6 +300,9 @@ describe("HandleAsaasWebhookUseCase", () => {
     });
 
     expect(subscriptionActivatedEmailUseCase.send).not.toHaveBeenCalled();
+    // A renewal isn't the friend's *first* payment, so it must not count
+    // as a fresh referral qualification.
+    expect(qualifyReferralUseCase.execute).not.toHaveBeenCalled();
   });
 
   it("marks the subscription as PAST_DUE, sets pastDueSince and sends the overdue email on PAYMENT_OVERDUE", async () => {
