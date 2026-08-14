@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import type { IRequestInfo } from "@/common/decorators/request-info.decorator";
 import { sanitizeSensitiveData } from "@/common/security/sanitize-sensitive-data";
+import { generateUniqueReferralCode } from "@/common/utils/referral-code.util";
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { AuthCredentialsService } from "@/modules/auth/application/use-cases/auth-credentials.use-case";
 import { AuthSessionResponseDto } from "@/modules/auth/presentation/graphql/dtos/session/auth-session-response.dto";
@@ -35,6 +36,7 @@ export class LoginWithGoogleUseCase {
   async execute(
     idToken: string,
     requestInfo: IRequestInfo,
+    referralCode?: string,
   ): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -53,7 +55,11 @@ export class LoginWithGoogleUseCase {
 
       credential = existingUser
         ? await this.linkGoogleToExistingUser(existingUser.idUsers, profile)
-        : await this.createUserFromGoogleProfile(profile, requestInfo);
+        : await this.createUserFromGoogleProfile(
+            profile,
+            requestInfo,
+            referralCode,
+          );
     }
 
     await this.authCredentialsUseCase.ensureCredentialCanAuthenticate(
@@ -84,11 +90,18 @@ export class LoginWithGoogleUseCase {
       picture?: string;
     },
     requestInfo: IRequestInfo,
+    referralCode?: string,
   ): Promise<AuthCredentialEntity> {
     const temporaryPassword =
       this.passwordHasherUseCase.generateTemporaryPassword();
     const passwordHash =
       await this.passwordHasherUseCase.hashPassword(temporaryPassword);
+    const newReferralCode = await generateUniqueReferralCode((candidate) =>
+      this.userRepository
+        .count({ where: { referralCode: candidate } })
+        .then((count) => count > 0),
+    );
+    const referredByUserId = await this.resolveReferrerId(referralCode);
 
     const savedUserId = await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity);
@@ -103,6 +116,8 @@ export class LoginWithGoogleUseCase {
         group: UserGroup.USER,
         ipAddress: requestInfo.ipAddress,
         userAgent: requestInfo.userAgent,
+        referralCode: newReferralCode,
+        referredByUserId,
       });
 
       const savedUser = await userRepository.save(user);
@@ -130,6 +145,22 @@ export class LoginWithGoogleUseCase {
     });
 
     return (await this.authCredentialsUseCase.findByUserId(savedUserId))!;
+  }
+
+  // Invalid/unknown codes are silently ignored — a bad ?ref= param in the
+  // URL shouldn't ever block someone from creating an account.
+  private async resolveReferrerId(
+    referralCode?: string,
+  ): Promise<string | undefined> {
+    if (!referralCode) {
+      return undefined;
+    }
+
+    const referrer = await this.userRepository.findOne({
+      where: { referralCode },
+    });
+
+    return referrer?.idUsers;
   }
 
   private async sendWelcomeEmailSafely(input: {

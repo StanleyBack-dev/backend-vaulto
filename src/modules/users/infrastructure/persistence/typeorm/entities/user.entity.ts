@@ -40,6 +40,24 @@ export class UserEntity {
   })
   deletionRequestedAt?: Date | null;
 
+  @Column({
+    name: "referral_code",
+    type: "varchar",
+    nullable: true,
+    unique: true,
+  })
+  referralCode?: string | null;
+
+  @Column({ name: "referred_by_user_id", type: "uuid", nullable: true })
+  referredByUserId?: string | null;
+
+  @Column({
+    name: "referral_qualified_at",
+    type: "timestamptz",
+    nullable: true,
+  })
+  referralQualifiedAt?: Date | null;
+
   @Column({ name: "ip_address", nullable: true })
   ipAddress?: string;
 

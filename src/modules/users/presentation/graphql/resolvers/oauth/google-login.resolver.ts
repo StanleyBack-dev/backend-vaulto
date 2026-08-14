@@ -33,6 +33,7 @@ export class GoogleLoginResolver {
       await this.loginWithGoogleUseCase.execute(
         input.idToken,
         this.extractRequestInfo(context.req),
+        input.referralCode,
       );
 
     this.authCookieUseCase.setAuthCookies(

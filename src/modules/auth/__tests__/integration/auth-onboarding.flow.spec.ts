@@ -90,6 +90,12 @@ describe("Auth onboarding flow", () => {
       return entity;
     }),
     find: jest.fn(async () => users),
+    count: jest.fn(
+      async (options?: { where?: Partial<UserEntity> }) =>
+        users.filter(
+          (user) => user.referralCode === options?.where?.referralCode,
+        ).length,
+    ),
   };
 
   const authCredentialRepository = {

@@ -18,7 +18,7 @@ import { UserEntity } from "../../infrastructure/persistence/typeorm/entities/us
 
 describe("CreateUserUseCase", () => {
   let service: CreateUserUseCase;
-  let userRepository: { findOne: jest.Mock };
+  let userRepository: { findOne: jest.Mock; count: jest.Mock };
   let userExistsValidator: jest.Mocked<UserExistsValidator>;
   let authorizationService: jest.Mocked<AuthorizationService>;
   let passwordHasherService: jest.Mocked<PasswordHasherService>;
@@ -37,6 +37,7 @@ describe("CreateUserUseCase", () => {
         group: UserGroup.ADMIN,
         status: true,
       }),
+      count: jest.fn().mockResolvedValue(0),
     };
 
     dataSource = {

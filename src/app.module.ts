@@ -30,6 +30,7 @@ import { LegalModule } from "@/modules/legal/legal.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
+import { ReferralsModule } from "@/modules/referrals/referrals.module";
 import { RemindersModule } from "@/modules/reminders/reminders.module";
 import { ReportsModule } from "@/modules/reports/reports.module";
 import { SupportModule } from "@/modules/support/support.module";
@@ -70,6 +71,7 @@ import { UsersModule } from "@/modules/users/users.module";
     LegalModule,
     AdminModule,
     AccountLifecycleModule,
+    ReferralsModule,
   ],
   providers: [
     UpstashRedisProvider,

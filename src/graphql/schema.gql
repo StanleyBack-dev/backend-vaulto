@@ -539,6 +539,18 @@ type DeleteDebtPaymentMutationResponseDto {
   data: RegisterInstallmentPaymentResponseDto!
 }
 
+type ReferralStatsResponseDto {
+  referralCode: String!
+  qualifiedReferralsCount: Int!
+  thresholdCount: Int!
+  rewardStatus: ReferralRewardStatus
+}
+
+enum ReferralRewardStatus {
+  PENDING
+  APPLIED
+}
+
 type CategoryComparisonEntryDto {
   idCategory: String!
   categoryName: String!
@@ -808,6 +820,7 @@ type Query {
   getSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
   adminDashboardStats: AdminDashboardStatsResponseDto!
+  myReferralStats: ReferralStatsResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -1101,6 +1114,7 @@ input UnlockUserCredentialInputDto {
 
 input LoginWithGoogleInputDto {
   idToken: String!
+  referralCode: String
 }
 
 input CreateCategoryInputDto {

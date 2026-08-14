@@ -20,6 +20,10 @@
   ],
   "crons": [
     {
+      "path": "/internal/referrals/apply-rewards",
+      "schedule": "50 8 * * *"
+    },
+    {
       "path": "/internal/billing/subscription-lifecycle",
       "schedule": "0 9 * * *"
     },
