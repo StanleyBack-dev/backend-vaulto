@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
+import { timingSafeEqual } from "crypto";
 import { Repository } from "typeorm";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
@@ -81,12 +82,26 @@ export class HandleAsaasWebhookUseCase {
   private assertValidToken(receivedToken?: string): void {
     const expectedToken = this.configService.get<string>("ASAAS_WEBHOOK_TOKEN");
 
-    if (!expectedToken || receivedToken !== expectedToken) {
+    if (
+      !expectedToken ||
+      !receivedToken ||
+      !this.tokensMatch(receivedToken, expectedToken)
+    ) {
       throw AppException.from(
         APP_ERRORS.billing.invalidWebhookToken,
         undefined,
       );
     }
+  }
+
+  private tokensMatch(received: string, expected: string): boolean {
+    const receivedBuffer = Buffer.from(received);
+    const expectedBuffer = Buffer.from(expected);
+
+    return (
+      receivedBuffer.length === expectedBuffer.length &&
+      timingSafeEqual(receivedBuffer, expectedBuffer)
+    );
   }
 
   private async handlePaymentEvent(
