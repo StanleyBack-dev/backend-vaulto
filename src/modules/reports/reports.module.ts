@@ -10,9 +10,13 @@ import { IncomeInstallmentEntity } from "@/modules/incomes/infrastructure/persis
 import { GoalsModule } from "@/modules/goals/goals.module";
 import { REPORT_REPOSITORY } from "@/modules/reports/application/ports/report-repository.port";
 import { GetCategoryComparisonUseCase } from "@/modules/reports/application/use-cases/get-category-comparison.use-case";
+import { GetDebtsAmountByCategoryUseCase } from "@/modules/reports/application/use-cases/get-debts-amount-by-category.use-case";
 import { GetDebtsReportUseCase } from "@/modules/reports/application/use-cases/get-debts-report.use-case";
 import { GetFinancialForecastUseCase } from "@/modules/reports/application/use-cases/get-financial-forecast.use-case";
 import { GetFinancialHealthScoreUseCase } from "@/modules/reports/application/use-cases/get-financial-health-score.use-case";
+import { GetIncomesAmountByCategoryUseCase } from "@/modules/reports/application/use-cases/get-incomes-amount-by-category.use-case";
+import { GetIncomesReportUseCase } from "@/modules/reports/application/use-cases/get-incomes-report.use-case";
+import { GetMonthlyCashflowTrendUseCase } from "@/modules/reports/application/use-cases/get-monthly-cashflow-trend.use-case";
 import { ReportTypeormRepository } from "@/modules/reports/infrastructure/persistence/typeorm/repositories/report-typeorm.repository";
 import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolvers/reports.resolver";
 
@@ -31,6 +35,10 @@ import { ReportsResolver } from "@/modules/reports/presentation/graphql/resolver
   ],
   providers: [
     GetDebtsReportUseCase,
+    GetIncomesReportUseCase,
+    GetDebtsAmountByCategoryUseCase,
+    GetIncomesAmountByCategoryUseCase,
+    GetMonthlyCashflowTrendUseCase,
     GetFinancialForecastUseCase,
     GetCategoryComparisonUseCase,
     GetFinancialHealthScoreUseCase,
