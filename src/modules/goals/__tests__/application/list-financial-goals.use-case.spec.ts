@@ -52,12 +52,13 @@ describe("ListFinancialGoalsUseCase", () => {
   });
 
   it("returns paginated results", async () => {
-    const { useCase } = buildUseCase({ total: 1 });
+    const goal = goalView();
+    const { useCase } = buildUseCase({ records: [goal], total: 1 });
 
     const result = await useCase.execute("user-1", { page: 1, limit: 10 });
 
     expect(result).toEqual({
-      items: [goalView()],
+      items: [goal],
       total: 1,
       currentPage: 1,
       limit: 10,
