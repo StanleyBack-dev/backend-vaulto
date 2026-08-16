@@ -3,16 +3,26 @@ import { FREE_PLAN_LIMITS } from "@/modules/billing/domain/constants/free-plan-l
 import { PlanLimitedResource } from "@/modules/billing/domain/enums/plan-limited-resource.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
+import { UserGroup } from "@/modules/users/domain/enums/user-group.enum";
 import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
 
-function buildService(subscription: unknown) {
+function buildService(
+  subscription: unknown,
+  group: UserGroup = UserGroup.USER,
+) {
   const subscriptionRepository = {
     findByUserId: jest.fn().mockResolvedValue(subscription),
   };
+  const userRepository = {
+    findOne: jest.fn().mockResolvedValue({ idUsers: "user-1", group }),
+  };
 
-  const service = new PlanLimitsService(subscriptionRepository as never);
+  const service = new PlanLimitsService(
+    subscriptionRepository as never,
+    userRepository as never,
+  );
 
-  return { service, subscriptionRepository };
+  return { service, subscriptionRepository, userRepository };
 }
 
 function freeSubscription() {
@@ -148,5 +158,30 @@ describe("PlanLimitsService", () => {
         AppException,
       );
     });
+
+    it("should always allow an ADMIN_MASTER, regardless of subscription plan", async () => {
+      const { service } = buildService(
+        freeSubscription(),
+        UserGroup.ADMIN_MASTER,
+      );
+
+      await expect(service.assertProPlan("user-1")).resolves.toBeUndefined();
+    });
+  });
+
+  it("should never block creation for an ADMIN_MASTER, regardless of count", async () => {
+    const { service, subscriptionRepository } = buildService(
+      freeSubscription(),
+      UserGroup.ADMIN_MASTER,
+    );
+
+    await expect(
+      service.assertCanCreate(
+        "user-1",
+        PlanLimitedResource.DEBTS,
+        FREE_PLAN_LIMITS[PlanLimitedResource.DEBTS] + 100,
+      ),
+    ).resolves.toBeUndefined();
+    expect(subscriptionRepository.findByUserId).not.toHaveBeenCalled();
   });
 });
