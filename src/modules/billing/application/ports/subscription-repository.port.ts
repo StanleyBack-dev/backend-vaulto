@@ -14,6 +14,7 @@ export type SubscriptionView = {
   cancelAtPeriodEnd: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
+  gatewayPixAuthorizationId?: string;
   trialEndingNotifiedAt?: Date;
   pastDueSince?: Date;
   createdAt: Date;
@@ -36,6 +37,7 @@ export type UpdateSubscriptionPayload = {
   cancelAtPeriodEnd?: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
+  gatewayPixAuthorizationId?: string;
   trialEndingNotifiedAt?: Date | null;
   pastDueSince?: Date | null;
 };
@@ -45,6 +47,9 @@ export interface SubscriptionRepositoryPort {
   findByUserId(idUsers: string): Promise<SubscriptionView | null>;
   findByGatewaySubscriptionId(
     gatewaySubscriptionId: string,
+  ): Promise<SubscriptionView | null>;
+  findByGatewayPixAuthorizationId(
+    gatewayPixAuthorizationId: string,
   ): Promise<SubscriptionView | null>;
   findByStatus(status: SubscriptionStatus): Promise<SubscriptionView[]>;
   findPendingCancellations(): Promise<SubscriptionView[]>;

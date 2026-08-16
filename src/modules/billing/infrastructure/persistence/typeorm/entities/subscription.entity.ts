@@ -60,6 +60,13 @@ export class SubscriptionEntity {
   gatewaySubscriptionId?: string;
 
   @Column({
+    name: "gateway_pix_authorization_id",
+    type: "varchar",
+    nullable: true,
+  })
+  gatewayPixAuthorizationId?: string;
+
+  @Column({
     name: "trial_ending_notified_at",
     type: "timestamptz",
     nullable: true,

@@ -7,6 +7,8 @@ import type {
   CreateGatewayCustomerResult,
   CreateGatewaySubscriptionInput,
   CreateGatewaySubscriptionResult,
+  CreatePixAutomaticAuthorizationInput,
+  CreatePixAutomaticAuthorizationResult,
   PaymentGatewayPort,
 } from "@/modules/billing/application/ports/payment-gateway.port";
 
@@ -24,6 +26,13 @@ interface AsaasSubscriptionResponse {
 
 interface AsaasPaymentListResponse {
   data: Array<{ invoiceUrl?: string }>;
+}
+
+interface AsaasPixAutomaticAuthorizationResponse {
+  id: string;
+  status: string;
+  payload?: string;
+  encodedImage?: string;
 }
 
 @Injectable()
@@ -94,6 +103,54 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
     await this.request(`/subscriptions/${gatewaySubscriptionId}`, {
       method: "DELETE",
     });
+  }
+
+  // Pix Automático's "Jornada 3": the authorization is created together with
+  // an immediate charge (immediateQrCode) that both collects the first
+  // payment and registers the payer's recurring consent. paymentCreationMode
+  // SUBSCRIPTION tells Asaas to keep generating the following charges by
+  // itself from then on, mirroring how a card subscription auto-renews once
+  // the card is tokenized on first payment.
+  async createPixAutomaticAuthorization(
+    input: CreatePixAutomaticAuthorizationInput,
+  ): Promise<CreatePixAutomaticAuthorizationResult> {
+    const authorization =
+      await this.request<AsaasPixAutomaticAuthorizationResponse>(
+        "/pix/automatic/authorizations",
+        {
+          method: "POST",
+          body: {
+            customerId: input.gatewayCustomerId,
+            frequency: input.frequency,
+            contractId: input.contractId,
+            startDate: input.startDate,
+            value: input.value,
+            description: input.description,
+            paymentCreationMode: "SUBSCRIPTION",
+            immediateQrCode: {
+              originalValue: input.value,
+              expirationSeconds: 3600,
+              description: input.description,
+            },
+          },
+        },
+      );
+
+    return {
+      pixAutomaticAuthorizationId: authorization.id,
+      status: authorization.status,
+      qrCodePayload: authorization.payload,
+      qrCodeImage: authorization.encodedImage,
+    };
+  }
+
+  async cancelPixAutomaticAuthorization(
+    pixAutomaticAuthorizationId: string,
+  ): Promise<void> {
+    await this.request(
+      `/pix/automatic/authorizations/${pixAutomaticAuthorizationId}`,
+      { method: "DELETE" },
+    );
   }
 
   private async findFirstPaymentInvoiceUrl(

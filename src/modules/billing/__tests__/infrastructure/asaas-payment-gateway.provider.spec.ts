@@ -178,6 +178,69 @@ describe("AsaasPaymentGatewayProvider", () => {
     );
   });
 
+  it("creates a Pix Automático authorization with an immediate QR Code and subscription mode", async () => {
+    const fetchMock = jest.fn().mockResolvedValue(
+      jsonResponse({
+        id: "aut_123",
+        status: "CREATED",
+        payload: "00020126...",
+        encodedImage: "data:image/png;base64,abc",
+      }),
+    );
+    global.fetch = fetchMock as never;
+
+    const provider = new AsaasPaymentGatewayProvider(
+      buildConfigService() as never,
+    );
+
+    const result = await provider.createPixAutomaticAuthorization({
+      gatewayCustomerId: "cus_123",
+      value: 14.9,
+      frequency: "MONTHLY",
+      contractId: "user1",
+      startDate: "2026-08-16",
+      description: "Vaulto Pro",
+    });
+
+    expect(result).toEqual({
+      pixAutomaticAuthorizationId: "aut_123",
+      status: "CREATED",
+      qrCodePayload: "00020126...",
+      qrCodeImage: "data:image/png;base64,abc",
+    });
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      "https://api-sandbox.asaas.com/v3/pix/automatic/authorizations",
+    );
+    const body = JSON.parse(options.body);
+    expect(body).toMatchObject({
+      customerId: "cus_123",
+      frequency: "MONTHLY",
+      contractId: "user1",
+      startDate: "2026-08-16",
+      value: 14.9,
+      paymentCreationMode: "SUBSCRIPTION",
+      immediateQrCode: expect.objectContaining({ originalValue: 14.9 }),
+    });
+  });
+
+  it("cancels a Pix Automático authorization with a DELETE request", async () => {
+    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({}));
+    global.fetch = fetchMock as never;
+
+    const provider = new AsaasPaymentGatewayProvider(
+      buildConfigService() as never,
+    );
+
+    await provider.cancelPixAutomaticAuthorization("aut_123");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api-sandbox.asaas.com/v3/pix/automatic/authorizations/aut_123",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
   it("rejects with a gateway error when the network request throws", async () => {
     global.fetch = jest
       .fn()

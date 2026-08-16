@@ -56,6 +56,7 @@ export class BillingResolver {
     const result = await this.subscribeToProUseCase.execute(user.idUsers, {
       cpfCnpj: input.cpfCnpj,
       billingCycle: input.billingCycle,
+      pixAutomatic: input.pixAutomatic,
     });
 
     return SubscribeToProResponseDto.fromResult(result);

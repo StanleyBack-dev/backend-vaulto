@@ -12,7 +12,6 @@ import { ReferralRewardGrantedEmailUseCase } from "@/modules/mails/application/u
 import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
 import { SubscriptionCanceledNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-canceled-notification-email.use-case";
 import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-contracted-notification-email.use-case";
-import { SubscriptionTrialEndingEmailUseCase } from "@/modules/mails/application/use-cases/subscription-trial-ending-email.use-case";
 import { SupportMessageConfirmationEmailUseCase } from "@/modules/mails/application/use-cases/support-message-confirmation-email.use-case";
 import { SupportMessageNotificationEmailUseCase } from "@/modules/mails/application/use-cases/support-message-notification-email.use-case";
 import { SupportTicketFinalizedEmailUseCase } from "@/modules/mails/application/use-cases/support-ticket-finalized-email.use-case";
@@ -31,7 +30,6 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     UserOnboardingEmailUseCase,
     UserWelcomeEmailUseCase,
     PasswordChangedEmailUseCase,
-    SubscriptionTrialEndingEmailUseCase,
     SubscriptionActivatedEmailUseCase,
     SubscriptionContractedNotificationEmailUseCase,
     SubscriptionCanceledNotificationEmailUseCase,
@@ -53,7 +51,6 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     UserOnboardingEmailUseCase,
     UserWelcomeEmailUseCase,
     PasswordChangedEmailUseCase,
-    SubscriptionTrialEndingEmailUseCase,
     SubscriptionActivatedEmailUseCase,
     SubscriptionContractedNotificationEmailUseCase,
     SubscriptionCanceledNotificationEmailUseCase,

@@ -127,6 +127,8 @@ enum SubscriptionBillingCycle {
 type SubscribeToProResponseDto {
   subscription: SubscriptionResponseDto!
   checkoutUrl: String
+  pixQrCodePayload: String
+  pixQrCodeImage: String
 }
 
 type CancelAccountDeletionResponseDto {
@@ -1104,6 +1106,7 @@ input ResetPasswordWithRecoveryInputDto {
 input SubscribeToProInputDto {
   cpfCnpj: String!
   billingCycle: SubscriptionBillingCycle!
+  pixAutomatic: Boolean
 }
 
 input CancelSubscriptionInputDto {

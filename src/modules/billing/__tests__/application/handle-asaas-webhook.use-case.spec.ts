@@ -12,7 +12,7 @@ function subscriptionView(overrides: Record<string, unknown> = {}) {
     idSubscription: "subscription-1",
     idUsers: "user-1",
     plan: SubscriptionPlan.FREE,
-    status: SubscriptionStatus.TRIALING,
+    status: SubscriptionStatus.ACTIVE,
     cancelAtPeriodEnd: false,
     gatewaySubscriptionId: "sub_123",
     createdAt: new Date(),
@@ -33,6 +33,13 @@ function buildUseCase(
 
   const subscriptionRepository = {
     findByGatewaySubscriptionId: jest
+      .fn()
+      .mockResolvedValue(
+        overrides.subscription === undefined
+          ? subscriptionView()
+          : overrides.subscription,
+      ),
+    findByGatewayPixAuthorizationId: jest
       .fn()
       .mockResolvedValue(
         overrides.subscription === undefined
@@ -286,7 +293,10 @@ describe("HandleAsaasWebhookUseCase", () => {
       subscriptionActivatedEmailUseCase,
       qualifyReferralUseCase,
     } = buildUseCase({
-      subscription: subscriptionView({ status: SubscriptionStatus.ACTIVE }),
+      subscription: subscriptionView({
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.ACTIVE,
+      }),
     });
 
     await useCase.execute(WEBHOOK_TOKEN, {
@@ -446,5 +456,115 @@ describe("HandleAsaasWebhookUseCase", () => {
     });
 
     expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+  });
+
+  it("activates the subscription and sends the activation email on PIX_AUTOMATIC_RECURRING_AUTHORIZATION_ACTIVATED", async () => {
+    const {
+      useCase,
+      subscriptionRepository,
+      subscriptionActivatedEmailUseCase,
+      qualifyReferralUseCase,
+    } = buildUseCase({
+      subscription: subscriptionView({
+        gatewaySubscriptionId: undefined,
+        gatewayPixAuthorizationId: "aut_123",
+      }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_ACTIVATED",
+      pixAutomaticAuthorization: "aut_123",
+    });
+
+    expect(
+      subscriptionRepository.findByGatewayPixAuthorizationId,
+    ).toHaveBeenCalledWith("aut_123");
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.ACTIVE,
+      }),
+    );
+    expect(subscriptionActivatedEmailUseCase.send).toHaveBeenCalled();
+    expect(qualifyReferralUseCase.execute).toHaveBeenCalledWith("user-1");
+  });
+
+  it.each([
+    "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_CANCELLED",
+    "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_REFUSED",
+    "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_EXPIRED",
+  ])("downgrades the subscription to FREE/CANCELED on %s", async (event) => {
+    const { useCase, subscriptionRepository } = buildUseCase({
+      subscription: subscriptionView({
+        gatewaySubscriptionId: undefined,
+        gatewayPixAuthorizationId: "aut_123",
+      }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event,
+      pixAutomaticAuthorization: "aut_123",
+    });
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        plan: SubscriptionPlan.FREE,
+        status: SubscriptionStatus.CANCELED,
+      }),
+    );
+  });
+
+  it("ignores Pix Automático authorization events it doesn't recognize", async () => {
+    const { useCase, subscriptionRepository } = buildUseCase({
+      subscription: subscriptionView({
+        gatewaySubscriptionId: undefined,
+        gatewayPixAuthorizationId: "aut_123",
+      }),
+    });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_CREATED",
+      pixAutomaticAuthorization: "aut_123",
+    });
+
+    expect(subscriptionRepository.updateByUserId).not.toHaveBeenCalled();
+  });
+
+  it("resolves the subscription via pixAutomaticAuthorizationId when a payment has no subscription reference", async () => {
+    const { useCase, subscriptionRepository, billingPaymentRepository } =
+      buildUseCase({
+        subscription: subscriptionView({
+          gatewaySubscriptionId: undefined,
+          gatewayPixAuthorizationId: "aut_123",
+        }),
+      });
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "PAYMENT_CONFIRMED",
+      payment: {
+        id: "pay_pix_2",
+        pixAutomaticAuthorizationId: "aut_123",
+        value: 14.9,
+        status: "CONFIRMED",
+      },
+    });
+
+    expect(
+      subscriptionRepository.findByGatewayPixAuthorizationId,
+    ).toHaveBeenCalledWith("aut_123");
+    expect(
+      billingPaymentRepository.upsertByGatewayPaymentId,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({ gatewayPaymentId: "pay_pix_2" }),
+    );
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.ACTIVE,
+      }),
+    );
   });
 });

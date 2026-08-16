@@ -75,8 +75,7 @@ export class CancelSubscriptionUseCase {
     }
 
     const requestedAt = new Date();
-    const accessEndsAt =
-      subscription.currentPeriodEnd ?? subscription.trialEndsAt;
+    const accessEndsAt = subscription.currentPeriodEnd;
     const alreadyLapsed = !accessEndsAt || accessEndsAt <= requestedAt;
     const effectiveCancellationAt = alreadyLapsed ? requestedAt : accessEndsAt;
     const user = await this.userRepository.findOne({ where: { idUsers } });
@@ -95,6 +94,12 @@ export class CancelSubscriptionUseCase {
     if (subscription.gatewaySubscriptionId) {
       await this.paymentGateway.cancelSubscription(
         subscription.gatewaySubscriptionId,
+      );
+    }
+
+    if (subscription.gatewayPixAuthorizationId) {
+      await this.paymentGateway.cancelPixAutomaticAuthorization(
+        subscription.gatewayPixAuthorizationId,
       );
     }
 

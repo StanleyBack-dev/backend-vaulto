@@ -48,6 +48,7 @@ function buildUseCase(
 
   const paymentGateway = {
     cancelSubscription: jest.fn().mockResolvedValue(undefined),
+    cancelPixAutomaticAuthorization: jest.fn().mockResolvedValue(undefined),
   };
 
   const subscriptionCanceledNotificationEmailUseCase = {
@@ -166,7 +167,7 @@ describe("CancelSubscriptionUseCase", () => {
     );
   });
 
-  it("downgrades to FREE immediately when there is no currentPeriodEnd or trialEndsAt", async () => {
+  it("downgrades to FREE immediately when there is no currentPeriodEnd", async () => {
     const { useCase, subscriptionRepository } = buildUseCase({
       subscription: proSubscription(),
     });
@@ -184,10 +185,11 @@ describe("CancelSubscriptionUseCase", () => {
   });
 
   it("does not call the gateway when the subscription has no gatewaySubscriptionId", async () => {
+    const currentPeriodEnd = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const { useCase, paymentGateway, subscriptionRepository } = buildUseCase({
       subscription: proSubscription({
         gatewaySubscriptionId: undefined,
-        trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        currentPeriodEnd,
       }),
     });
 
@@ -197,6 +199,24 @@ describe("CancelSubscriptionUseCase", () => {
     expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
       "user-1",
       { cancelAtPeriodEnd: true },
+    );
+  });
+
+  it("cancels the Pix Automático authorization when gatewayPixAuthorizationId is set", async () => {
+    const currentPeriodEnd = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+    const { useCase, paymentGateway } = buildUseCase({
+      subscription: proSubscription({
+        gatewaySubscriptionId: undefined,
+        gatewayPixAuthorizationId: "aut_123",
+        currentPeriodEnd,
+      }),
+    });
+
+    await useCase.execute("user-1", { reasons });
+
+    expect(paymentGateway.cancelSubscription).not.toHaveBeenCalled();
+    expect(paymentGateway.cancelPixAutomaticAuthorization).toHaveBeenCalledWith(
+      "aut_123",
     );
   });
 

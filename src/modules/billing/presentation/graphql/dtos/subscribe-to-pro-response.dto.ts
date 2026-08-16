@@ -8,6 +8,8 @@ export class SubscribeToProResponseDto {
     const dto = new SubscribeToProResponseDto();
     dto.subscription = SubscriptionResponseDto.fromView(result.subscription);
     dto.checkoutUrl = result.checkoutUrl;
+    dto.pixQrCodePayload = result.pixQrCode?.payload;
+    dto.pixQrCodeImage = result.pixQrCode?.image;
     return dto;
   }
 
@@ -16,4 +18,10 @@ export class SubscribeToProResponseDto {
 
   @Field({ nullable: true })
   checkoutUrl?: string;
+
+  @Field({ nullable: true })
+  pixQrCodePayload?: string;
+
+  @Field({ nullable: true })
+  pixQrCodeImage?: string;
 }
