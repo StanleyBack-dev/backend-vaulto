@@ -183,8 +183,7 @@ describe("SubscribeToProUseCase", () => {
   });
 
   it("persists the newly created gateway customer id even if createSubscription then fails", async () => {
-    const { useCase, subscriptionRepository, paymentGateway } =
-      buildUseCase();
+    const { useCase, subscriptionRepository, paymentGateway } = buildUseCase();
     paymentGateway.createSubscription.mockRejectedValue(
       new Error("Asaas rejected the subscription"),
     );
