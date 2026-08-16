@@ -74,12 +74,17 @@ function buildUseCase(
     }),
   };
 
+  const configService = {
+    get: jest.fn().mockReturnValue("https://app.vaulto.com.br"),
+  };
+
   const useCase = new SubscribeToProUseCase(
     authorizationService as never,
     createDefaultSubscriptionUseCase as never,
     subscriptionRepository as never,
     paymentGateway as never,
     userRepository as never,
+    configService as never,
   );
 
   return {
@@ -89,6 +94,7 @@ function buildUseCase(
     subscriptionRepository,
     paymentGateway,
     userRepository,
+    configService,
   };
 }
 
@@ -125,6 +131,7 @@ describe("SubscribeToProUseCase", () => {
         nextDueDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         cycle: SubscriptionBillingCycle.MONTHLY,
         externalReference: "user-1",
+        callbackSuccessUrl: "https://app.vaulto.com.br/planos",
       }),
     );
     expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
@@ -136,6 +143,22 @@ describe("SubscribeToProUseCase", () => {
       }),
     );
     expect(result.checkoutUrl).toBe("https://asaas.com/i/abc123");
+  });
+
+  it("falls back to localhost for the callback success URL when FRONTEND_URL is unset", async () => {
+    const { useCase, paymentGateway, configService } = buildUseCase();
+    configService.get.mockReturnValue(undefined);
+
+    await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.MONTHLY,
+    });
+
+    expect(paymentGateway.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        callbackSuccessUrl: "http://localhost:3000/planos",
+      }),
+    );
   });
 
   it("charges the annual price and cycle when billingCycle is YEARLY", async () => {
