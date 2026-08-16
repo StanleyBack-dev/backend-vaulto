@@ -56,6 +56,16 @@ export type CategoryAmountRow = {
   amount: number;
 };
 
+export type MonthlyAmountFilters = {
+  dueDateFrom: Date;
+  dueDateTo: Date;
+};
+
+export type MonthlyAmountRow = {
+  month: string;
+  amount: number;
+};
+
 export interface ReportRepositoryPort {
   getDebtsReport(
     idUsers: string,
@@ -73,6 +83,14 @@ export interface ReportRepositoryPort {
     idUsers: string,
     filters: CategoryAmountFilters,
   ): Promise<CategoryAmountRow[]>;
+  getDebtsPaidAmountByMonth(
+    idUsers: string,
+    filters: MonthlyAmountFilters,
+  ): Promise<MonthlyAmountRow[]>;
+  getIncomesReceivedAmountByMonth(
+    idUsers: string,
+    filters: MonthlyAmountFilters,
+  ): Promise<MonthlyAmountRow[]>;
 }
 
 export const REPORT_REPOSITORY = Symbol("REPORT_REPOSITORY");

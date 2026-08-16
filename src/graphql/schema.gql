@@ -551,6 +551,12 @@ enum ReferralRewardStatus {
   APPLIED
 }
 
+type CategoryAmountResponseDto {
+  idCategory: String!
+  categoryName: String!
+  amount: Float!
+}
+
 type CategoryComparisonEntryDto {
   idCategory: String!
   categoryName: String!
@@ -620,6 +626,28 @@ type DebtsReportResponseDto {
   totalOutstanding: Float!
   totalCount: Int!
   countByStatus: DebtsReportStatusCountsDto!
+}
+
+type IncomesReportStatusCountsDto {
+  pending: Int!
+  overdue: Int!
+  partiallyReceived: Int!
+  received: Int!
+}
+
+type IncomesReportResponseDto {
+  totalAmountDue: Float!
+  totalAmountReceived: Float!
+  totalOutstanding: Float!
+  totalCount: Int!
+  countByStatus: IncomesReportStatusCountsDto!
+}
+
+type MonthlyCashflowPointDto {
+  month: String!
+  expenses: Float!
+  income: Float!
+  balance: Float!
 }
 
 type SupportTicketResponseDto {
@@ -809,6 +837,10 @@ type Query {
   getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
+  getIncomesReport(input: GetIncomesReportInputDto): IncomesReportResponseDto!
+  getDebtsAmountByCategory(input: GetCategoryAmountInputDto!): [CategoryAmountResponseDto!]!
+  getIncomesAmountByCategory(input: GetCategoryAmountInputDto!): [CategoryAmountResponseDto!]!
+  getMonthlyCashflowTrend(input: GetCategoryAmountInputDto!): [MonthlyCashflowPointDto!]!
   getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
   getCategoryComparison(input: GetCategoryComparisonInputDto): CategoryComparisonResponseDto!
   getFinancialHealthScore(input: GetFinancialHealthScoreInputDto): FinancialHealthScoreResponseDto!
@@ -901,6 +933,18 @@ input GetDebtsReportInputDto {
   dueDateTo: DateTime
   debtType: DebtType
   idCategory: String
+}
+
+input GetIncomesReportInputDto {
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+  incomeType: IncomeType
+  idCategory: String
+}
+
+input GetCategoryAmountInputDto {
+  dueDateFrom: DateTime!
+  dueDateTo: DateTime!
 }
 
 input GetFinancialForecastInputDto {

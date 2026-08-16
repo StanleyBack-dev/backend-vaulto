@@ -18,6 +18,8 @@ import type {
   IncomesReportFilters,
   IncomesReportStatusCounts,
   IncomesReportView,
+  MonthlyAmountFilters,
+  MonthlyAmountRow,
   ReportRepositoryPort,
 } from "@/modules/reports/application/ports/report-repository.port";
 
@@ -37,6 +39,11 @@ type IncomesReportRawRow = {
 
 type CategoryAmountRawRow = {
   idCategory: string;
+  amount: string | null;
+};
+
+type MonthlyAmountRawRow = {
+  month: string;
   amount: string | null;
 };
 
@@ -285,6 +292,65 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .getRawMany<CategoryAmountRawRow>();
 
     return this.resolveCategoryNames(rows);
+  }
+
+  async getDebtsPaidAmountByMonth(
+    idUsers: string,
+    filters: MonthlyAmountFilters,
+  ): Promise<MonthlyAmountRow[]> {
+    const rows = await this.installmentRepository
+      .createQueryBuilder("installment")
+      .innerJoin(
+        DebtEntity,
+        "debt",
+        "CAST(debt.idDebt AS varchar) = installment.idDebt",
+      )
+      .where("debt.idUsers = :idUsers", { idUsers })
+      .andWhere("installment.dueDate >= :dueDateFrom", {
+        dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+      })
+      .andWhere("installment.dueDate <= :dueDateTo", {
+        dueDateTo: toDateOnlyString(filters.dueDateTo),
+      })
+      .select("TO_CHAR(installment.dueDate, 'YYYY-MM')", "month")
+      .addSelect("SUM(installment.amountPaid)", "amount")
+      .groupBy("TO_CHAR(installment.dueDate, 'YYYY-MM')")
+      .getRawMany<MonthlyAmountRawRow>();
+
+    return this.mapMonthlyRows(rows);
+  }
+
+  async getIncomesReceivedAmountByMonth(
+    idUsers: string,
+    filters: MonthlyAmountFilters,
+  ): Promise<MonthlyAmountRow[]> {
+    const rows = await this.incomeInstallmentRepository
+      .createQueryBuilder("installment")
+      .innerJoin(
+        IncomeEntity,
+        "income",
+        "CAST(income.idIncome AS varchar) = installment.idIncome",
+      )
+      .where("income.idUsers = :idUsers", { idUsers })
+      .andWhere("installment.dueDate >= :dueDateFrom", {
+        dueDateFrom: toDateOnlyString(filters.dueDateFrom),
+      })
+      .andWhere("installment.dueDate <= :dueDateTo", {
+        dueDateTo: toDateOnlyString(filters.dueDateTo),
+      })
+      .select("TO_CHAR(installment.dueDate, 'YYYY-MM')", "month")
+      .addSelect("SUM(installment.amountReceived)", "amount")
+      .groupBy("TO_CHAR(installment.dueDate, 'YYYY-MM')")
+      .getRawMany<MonthlyAmountRawRow>();
+
+    return this.mapMonthlyRows(rows);
+  }
+
+  private mapMonthlyRows(rows: MonthlyAmountRawRow[]): MonthlyAmountRow[] {
+    return rows.map((row) => ({
+      month: row.month,
+      amount: round2(Number(row.amount) || 0),
+    }));
   }
 
   private async resolveCategoryNames(
