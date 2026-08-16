@@ -182,6 +182,25 @@ describe("SubscribeToProUseCase", () => {
     expect(paymentGateway.createCustomer).not.toHaveBeenCalled();
   });
 
+  it("persists the newly created gateway customer id even if createSubscription then fails", async () => {
+    const { useCase, subscriptionRepository, paymentGateway } = buildUseCase();
+    paymentGateway.createSubscription.mockRejectedValue(
+      new Error("Asaas rejected the subscription"),
+    );
+
+    await expect(
+      useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      }),
+    ).rejects.toThrow("Asaas rejected the subscription");
+
+    expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+      "user-1",
+      { gatewayCustomerId: "cus_123" },
+    );
+  });
+
   it("rejects when the authenticated user cannot be found", async () => {
     const { useCase, userRepository } = buildUseCase();
     userRepository.findOne.mockResolvedValue(null);

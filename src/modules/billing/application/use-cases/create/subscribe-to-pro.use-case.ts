@@ -71,16 +71,24 @@ export class SubscribeToProUseCase {
       );
     }
 
-    const gatewayCustomerId =
-      subscription.gatewayCustomerId ??
-      (
-        await this.paymentGateway.createCustomer({
-          name: user.name,
-          email: user.email,
-          cpfCnpj: command.cpfCnpj,
-          externalReference: idUsers,
-        })
-      ).gatewayCustomerId;
+    let gatewayCustomerId = subscription.gatewayCustomerId;
+
+    if (!gatewayCustomerId) {
+      const customer = await this.paymentGateway.createCustomer({
+        name: user.name,
+        email: user.email,
+        cpfCnpj: command.cpfCnpj,
+        externalReference: idUsers,
+      });
+      gatewayCustomerId = customer.gatewayCustomerId;
+
+      // Persisted immediately, before createSubscription runs, so a retry
+      // after a failure below (e.g. Asaas rejecting the subscription) reuses
+      // this customer instead of creating a duplicate orphan in Asaas.
+      await this.subscriptionRepository.updateByUserId(idUsers, {
+        gatewayCustomerId,
+      });
+    }
 
     const trialEndsAt = this.addDays(new Date(), PRO_PLAN_TRIAL_DAYS);
 
