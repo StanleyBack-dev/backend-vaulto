@@ -1,6 +1,7 @@
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
+import { PRO_PLAN_PRICES } from "@/modules/billing/domain/constants/pro-plan.constant";
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
@@ -115,7 +116,7 @@ describe("SubscribeToProUseCase", () => {
     expect(paymentGateway.createSubscription).toHaveBeenCalledWith(
       expect.objectContaining({
         gatewayCustomerId: "cus_123",
-        value: 14.9,
+        value: PRO_PLAN_PRICES[SubscriptionBillingCycle.MONTHLY],
         cycle: SubscriptionBillingCycle.MONTHLY,
         externalReference: "user-1",
       }),
@@ -142,7 +143,7 @@ describe("SubscribeToProUseCase", () => {
 
     expect(paymentGateway.createSubscription).toHaveBeenCalledWith(
       expect.objectContaining({
-        value: 149.9,
+        value: PRO_PLAN_PRICES[SubscriptionBillingCycle.YEARLY],
         cycle: SubscriptionBillingCycle.YEARLY,
       }),
     );
