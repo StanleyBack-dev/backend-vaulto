@@ -7,14 +7,13 @@ export type SubscriptionView = {
   idUsers: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
-  trialEndsAt?: Date;
   proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
-  trialEndingNotifiedAt?: Date;
+  gatewayPixAuthorizationId?: string;
   pastDueSince?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -29,14 +28,13 @@ export type CreateSubscriptionPayload = {
 export type UpdateSubscriptionPayload = {
   plan?: SubscriptionPlan;
   status?: SubscriptionStatus;
-  trialEndsAt?: Date;
   proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
   cancelAtPeriodEnd?: boolean;
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
-  trialEndingNotifiedAt?: Date | null;
+  gatewayPixAuthorizationId?: string;
   pastDueSince?: Date | null;
 };
 
@@ -45,6 +43,9 @@ export interface SubscriptionRepositoryPort {
   findByUserId(idUsers: string): Promise<SubscriptionView | null>;
   findByGatewaySubscriptionId(
     gatewaySubscriptionId: string,
+  ): Promise<SubscriptionView | null>;
+  findByGatewayPixAuthorizationId(
+    gatewayPixAuthorizationId: string,
   ): Promise<SubscriptionView | null>;
   findByStatus(status: SubscriptionStatus): Promise<SubscriptionView[]>;
   findPendingCancellations(): Promise<SubscriptionView[]>;

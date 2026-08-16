@@ -38,6 +38,13 @@ const CANCELING_SUBSCRIPTION_EVENTS = new Set([
   "SUBSCRIPTION_DELETED",
   "SUBSCRIPTION_INACTIVATED",
 ]);
+const PIX_AUTOMATIC_AUTHORIZATION_ACTIVATED_EVENT =
+  "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_ACTIVATED";
+const CANCELING_PIX_AUTOMATIC_AUTHORIZATION_EVENTS = new Set([
+  "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_CANCELLED",
+  "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_REFUSED",
+  "PIX_AUTOMATIC_RECURRING_AUTHORIZATION_EXPIRED",
+]);
 
 const PAYMENT_STATUS_MAP: Record<string, BillingPaymentStatus> = {
   CONFIRMED: BillingPaymentStatus.CONFIRMED,
@@ -76,6 +83,14 @@ export class HandleAsaasWebhookUseCase {
 
     if (payload.subscription) {
       await this.handleSubscriptionEvent(payload.event, payload.subscription);
+      return;
+    }
+
+    if (payload.pixAutomaticAuthorization) {
+      await this.handlePixAutomaticAuthorizationEvent(
+        payload.event,
+        payload.pixAutomaticAuthorization,
+      );
     }
   }
 
@@ -108,14 +123,15 @@ export class HandleAsaasWebhookUseCase {
     event: string,
     payment: AsaasWebhookPaymentPayload,
   ): Promise<void> {
-    if (!payment.subscription) {
-      return;
-    }
-
-    const subscription =
-      await this.subscriptionRepository.findByGatewaySubscriptionId(
-        payment.subscription,
-      );
+    const subscription = payment.subscription
+      ? await this.subscriptionRepository.findByGatewaySubscriptionId(
+          payment.subscription,
+        )
+      : payment.pixAutomaticAuthorizationId
+        ? await this.subscriptionRepository.findByGatewayPixAuthorizationId(
+            payment.pixAutomaticAuthorizationId,
+          )
+        : null;
     if (!subscription) {
       return;
     }
@@ -130,7 +146,20 @@ export class HandleAsaasWebhookUseCase {
       paidAt: SETTLED_PAYMENT_EVENTS.has(event) ? new Date() : undefined,
     });
 
-    await this.applyPaymentEventToSubscription(subscription, event, payment);
+    if (SETTLED_PAYMENT_EVENTS.has(event)) {
+      const baseDate = payment.dueDate ? new Date(payment.dueDate) : new Date();
+      await this.activatePro(subscription, baseDate);
+      return;
+    }
+
+    if (event === "PAYMENT_OVERDUE") {
+      await this.markPastDue(subscription);
+      return;
+    }
+
+    if (event === "PAYMENT_DELETED" || event === "PAYMENT_REFUNDED") {
+      await this.downgradeToFree(subscription.idUsers);
+    }
   }
 
   private async handleSubscriptionEvent(
@@ -149,7 +178,81 @@ export class HandleAsaasWebhookUseCase {
       return;
     }
 
+    await this.downgradeToFree(subscription.idUsers);
+  }
+
+  private async handlePixAutomaticAuthorizationEvent(
+    event: string,
+    pixAutomaticAuthorizationId: string,
+  ): Promise<void> {
+    const subscription =
+      await this.subscriptionRepository.findByGatewayPixAuthorizationId(
+        pixAutomaticAuthorizationId,
+      );
+    if (!subscription) {
+      return;
+    }
+
+    if (event === PIX_AUTOMATIC_AUTHORIZATION_ACTIVATED_EVENT) {
+      // The immediate QR Code payment that establishes consent has just
+      // settled — same meaning as a first PAYMENT_CONFIRMED/RECEIVED on the
+      // card/boleto checkout flow.
+      await this.activatePro(subscription, new Date());
+      return;
+    }
+
+    if (CANCELING_PIX_AUTOMATIC_AUTHORIZATION_EVENTS.has(event)) {
+      await this.downgradeToFree(subscription.idUsers);
+    }
+  }
+
+  private async activatePro(
+    subscription: SubscriptionView,
+    periodBaseDate: Date,
+  ): Promise<void> {
+    const { idUsers } = subscription;
+    // Checked on plan, not status: every subscription (including a brand
+    // new FREE one) already starts out with status ACTIVE, so status alone
+    // can't tell a first-ever activation from a renewal now that there's no
+    // TRIALING interim state.
+    const wasActive =
+      subscription.plan === SubscriptionPlan.PRO &&
+      subscription.status === SubscriptionStatus.ACTIVE;
+    const currentPeriodEnd = this.computeNextPeriodEnd(
+      subscription,
+      periodBaseDate,
+    );
+
+    await this.subscriptionRepository.updateByUserId(idUsers, {
+      plan: SubscriptionPlan.PRO,
+      status: SubscriptionStatus.ACTIVE,
+      pastDueSince: null,
+      ...(currentPeriodEnd ? { currentPeriodEnd } : {}),
+    });
+
+    if (!wasActive) {
+      await this.notifySubscriptionActivated(
+        idUsers,
+        subscription.billingCycle,
+      );
+      await this.qualifyReferralUseCase.execute(idUsers);
+    }
+  }
+
+  private async markPastDue(subscription: SubscriptionView): Promise<void> {
+    if (subscription.pastDueSince) {
+      return;
+    }
+
     await this.subscriptionRepository.updateByUserId(subscription.idUsers, {
+      status: SubscriptionStatus.PAST_DUE,
+      pastDueSince: new Date(),
+    });
+    await this.notifyPaymentOverdue(subscription.idUsers);
+  }
+
+  private async downgradeToFree(idUsers: string): Promise<void> {
+    await this.subscriptionRepository.updateByUserId(idUsers, {
       plan: SubscriptionPlan.FREE,
       status: SubscriptionStatus.CANCELED,
       cancelAtPeriodEnd: false,
@@ -157,68 +260,17 @@ export class HandleAsaasWebhookUseCase {
     });
   }
 
-  private async applyPaymentEventToSubscription(
-    subscription: SubscriptionView,
-    event: string,
-    payment: AsaasWebhookPaymentPayload,
-  ): Promise<void> {
-    const { idUsers } = subscription;
-
-    if (SETTLED_PAYMENT_EVENTS.has(event)) {
-      const wasActive = subscription.status === SubscriptionStatus.ACTIVE;
-      const currentPeriodEnd = this.computeNextPeriodEnd(subscription, payment);
-
-      await this.subscriptionRepository.updateByUserId(idUsers, {
-        plan: SubscriptionPlan.PRO,
-        status: SubscriptionStatus.ACTIVE,
-        pastDueSince: null,
-        ...(currentPeriodEnd ? { currentPeriodEnd } : {}),
-      });
-
-      if (!wasActive) {
-        await this.notifySubscriptionActivated(
-          idUsers,
-          subscription.billingCycle,
-        );
-        await this.qualifyReferralUseCase.execute(idUsers);
-      }
-      return;
-    }
-
-    if (event === "PAYMENT_OVERDUE") {
-      if (subscription.pastDueSince) {
-        return;
-      }
-
-      await this.subscriptionRepository.updateByUserId(idUsers, {
-        status: SubscriptionStatus.PAST_DUE,
-        pastDueSince: new Date(),
-      });
-      await this.notifyPaymentOverdue(idUsers);
-      return;
-    }
-
-    if (event === "PAYMENT_DELETED" || event === "PAYMENT_REFUNDED") {
-      await this.subscriptionRepository.updateByUserId(idUsers, {
-        plan: SubscriptionPlan.FREE,
-        status: SubscriptionStatus.CANCELED,
-        pastDueSince: null,
-      });
-    }
-  }
-
   // The subscription is paying for access up to the due date of the charge
   // that was just confirmed plus one more billing cycle — that's when Asaas
   // will generate (and attempt to charge) the next one.
   private computeNextPeriodEnd(
     subscription: SubscriptionView,
-    payment: AsaasWebhookPaymentPayload,
+    baseDate: Date,
   ): Date | undefined {
     if (!subscription.billingCycle) {
       return undefined;
     }
 
-    const baseDate = payment.dueDate ? new Date(payment.dueDate) : new Date();
     const nextPeriodEnd = new Date(baseDate);
 
     if (subscription.billingCycle === SubscriptionBillingCycle.YEARLY) {

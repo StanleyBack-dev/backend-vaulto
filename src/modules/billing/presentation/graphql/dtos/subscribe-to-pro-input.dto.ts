@@ -8,4 +8,7 @@ export class SubscribeToProInputDto {
 
   @Field(() => SubscriptionBillingCycle)
   billingCycle!: SubscriptionBillingCycle;
+
+  @Field({ nullable: true })
+  pixAutomatic?: boolean;
 }

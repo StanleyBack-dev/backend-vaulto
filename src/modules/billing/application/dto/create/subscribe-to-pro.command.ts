@@ -3,4 +3,5 @@ import type { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/su
 export type SubscribeToProCommand = {
   cpfCnpj: string;
   billingCycle: SubscriptionBillingCycle;
+  pixAutomatic?: boolean;
 };

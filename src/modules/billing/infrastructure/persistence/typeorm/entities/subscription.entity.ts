@@ -33,9 +33,6 @@ export class SubscriptionEntity {
   })
   status!: SubscriptionStatus;
 
-  @Column({ name: "trial_ends_at", type: "timestamptz", nullable: true })
-  trialEndsAt?: Date;
-
   @Column({ name: "pro_started_at", type: "timestamptz", nullable: true })
   proStartedAt?: Date;
 
@@ -60,11 +57,11 @@ export class SubscriptionEntity {
   gatewaySubscriptionId?: string;
 
   @Column({
-    name: "trial_ending_notified_at",
-    type: "timestamptz",
+    name: "gateway_pix_authorization_id",
+    type: "varchar",
     nullable: true,
   })
-  trialEndingNotifiedAt?: Date;
+  gatewayPixAuthorizationId?: string;
 
   @Column({ name: "past_due_since", type: "timestamptz", nullable: true })
   pastDueSince?: Date;

@@ -10,7 +10,6 @@ export class SubscriptionResponseDto {
     const dto = new SubscriptionResponseDto();
     dto.plan = view.plan;
     dto.status = view.status;
-    dto.trialEndsAt = view.trialEndsAt;
     dto.currentPeriodEnd = view.currentPeriodEnd;
     dto.billingCycle = view.billingCycle;
     dto.cancelAtPeriodEnd = view.cancelAtPeriodEnd;
@@ -22,9 +21,6 @@ export class SubscriptionResponseDto {
 
   @Field(() => SubscriptionStatus)
   status!: SubscriptionStatus;
-
-  @Field(() => Date, { nullable: true })
-  trialEndsAt?: Date;
 
   @Field(() => Date, { nullable: true })
   currentPeriodEnd?: Date;

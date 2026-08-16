@@ -49,8 +49,7 @@ export class PlanLimitsService {
   }
 
   // Gates a whole feature (not a per-resource count) behind the Pro plan,
-  // e.g. the financial forecast. TRIALING counts as Pro since the user
-  // already has full access during the trial window.
+  // e.g. the financial forecast.
   async assertProPlan(idUsers: string): Promise<void> {
     const subscription =
       await this.subscriptionRepository.findByUserId(idUsers);

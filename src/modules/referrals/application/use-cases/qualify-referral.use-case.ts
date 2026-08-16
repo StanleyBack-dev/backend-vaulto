@@ -20,10 +20,9 @@ import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/e
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-// Called from HandleAsaasWebhookUseCase the moment a subscription is
-// confirmed paid for the first time (not at trial start — a friend can
-// cancel a trial before ever being charged, which shouldn't count). Also
-// registered directly in BillingModule (in addition to ReferralsModule) so
+// Called from HandleAsaasWebhookUseCase the moment a subscription's first
+// charge is actually confirmed paid. Also registered directly in
+// BillingModule (in addition to ReferralsModule) so
 // the webhook handler can inject it without BillingModule importing
 // ReferralsModule — see comment on ReferralRewardEntity registration in
 // billing.module.ts.
@@ -86,8 +85,8 @@ export class QualifyReferralUseCase {
   }
 
   // A Free-plan referrer has nothing to conflict with — grant the reward
-  // straight away. A Pro (trialing or paying) referrer keeps their reward
-  // PENDING: it gets consumed by ApplyReferralRewardsUseCase right when they
+  // straight away. A paying Pro referrer keeps their reward PENDING: it
+  // gets consumed by ApplyReferralRewardsUseCase right when they
   // would otherwise lapse back to Free, so it never has to fight with an
   // Asaas billing cycle that's already in flight.
   private async applyIfFreePlan(idUsers: string): Promise<boolean> {

@@ -23,15 +23,14 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 // Runs daily (its own Vercel Cron entry, scheduled ahead of the billing
 // subscription-lifecycle job — see vercel.json) and rescues any Pro referrer
 // with a PENDING reward who is right at the point RunSubscriptionLifecycleUseCase
-// would otherwise downgrade them to Free: a stale/unconverted trial, or a
-// payment gone past due. Runs first on purpose, so that by the time the
-// billing job checks, the rescued subscription no longer matches its
-// downgrade criteria — this is how the two stay decoupled (billing has no
-// idea referrals exist).
+// would otherwise downgrade them to Free: a payment gone past due. Runs
+// first on purpose, so that by the time the billing job checks, the rescued
+// subscription no longer matches its downgrade criteria — this is how the
+// two stay decoupled (billing has no idea referrals exist).
 //
 // Deliberately does NOT rescue a subscription pending cancellation
 // (CancelSubscriptionUseCase): the user asked to leave, so an involuntary
-// lapse (trial/payment) is the only case a surprise extra month applies to.
+// payment lapse is the only case a surprise extra month applies to.
 @Injectable()
 export class ApplyReferralRewardsUseCase {
   private readonly logger = new Logger(ApplyReferralRewardsUseCase.name);
@@ -59,13 +58,9 @@ export class ApplyReferralRewardsUseCase {
         continue;
       }
 
-      const isLapsingTrial =
-        subscription.status === SubscriptionStatus.TRIALING &&
-        !!subscription.trialEndsAt &&
-        subscription.trialEndsAt <= now;
       const isPastDue = subscription.status === SubscriptionStatus.PAST_DUE;
 
-      if (!isLapsingTrial && !isPastDue) {
+      if (!isPastDue) {
         continue;
       }
 

@@ -38,8 +38,6 @@ function buildUseCase(
   const updatedSubscription =
     overrides.updatedSubscription ??
     freeSubscription({
-      plan: SubscriptionPlan.FREE,
-      status: SubscriptionStatus.TRIALING,
       gatewayCustomerId: "cus_123",
       gatewaySubscriptionId: "sub_123",
     });
@@ -47,6 +45,7 @@ function buildUseCase(
   const subscriptionRepository = {
     findByUserId: jest.fn(),
     findByGatewaySubscriptionId: jest.fn(),
+    findByGatewayPixAuthorizationId: jest.fn(),
     updateByUserId: jest.fn().mockResolvedValue(updatedSubscription),
   };
 
@@ -58,6 +57,12 @@ function buildUseCase(
       gatewaySubscriptionId: "sub_123",
       status: "ACTIVE",
       checkoutUrl: "https://asaas.com/i/abc123",
+    }),
+    createPixAutomaticAuthorization: jest.fn().mockResolvedValue({
+      pixAutomaticAuthorizationId: "aut_123",
+      status: "CREATED",
+      qrCodePayload: "00020126...",
+      qrCodeImage: "data:image/png;base64,abc",
     }),
   };
 
@@ -88,7 +93,7 @@ function buildUseCase(
 }
 
 describe("SubscribeToProUseCase", () => {
-  it("creates a gateway customer, a monthly subscription and updates the local subscription to TRIALING", async () => {
+  it("creates a gateway customer, a monthly subscription and charges it immediately", async () => {
     const {
       useCase,
       authorizationService,
@@ -117,6 +122,7 @@ describe("SubscribeToProUseCase", () => {
       expect.objectContaining({
         gatewayCustomerId: "cus_123",
         value: PRO_PLAN_PRICES[SubscriptionBillingCycle.MONTHLY],
+        nextDueDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         cycle: SubscriptionBillingCycle.MONTHLY,
         externalReference: "user-1",
       }),
@@ -124,7 +130,6 @@ describe("SubscribeToProUseCase", () => {
     expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
       "user-1",
       expect.objectContaining({
-        status: SubscriptionStatus.TRIALING,
         billingCycle: SubscriptionBillingCycle.MONTHLY,
         gatewayCustomerId: "cus_123",
         gatewaySubscriptionId: "sub_123",
@@ -165,7 +170,7 @@ describe("SubscribeToProUseCase", () => {
     );
   });
 
-  it("rejects when the user already has an active or trialing Pro subscription", async () => {
+  it("rejects when the user already has an active Pro subscription", async () => {
     const { useCase, paymentGateway } = buildUseCase({
       subscription: freeSubscription({
         plan: SubscriptionPlan.PRO,
@@ -211,5 +216,85 @@ describe("SubscribeToProUseCase", () => {
         billingCycle: SubscriptionBillingCycle.MONTHLY,
       }),
     ).rejects.toBeInstanceOf(AppException);
+  });
+
+  describe("pixAutomatic", () => {
+    it("creates a Pix Automático authorization instead of a checkout subscription", async () => {
+      const { useCase, subscriptionRepository, paymentGateway } = buildUseCase({
+        updatedSubscription: freeSubscription({
+          gatewayCustomerId: "cus_123",
+          gatewayPixAuthorizationId: "aut_123",
+        }),
+      });
+
+      const result = await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+        pixAutomatic: true,
+      });
+
+      expect(paymentGateway.createSubscription).not.toHaveBeenCalled();
+      expect(
+        paymentGateway.createPixAutomaticAuthorization,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gatewayCustomerId: "cus_123",
+          value: PRO_PLAN_PRICES[SubscriptionBillingCycle.MONTHLY],
+          frequency: "MONTHLY",
+          contractId: "user1",
+          startDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        }),
+      );
+      expect(subscriptionRepository.updateByUserId).toHaveBeenCalledWith(
+        "user-1",
+        expect.objectContaining({
+          gatewayCustomerId: "cus_123",
+          gatewayPixAuthorizationId: "aut_123",
+        }),
+      );
+      expect(result.checkoutUrl).toBeUndefined();
+      expect(result.pixQrCode).toEqual({
+        payload: "00020126...",
+        image: "data:image/png;base64,abc",
+      });
+    });
+
+    it("maps YEARLY billing cycle to the ANNUALLY Pix frequency", async () => {
+      const { useCase, paymentGateway } = buildUseCase();
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.YEARLY,
+        pixAutomatic: true,
+      });
+
+      expect(
+        paymentGateway.createPixAutomaticAuthorization,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ frequency: "ANNUALLY" }),
+      );
+    });
+
+    it("strips hyphens from the user id to build a valid contractId", async () => {
+      const { useCase, paymentGateway } = buildUseCase({
+        subscription: freeSubscription({
+          idUsers: "11111111-2222-3333-4444-555555555555",
+        }),
+      });
+
+      await useCase.execute("11111111-2222-3333-4444-555555555555", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+        pixAutomatic: true,
+      });
+
+      expect(
+        paymentGateway.createPixAutomaticAuthorization,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contractId: "11111111222233334444555555555555",
+        }),
+      );
+    });
   });
 });

@@ -44,6 +44,15 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
     return row ? this.mapToView(row) : null;
   }
 
+  async findByGatewayPixAuthorizationId(
+    gatewayPixAuthorizationId: string,
+  ): Promise<SubscriptionView | null> {
+    const row = await this.repository.findOne({
+      where: { gatewayPixAuthorizationId },
+    });
+    return row ? this.mapToView(row) : null;
+  }
+
   async findByStatus(status: SubscriptionStatus): Promise<SubscriptionView[]> {
     const rows = await this.repository.find({ where: { status } });
     return rows.map((row) => this.mapToView(row));
@@ -77,14 +86,13 @@ export class SubscriptionTypeormRepository implements SubscriptionRepositoryPort
       idUsers: entity.idUsers,
       plan: entity.plan,
       status: entity.status,
-      trialEndsAt: entity.trialEndsAt,
       proStartedAt: entity.proStartedAt,
       currentPeriodEnd: entity.currentPeriodEnd,
       cancelAtPeriodEnd: entity.cancelAtPeriodEnd,
       gatewayCustomerId: entity.gatewayCustomerId,
       gatewaySubscriptionId: entity.gatewaySubscriptionId,
+      gatewayPixAuthorizationId: entity.gatewayPixAuthorizationId,
       billingCycle: entity.billingCycle,
-      trialEndingNotifiedAt: entity.trialEndingNotifiedAt,
       pastDueSince: entity.pastDueSince,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
