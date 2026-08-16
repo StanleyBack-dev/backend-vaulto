@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BillingModule } from "@/modules/billing/billing.module";
 import { CategoriesModule } from "@/modules/categories/categories.module";
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { INCOME_REPOSITORY } from "@/modules/incomes/application/ports/income-repository.port";
@@ -25,6 +26,7 @@ import "@/modules/incomes/presentation/graphql/enums/incomes-graphql.enums";
     ]),
     CategoriesModule,
     AuthModule,
+    BillingModule,
   ],
   providers: [
     CreateIncomeUseCase,
@@ -40,5 +42,6 @@ import "@/modules/incomes/presentation/graphql/enums/incomes-graphql.enums";
       useExisting: IncomeTypeormRepository,
     },
   ],
+  exports: [INCOME_REPOSITORY],
 })
 export class IncomesModule {}

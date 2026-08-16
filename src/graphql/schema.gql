@@ -28,6 +28,7 @@ type AuthSessionResponseDto {
   authenticated: Boolean!
   mustChangePassword: Boolean!
   onboardingTourCompleted: Boolean!
+  termsAccepted: Boolean!
   user: AuthUserDto!
 }
 
@@ -62,12 +63,111 @@ enum PageAccessKey {
   PAYMENTS
   INCOME_RECEIPTS
   CREDIT_CARDS
-  USERS
+  ADMIN
 }
 
 type PageAccessMetadataResponseDto {
   allKeys: [PageAccessKey!]!
   groupDefaults: [GroupDefaultDto!]!
+}
+
+type BillingPaymentResponseDto {
+  amount: Float!
+  status: BillingPaymentStatus!
+  dueDate: DateTime
+  paidAt: DateTime
+  createdAt: DateTime!
+}
+
+enum BillingPaymentStatus {
+  PENDING
+  CONFIRMED
+  RECEIVED
+  OVERDUE
+  REFUNDED
+  DELETED
+}
+
+type BillingPaymentsResponseDto {
+  items: [BillingPaymentResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type SubscriptionResponseDto {
+  plan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  trialEndsAt: DateTime
+  currentPeriodEnd: DateTime
+  billingCycle: SubscriptionBillingCycle
+  cancelAtPeriodEnd: Boolean!
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum SubscriptionBillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+type SubscribeToProResponseDto {
+  subscription: SubscriptionResponseDto!
+  checkoutUrl: String
+}
+
+type CancelAccountDeletionResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type DeactivateAccountResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type RequestAccountDeletionResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type UsersByGroupCountDto {
+  group: UserGroup!
+  count: Int!
+}
+
+type SubscriptionsByStatusCountDto {
+  status: SubscriptionStatus!
+  count: Int!
+}
+
+type AdminDashboardStatsResponseDto {
+  totalUsers: Int!
+  usersByGroup: [UsersByGroupCountDto!]!
+  totalSubscriptions: Int!
+  freeSubscriptions: Int!
+  activeProSubscriptions: Int!
+  subscriptionsByStatus: [SubscriptionsByStatusCountDto!]!
+  estimatedMonthlyRecurringRevenue: Float!
+  totalSupportTickets: Int!
+  openSupportTickets: Int!
+  resolvedSupportTickets: Int!
 }
 
 type CategoryResponseDto {
@@ -236,14 +336,59 @@ type ListDebtsResponseDto {
   hasNextPage: Boolean!
 }
 
-type IncomeReceiptResponseDto {
-  idIncomeReceipt: String!
-  idIncome: String!
-  idIncomeInstallment: String
+type GoalContributionResponseDto {
+  idGoalContribution: String!
+  idFinancialGoal: String!
+  amount: Float!
+  contributedAt: DateTime!
+  note: String
+  createdAt: DateTime!
+}
+
+type FinancialGoalResponseDto {
+  idFinancialGoal: String!
   idUsers: String!
-  amountReceived: Float!
-  receivedAt: String!
-  createdAt: String!
+  title: String!
+  description: String
+  targetAmount: Float!
+  currentAmount: Float!
+  targetDate: DateTime
+  status: FinancialGoalStatus!
+  progressPercent: Int!
+  estimatedMonthsToComplete: Int
+  contributions: [GoalContributionResponseDto!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum FinancialGoalStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+type CreateFinancialGoalMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: FinancialGoalResponseDto!
+}
+
+type DeleteFinancialGoalResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type ListFinancialGoalsResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [FinancialGoalResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
 }
 
 type IncomeInstallmentResponseDto {
@@ -262,34 +407,6 @@ enum IncomeStatus {
   PARTIALLY_RECEIVED
   RECEIVED
   OVERDUE
-}
-
-type RegisterInstallmentReceiptResponseDto {
-  idIncome: String!
-  incomeStatus: IncomeStatus!
-  receipts: [IncomeReceiptResponseDto!]!
-  installments: [IncomeInstallmentResponseDto!]!
-}
-
-type RegisterInstallmentReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
-}
-
-type UpdateIncomeReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
-}
-
-type DeleteIncomeReceiptMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: RegisterInstallmentReceiptResponseDto!
 }
 
 type IncomeResponseDto {
@@ -344,6 +461,56 @@ type ListIncomesResponseDto {
   hasNextPage: Boolean!
 }
 
+type ExportResourceResponseDto {
+  filename: String!
+  mimeType: String!
+  base64: String!
+}
+
+type IncomeReceiptResponseDto {
+  idIncomeReceipt: String!
+  idIncome: String!
+  idIncomeInstallment: String
+  idUsers: String!
+  amountReceived: Float!
+  receivedAt: String!
+  createdAt: String!
+}
+
+type RegisterInstallmentReceiptResponseDto {
+  idIncome: String!
+  incomeStatus: IncomeStatus!
+  receipts: [IncomeReceiptResponseDto!]!
+  installments: [IncomeInstallmentResponseDto!]!
+}
+
+type RegisterInstallmentReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type UpdateIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type DeleteIncomeReceiptMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: RegisterInstallmentReceiptResponseDto!
+}
+
+type TermsAcceptanceStatusResponseDto {
+  accepted: Boolean!
+  acceptedAt: DateTime
+  termsVersion: String
+}
+
 type RegisterInstallmentPaymentResponseDto {
   idDebt: String!
   debtStatus: DebtStatus!
@@ -372,6 +539,80 @@ type DeleteDebtPaymentMutationResponseDto {
   data: RegisterInstallmentPaymentResponseDto!
 }
 
+type ReferralStatsResponseDto {
+  referralCode: String!
+  qualifiedReferralsCount: Int!
+  thresholdCount: Int!
+  rewardStatus: ReferralRewardStatus
+}
+
+enum ReferralRewardStatus {
+  PENDING
+  APPLIED
+}
+
+type CategoryAmountResponseDto {
+  idCategory: String!
+  categoryName: String!
+  amount: Float!
+}
+
+type CategoryComparisonEntryDto {
+  idCategory: String!
+  categoryName: String!
+  currentAmount: Float!
+  previousAmount: Float!
+  changeAmount: Float!
+  changePercent: Int
+}
+
+type CategoryComparisonGroupDto {
+  currentTotal: Float!
+  previousTotal: Float!
+  changeAmount: Float!
+  changePercent: Int
+  categories: [CategoryComparisonEntryDto!]!
+}
+
+type CategoryComparisonResponseDto {
+  currentPeriodStart: DateTime!
+  currentPeriodEnd: DateTime!
+  previousPeriodStart: DateTime!
+  previousPeriodEnd: DateTime!
+  expenses: CategoryComparisonGroupDto!
+  income: CategoryComparisonGroupDto!
+}
+
+type FinancialForecastResponseDto {
+  currentBalance: Float!
+  projectedIncome: Float!
+  projectedExpenses: Float!
+  safeToSpend: Float!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+}
+
+type FinancialHealthPillarScoreDto {
+  score: Int!
+  weight: Float!
+}
+
+type FinancialHealthScoreResponseDto {
+  score: Int!
+  status: FinancialHealthStatus!
+  debtCommitment: FinancialHealthPillarScoreDto!
+  punctuality: FinancialHealthPillarScoreDto!
+  reserves: FinancialHealthPillarScoreDto
+  periodStart: DateTime!
+  periodEnd: DateTime!
+}
+
+enum FinancialHealthStatus {
+  HEALTHY
+  ATTENTION
+  CRITICAL
+}
+
 type DebtsReportStatusCountsDto {
   open: Int!
   overdue: Int!
@@ -387,6 +628,77 @@ type DebtsReportResponseDto {
   countByStatus: DebtsReportStatusCountsDto!
 }
 
+type IncomesReportStatusCountsDto {
+  pending: Int!
+  overdue: Int!
+  partiallyReceived: Int!
+  received: Int!
+}
+
+type IncomesReportResponseDto {
+  totalAmountDue: Float!
+  totalAmountReceived: Float!
+  totalOutstanding: Float!
+  totalCount: Int!
+  countByStatus: IncomesReportStatusCountsDto!
+}
+
+type MonthlyCashflowPointDto {
+  month: String!
+  expenses: Float!
+  income: Float!
+  balance: Float!
+}
+
+type SupportTicketResponseDto {
+  idSupportMessage: String!
+  protocolNumber: Int!
+  userName: String!
+  userEmail: String!
+  category: SupportCategory!
+  message: String!
+  status: SupportTicketStatus!
+  adminReply: String
+  repliedAt: DateTime
+  finalizedAt: DateTime
+  finalizedByName: String
+  createdAt: DateTime!
+}
+
+enum SupportCategory {
+  DOUBT
+  TECHNICAL_ISSUE
+  SUGGESTION
+  BILLING
+  OTHER
+}
+
+enum SupportTicketStatus {
+  OPEN
+  ANSWERED
+  RESOLVED
+}
+
+type SupportTicketsResponseDto {
+  items: [SupportTicketResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type SupportMessageResponseDto {
+  category: SupportCategory!
+  message: String!
+  createdAt: DateTime!
+}
+
+type SupportMessageStatusResponseDto {
+  canSend: Boolean!
+  nextAllowedAt: DateTime
+}
+
 type GetUserResponseDto {
   idUsers: String!
   name: String!
@@ -396,6 +708,7 @@ type GetUserResponseDto {
   status: Boolean!
   group: UserGroup!
   inactivatedAt: String
+  deletionRequestedAt: String
   mustChangePassword: Boolean
   lastLoginAt: String
   failedLoginAttempts: Int
@@ -503,6 +816,8 @@ type UpdateUserMutationResponseDto {
 
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
+  mySubscription: SubscriptionResponseDto!
+  myBillingPayments(input: ListBillingPaymentsInputDto): BillingPaymentsResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUserFilterOptions: [UserFilterOptionDto!]!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
@@ -511,8 +826,10 @@ type Query {
   getMyPagePermissions: UserPagePermissionsResponseDto!
   getMyCategories(input: ListCategoriesInputDto): ListCategoriesResponseDto!
   getCategoryById(input: GetCategoryByIdInputDto!): CategoryResponseDto!
+  getMyCategoryOptions(input: ListCategoriesInputDto): ListCategoriesResponseDto!
   getMyCreditCards(input: ListCreditCardsInputDto): ListCreditCardsResponseDto!
   getCreditCardById(input: GetCreditCardByIdInputDto!): CreditCardResponseDto!
+  getMyCreditCardOptions(input: ListCreditCardsInputDto): ListCreditCardsResponseDto!
   getDebtById(input: GetDebtByIdInputDto!): DebtResponseDto!
   getMyDebts(input: ListDebtsInputDto): ListDebtsResponseDto!
   getDebtPayments(idDebt: String!): [DebtPaymentResponseDto!]!
@@ -520,6 +837,27 @@ type Query {
   getMyIncomes(input: ListIncomesInputDto): ListIncomesResponseDto!
   getIncomeReceipts(idIncome: String!): [IncomeReceiptResponseDto!]!
   getDebtsReport(input: GetDebtsReportInputDto): DebtsReportResponseDto!
+  getIncomesReport(input: GetIncomesReportInputDto): IncomesReportResponseDto!
+  getDebtsAmountByCategory(input: GetCategoryAmountInputDto!): [CategoryAmountResponseDto!]!
+  getIncomesAmountByCategory(input: GetCategoryAmountInputDto!): [CategoryAmountResponseDto!]!
+  getMonthlyCashflowTrend(input: GetCategoryAmountInputDto!): [MonthlyCashflowPointDto!]!
+  getFinancialForecast(input: GetFinancialForecastInputDto!): FinancialForecastResponseDto!
+  getCategoryComparison(input: GetCategoryComparisonInputDto): CategoryComparisonResponseDto!
+  getFinancialHealthScore(input: GetFinancialHealthScoreInputDto): FinancialHealthScoreResponseDto!
+  getFinancialGoalById(input: GetFinancialGoalByIdInputDto!): FinancialGoalResponseDto!
+  getMyFinancialGoals(input: ListFinancialGoalsInputDto): ListFinancialGoalsResponseDto!
+  exportResource(input: ExportResourceInputDto!): ExportResourceResponseDto!
+  mySupportMessageStatus: SupportMessageStatusResponseDto!
+  listSupportTickets(input: ListSupportTicketsInputDto): SupportTicketsResponseDto!
+  getSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
+  myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
+  adminDashboardStats: AdminDashboardStatsResponseDto!
+  myReferralStats: ReferralStatsResponseDto!
+}
+
+input ListBillingPaymentsInputDto {
+  page: Int
+  limit: Int
 }
 
 input GetUsersInputDto {
@@ -597,6 +935,98 @@ input GetDebtsReportInputDto {
   idCategory: String
 }
 
+input GetIncomesReportInputDto {
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+  incomeType: IncomeType
+  idCategory: String
+}
+
+input GetCategoryAmountInputDto {
+  dueDateFrom: DateTime!
+  dueDateTo: DateTime!
+}
+
+input GetFinancialForecastInputDto {
+  currentBalance: Float!
+  periodStart: DateTime
+  periodEnd: DateTime
+}
+
+input GetCategoryComparisonInputDto {
+  periodType: CategoryComparisonPeriodType
+  referenceDate: DateTime
+  comparisonDate: DateTime
+}
+
+enum CategoryComparisonPeriodType {
+  MONTH
+  QUARTER
+  SEMESTER
+  YEAR
+}
+
+input GetFinancialHealthScoreInputDto {
+  periodEnd: DateTime
+}
+
+input GetFinancialGoalByIdInputDto {
+  idFinancialGoal: String!
+}
+
+input ListFinancialGoalsInputDto {
+  page: Int
+  limit: Int
+}
+
+input ExportResourceInputDto {
+  resource: ExportResource!
+  format: ExportFormat!
+  dueDateFrom: DateTime
+  dueDateTo: DateTime
+  idDebt: String
+  idIncome: String
+  idFinancialGoal: String
+  statementScope: StatementScope
+  debtStatus: DebtStatus
+  debtType: DebtType
+  incomeStatus: IncomeStatus
+  incomeType: IncomeType
+  idCategory: String
+  categoryType: CategoryType
+  activeOnly: Boolean
+}
+
+enum ExportResource {
+  DEBTS
+  PAYMENTS
+  INCOMES
+  INCOME_RECEIPTS
+  CREDIT_CARDS
+  CATEGORIES
+  STATEMENT
+  GOALS
+  GOAL_CONTRIBUTIONS
+}
+
+enum ExportFormat {
+  PDF
+  XLSX
+}
+
+enum StatementScope {
+  DEBTS
+  INCOMES
+  BOTH
+}
+
+input ListSupportTicketsInputDto {
+  page: Int
+  limit: Int
+  status: SupportTicketStatus
+  category: SupportCategory
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -606,6 +1036,8 @@ type Mutation {
   requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
   verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
+  subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
+  cancelSubscription(input: CancelSubscriptionInputDto!): SubscriptionResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
@@ -630,6 +1062,19 @@ type Mutation {
   registerInstallmentReceipt(input: RegisterInstallmentReceiptInputDto!): RegisterInstallmentReceiptMutationResponseDto!
   updateIncomeReceipt(input: UpdateIncomeReceiptInputDto!): UpdateIncomeReceiptMutationResponseDto!
   deleteIncomeReceipt(idIncomeReceipt: String!): DeleteIncomeReceiptMutationResponseDto!
+  createFinancialGoal(input: CreateFinancialGoalInputDto!): CreateFinancialGoalMutationResponseDto!
+  updateFinancialGoal(input: UpdateFinancialGoalInputDto!): CreateFinancialGoalMutationResponseDto!
+  deleteFinancialGoal(idFinancialGoal: String!): DeleteFinancialGoalResponseDto!
+  registerGoalContribution(input: RegisterGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
+  updateGoalContribution(input: UpdateGoalContributionInputDto!): CreateFinancialGoalMutationResponseDto!
+  deleteGoalContribution(idFinancialGoal: String!, idGoalContribution: String!): CreateFinancialGoalMutationResponseDto!
+  sendSupportMessage(input: SendSupportMessageInputDto!): SupportMessageResponseDto!
+  replyToSupportTicket(input: ReplyToSupportTicketInputDto!): SupportTicketResponseDto!
+  finalizeSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
+  acceptTermsOfUse: LogoutResponseDto!
+  deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
+  requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
+  cancelAccountDeletion: CancelAccountDeletionResponseDto!
 }
 
 input LoginInputDto {
@@ -654,6 +1099,27 @@ input VerifyPasswordRecoveryCodeInputDto {
 input ResetPasswordWithRecoveryInputDto {
   recoveryToken: String!
   newPassword: String!
+}
+
+input SubscribeToProInputDto {
+  cpfCnpj: String!
+  billingCycle: SubscriptionBillingCycle!
+}
+
+input CancelSubscriptionInputDto {
+  reasons: [CancellationReason!]!
+  otherReason: String
+}
+
+enum CancellationReason {
+  DOES_NOT_MEET_NEEDS
+  TOO_EXPENSIVE
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  MISSING_FEATURES
+  TEMPORARY_USE
+  TECHNICAL_ISSUES
+  OTHER
 }
 
 input CreateUserInputDto {
@@ -692,6 +1158,7 @@ input UnlockUserCredentialInputDto {
 
 input LoginWithGoogleInputDto {
   idToken: String!
+  referralCode: String
 }
 
 input CreateCategoryInputDto {
@@ -807,4 +1274,72 @@ input UpdateIncomeReceiptInputDto {
   idIncomeReceipt: String!
   amountReceived: Float
   receivedAt: DateTime
+}
+
+input CreateFinancialGoalInputDto {
+  title: String!
+  description: String
+  targetAmount: Float!
+  targetDate: DateTime
+}
+
+input UpdateFinancialGoalInputDto {
+  idFinancialGoal: String!
+  title: String
+  description: String
+  targetAmount: Float
+  targetDate: DateTime
+}
+
+input RegisterGoalContributionInputDto {
+  idFinancialGoal: String!
+  amount: Float!
+  contributedAt: DateTime
+  note: String
+}
+
+input UpdateGoalContributionInputDto {
+  idFinancialGoal: String!
+  idGoalContribution: String!
+  amount: Float
+  contributedAt: DateTime
+  note: String
+}
+
+input SendSupportMessageInputDto {
+  category: SupportCategory!
+  message: String!
+}
+
+input ReplyToSupportTicketInputDto {
+  idSupportMessage: String!
+  reply: String!
+}
+
+input DeactivateAccountInputDto {
+  reasons: [AccountDeactivationReason!]!
+  otherReason: String
+}
+
+enum AccountDeactivationReason {
+  NOT_USING_ANYMORE
+  TAKING_A_BREAK
+  TOO_MANY_NOTIFICATIONS
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  OTHER
+}
+
+input RequestAccountDeletionInputDto {
+  reasons: [AccountDeletionReason!]!
+  otherReason: String
+}
+
+enum AccountDeletionReason {
+  NOT_USING_ANYMORE
+  PRIVACY_CONCERNS
+  FOUND_ALTERNATIVE
+  HARD_TO_USE
+  TECHNICAL_ISSUES
+  OTHER
 }

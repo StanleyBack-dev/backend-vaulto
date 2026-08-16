@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthGuard } from "../../common/guards/auth.guards";
+import { AccountAuditLogEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-audit-log.entity";
+import { AccountDeactivationEntity } from "@/modules/account-lifecycle/infrastructure/persistence/typeorm/entities/account-deactivation.entity";
 import { MailModule } from "@/modules/mails/mail.module";
 import { SessionsModule } from "@/modules/sessions/sessions.module";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
@@ -9,6 +11,7 @@ import { AuthResolver } from "./presentation/graphql/resolvers/auth.resolver";
 import { AuthPermissionsGuard } from "./presentation/guards/auth-permissions.guard";
 import { FirstAccessGuard } from "./presentation/guards/first-access.guard";
 import { PageAccessGuard } from "./presentation/guards/page-access.guard";
+import { TermsAcceptanceGuard } from "./presentation/guards/terms-acceptance.guard";
 import { AuthCredentialEntity } from "./infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { AuthVerificationCodeEntity } from "./infrastructure/persistence/typeorm/entities/auth-verification-code.entity";
 import { UserPageAccessEntity } from "./infrastructure/persistence/typeorm/entities/user-page-access.entity";
@@ -40,6 +43,8 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
       AuthVerificationCodeEntity,
       UserPageAccessEntity,
       UserEntity,
+      AccountDeactivationEntity,
+      AccountAuditLogEntity,
     ]),
     MailModule,
     SessionsModule,
@@ -80,6 +85,10 @@ import "@/modules/auth/presentation/graphql/enums/auth-graphql.enums";
     {
       provide: APP_GUARD,
       useClass: FirstAccessGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TermsAcceptanceGuard,
     },
   ],
   exports: [

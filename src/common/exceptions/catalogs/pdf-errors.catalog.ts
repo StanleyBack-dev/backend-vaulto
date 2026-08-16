@@ -6,9 +6,4 @@ export const pdfErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Template de PDF não mapeado para a chave informada.",
   },
-  templateNotFound: {
-    code: "PDF_TEMPLATE_NOT_FOUND",
-    status: HttpStatus.NOT_FOUND,
-    message: "Template de PDF não encontrado.",
-  },
 };

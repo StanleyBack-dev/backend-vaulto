@@ -16,6 +16,7 @@ const issuedSession = { accessToken: "a", refreshToken: "r", response: {} };
 function buildDeps() {
   const userRepository = {
     findOne: jest.fn().mockResolvedValue(null),
+    count: jest.fn().mockResolvedValue(0),
   };
 
   const transactionalUserRepository = {
@@ -70,6 +71,10 @@ function buildDeps() {
     send: jest.fn().mockResolvedValue(undefined),
   };
 
+  const createDefaultSubscriptionUseCase = {
+    execute: jest.fn().mockResolvedValue(undefined),
+  };
+
   return {
     userRepository,
     dataSource,
@@ -79,6 +84,7 @@ function buildDeps() {
     issueAuthSessionUseCase,
     seedDefaultCategoriesUseCase,
     userWelcomeEmailUseCase,
+    createDefaultSubscriptionUseCase,
     transactionalUserRepository,
     transactionalCredentialRepository,
   };
@@ -94,6 +100,7 @@ function buildService(deps: ReturnType<typeof buildDeps>) {
     deps.issueAuthSessionUseCase as never,
     deps.seedDefaultCategoriesUseCase as never,
     deps.userWelcomeEmailUseCase as never,
+    deps.createDefaultSubscriptionUseCase as never,
   );
 }
 
@@ -182,6 +189,9 @@ describe("LoginWithGoogleUseCase", () => {
       }),
     );
     expect(deps.seedDefaultCategoriesUseCase.execute).toHaveBeenCalledWith(
+      "new-user-id",
+    );
+    expect(deps.createDefaultSubscriptionUseCase.execute).toHaveBeenCalledWith(
       "new-user-id",
     );
     expect(deps.userWelcomeEmailUseCase.send).toHaveBeenCalledWith({

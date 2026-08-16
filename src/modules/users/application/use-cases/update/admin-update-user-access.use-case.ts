@@ -71,7 +71,7 @@ export class AdminUpdateUserAccessUseCase {
       idUsers: updated.idUsers,
       group: updated.group,
       status: updated.status,
-      inactivatedAt: updated.inactivatedAt,
+      inactivatedAt: updated.inactivatedAt ?? undefined,
       updatedAt: updated.updatedAt,
     };
   }

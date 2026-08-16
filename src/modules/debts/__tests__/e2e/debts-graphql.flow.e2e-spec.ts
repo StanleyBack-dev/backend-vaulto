@@ -2,6 +2,7 @@ import { Test } from "@nestjs/testing";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { CATEGORY_REPOSITORY } from "@/modules/categories/application/ports/category-repository.port";
 import { CREDIT_CARD_REPOSITORY } from "@/modules/credit-cards/application/ports/credit-card-repository.port";
+import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
 import { DebtsResolver } from "@/modules/debts/presentation/graphql/resolvers/debts.resolver";
 import { CreateDebtUseCase } from "@/modules/debts/application/use-cases/create/create-debt.use-case";
 import { DeleteDebtUseCase } from "@/modules/debts/application/use-cases/delete/delete-debt.use-case";
@@ -183,6 +184,12 @@ describe("Debts GraphQL flow (create/list/update status)", () => {
         {
           provide: DEBT_REPOSITORY,
           useClass: InMemoryDebtRepository,
+        },
+        {
+          provide: PlanLimitsService,
+          useValue: {
+            assertCanCreate: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();

@@ -3,8 +3,7 @@ import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { PdfTemplateKey } from "../../domain/enums/pdf-template-key.enum";
 import { PdfTemplateRenderer } from "../interfaces/pdf-template-renderer.interface";
-import { RenderBudgetProposalTemplateService } from "../../presentation/templates/budgets/render-budget-proposal-template.service";
-import { RenderContractTemplateService } from "../../presentation/templates/contracts/render-contract-template.service";
+import { RenderTabularReportTemplateService } from "../../presentation/templates/financial-table/render-tabular-report-template.service";
 
 interface GenerateByTemplateInput<TPayload> {
   templateKey: PdfTemplateKey;
@@ -16,17 +15,12 @@ export class PdfTemplateEngineService {
   private readonly registry: Map<PdfTemplateKey, PdfTemplateRenderer>;
 
   constructor(
-    private readonly renderBudgetProposalTemplateUseCase: RenderBudgetProposalTemplateService,
-    private readonly renderContractTemplateUseCase: RenderContractTemplateService,
+    private readonly renderTabularReportTemplateUseCase: RenderTabularReportTemplateService,
   ) {
     this.registry = new Map<PdfTemplateKey, PdfTemplateRenderer>([
       [
-        this.renderBudgetProposalTemplateUseCase.templateKey,
-        this.renderBudgetProposalTemplateUseCase,
-      ],
-      [
-        this.renderContractTemplateUseCase.templateKey,
-        this.renderContractTemplateUseCase,
+        this.renderTabularReportTemplateUseCase.templateKey,
+        this.renderTabularReportTemplateUseCase,
       ],
     ]);
   }

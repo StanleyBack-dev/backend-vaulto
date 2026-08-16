@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BillingModule } from "@/modules/billing/billing.module";
 import { DebtEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt.entity";
 import { DebtInstallmentEntity } from "@/modules/debts/infrastructure/persistence/typeorm/entities/debt-installment.entity";
 import { CREDIT_CARD_REPOSITORY } from "@/modules/credit-cards/application/ports/credit-card-repository.port";
@@ -11,6 +12,7 @@ import { UpdateCreditCardUseCase } from "@/modules/credit-cards/application/use-
 import { CreditCardEntity } from "@/modules/credit-cards/infrastructure/persistence/typeorm/entities/credit-card.entity";
 import { CreditCardTypeormRepository } from "@/modules/credit-cards/infrastructure/persistence/typeorm/repositories/credit-card-typeorm.repository";
 import { CreditCardsResolver } from "@/modules/credit-cards/presentation/graphql/resolvers/credit-cards.resolver";
+import { CreditCardOptionsResolver } from "@/modules/credit-cards/presentation/graphql/resolvers/credit-card-options.resolver";
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { CreditCardsResolver } from "@/modules/credit-cards/presentation/graphql
       DebtInstallmentEntity,
     ]),
     AuthModule,
+    BillingModule,
   ],
   providers: [
     CreateCreditCardUseCase,
@@ -27,6 +30,7 @@ import { CreditCardsResolver } from "@/modules/credit-cards/presentation/graphql
     GetCreditCardByIdUseCase,
     UpdateCreditCardUseCase,
     CreditCardsResolver,
+    CreditCardOptionsResolver,
     CreditCardTypeormRepository,
     {
       provide: CREDIT_CARD_REPOSITORY,

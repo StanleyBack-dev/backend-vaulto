@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
+import { generateUniqueReferralCode } from "@/common/utils/referral-code.util";
 import { CreateUserInputDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-input.dto";
 import { CreateUserResponseDto } from "@/modules/users/presentation/graphql/dtos/create/create-user-response.dto";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
@@ -13,6 +14,7 @@ import { AuthorizationService } from "@/modules/auth/application/use-cases/autho
 import { PasswordHasherService } from "@/modules/auth/application/use-cases/password-hasher.use-case";
 import type { IRequestInfo } from "@/common/decorators/request-info.decorator";
 import { SeedDefaultCategoriesUseCase } from "@/modules/categories/application/use-cases/create/seed-default-categories.use-case";
+import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
 import { UserOnboardingEmailUseCase } from "@/modules/mails/application/use-cases/user-onboarding-email.use-case";
 import { sanitizeSensitiveData } from "@/common/security/sanitize-sensitive-data";
 import { UserPageAccessUseCase } from "@/modules/users/application/use-cases/permissions/user-page-access.use-case";
@@ -31,6 +33,7 @@ export class CreateUserUseCase {
     private readonly userOnboardingEmailUseCase: UserOnboardingEmailUseCase,
     private readonly userPageAccessUseCase: UserPageAccessUseCase,
     private readonly seedDefaultCategoriesUseCase: SeedDefaultCategoriesUseCase,
+    private readonly createDefaultSubscriptionUseCase: CreateDefaultSubscriptionUseCase,
   ) {}
 
   async execute(
@@ -53,6 +56,11 @@ export class CreateUserUseCase {
       this.passwordHasherService.generateTemporaryPassword();
     const passwordHash =
       await this.passwordHasherService.hashPassword(temporaryPassword);
+    const referralCode = await generateUniqueReferralCode((candidate) =>
+      this.repo
+        .count({ where: { referralCode: candidate } })
+        .then((count) => count > 0),
+    );
 
     const createdUser = await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity);
@@ -75,6 +83,7 @@ export class CreateUserUseCase {
         group: input.group,
         ipAddress: requestInfo?.ipAddress,
         userAgent: requestInfo?.userAgent,
+        referralCode,
       });
 
       const savedUser = await userRepository.save(user);
@@ -98,6 +107,7 @@ export class CreateUserUseCase {
       );
 
       await this.seedDefaultCategoriesUseCase.execute(savedUser.idUsers);
+      await this.createDefaultSubscriptionUseCase.execute(savedUser.idUsers);
 
       return {
         idUsers: savedUser.idUsers,

@@ -33,15 +33,18 @@ const issuedSession = {
 
 function buildDeps(overrides?: {
   findByUsername?: jest.Mock;
-  ensureCredentialCanAuthenticate?: jest.Mock;
+  assertNotLocked?: jest.Mock;
+  ensureAccountActiveOrReactivate?: jest.Mock;
   verifyPassword?: jest.Mock;
 }) {
   const authCredentialsUseCase = {
     findByUsername:
       overrides?.findByUsername ??
       jest.fn().mockResolvedValue(authCredentialMock),
-    ensureCredentialCanAuthenticate:
-      overrides?.ensureCredentialCanAuthenticate ??
+    assertNotLocked:
+      overrides?.assertNotLocked ?? jest.fn().mockResolvedValue(undefined),
+    ensureAccountActiveOrReactivate:
+      overrides?.ensureAccountActiveOrReactivate ??
       jest.fn().mockResolvedValue(undefined),
     registerFailedLogin: jest.fn().mockResolvedValue(undefined),
   };
@@ -88,13 +91,13 @@ describe("LoginService", () => {
     expect(deps.issueAuthSessionUseCase.execute).not.toHaveBeenCalled();
   });
 
-  it("propagates a locked/inactive credential rejection without touching the password", async () => {
+  it("propagates a locked credential rejection without touching the password", async () => {
     const lockedError = AppException.from(
       APP_ERRORS.auth.credentialLocked,
       undefined,
     );
     const deps = buildDeps({
-      ensureCredentialCanAuthenticate: jest.fn().mockRejectedValue(lockedError),
+      assertNotLocked: jest.fn().mockRejectedValue(lockedError),
     });
     const service = new LoginService(
       deps.authCredentialsUseCase as never,
@@ -137,6 +140,40 @@ describe("LoginService", () => {
     expect(
       deps.authCredentialsUseCase.registerFailedLogin,
     ).toHaveBeenCalledWith(authCredentialMock);
+    expect(
+      deps.authCredentialsUseCase.ensureAccountActiveOrReactivate,
+    ).not.toHaveBeenCalled();
+    expect(deps.issueAuthSessionUseCase.execute).not.toHaveBeenCalled();
+  });
+
+  // Only checked (and possibly auto-reactivated) once the password has been
+  // confirmed, so an unauthenticated probe can't tell an inactive account
+  // apart from a wrong password, nor trigger a reactivation.
+  it("rejects an inactive account only after the password has been confirmed", async () => {
+    const inactiveError = AppException.from(
+      APP_ERRORS.auth.inactiveUser,
+      undefined,
+    );
+    const deps = buildDeps({
+      ensureAccountActiveOrReactivate: jest
+        .fn()
+        .mockRejectedValue(inactiveError),
+    });
+    const service = new LoginService(
+      deps.authCredentialsUseCase as never,
+      deps.passwordHasherUseCase as never,
+      deps.issueAuthSessionUseCase as never,
+    );
+
+    const error = await captureError(() =>
+      service.execute(
+        { username: authCredentialMock.username, password: "correct-password" },
+        { ipAddress: "127.0.0.1", userAgent: "jest" },
+      ),
+    );
+
+    expect(error).toBe(inactiveError);
+    expect(deps.passwordHasherUseCase.verifyPassword).toHaveBeenCalled();
     expect(deps.issueAuthSessionUseCase.execute).not.toHaveBeenCalled();
   });
 
@@ -154,6 +191,9 @@ describe("LoginService", () => {
     );
 
     expect(result).toBe(issuedSession);
+    expect(
+      deps.authCredentialsUseCase.ensureAccountActiveOrReactivate,
+    ).toHaveBeenCalledWith(authCredentialMock);
     expect(deps.issueAuthSessionUseCase.execute).toHaveBeenCalledWith(
       authCredentialMock,
       { ipAddress: "127.0.0.1", userAgent: "jest" },

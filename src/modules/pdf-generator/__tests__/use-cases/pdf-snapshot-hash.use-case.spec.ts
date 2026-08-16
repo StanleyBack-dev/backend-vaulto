@@ -3,7 +3,7 @@ import { PdfSnapshotHashService } from "../../application/use-cases/pdf-snapshot
 describe("PdfSnapshotHashService", () => {
   it("should create deterministic hash for same snapshot", () => {
     const service = new PdfSnapshotHashService();
-    const snapshot = { budgetNumber: "ORC-2026-00001", totalAmount: 1000 };
+    const snapshot = { resource: "DEBTS", rowCount: 12, totalAmount: 1000 };
 
     const hash1 = service.hashSnapshot(snapshot);
     const hash2 = service.hashSnapshot(snapshot);

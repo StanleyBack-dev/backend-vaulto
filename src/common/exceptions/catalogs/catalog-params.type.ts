@@ -23,3 +23,8 @@ export type InvalidOptionParams = {
 export type RateLimitExceededParams = {
   retryAfterSeconds?: number;
 };
+
+export type PlanLimitParams = {
+  resource: string;
+  limit: number;
+};

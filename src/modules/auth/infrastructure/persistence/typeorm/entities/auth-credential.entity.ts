@@ -43,6 +43,9 @@ export class AuthCredentialEntity {
   @Column({ name: "onboarding_tour_completed", default: false })
   onboardingTourCompleted!: boolean;
 
+  @Column({ name: "terms_accepted_at", type: "timestamptz", nullable: true })
+  termsAcceptedAt?: Date;
+
   @Column({
     name: "temporary_password_created_at",
     type: "timestamptz",

@@ -18,6 +18,7 @@ export class GetUserResponseDto {
     dto.status = entity.status;
     dto.group = entity.group;
     dto.inactivatedAt = toLocalNaiveIsoString(entity.inactivatedAt);
+    dto.deletionRequestedAt = toLocalNaiveIsoString(entity.deletionRequestedAt);
     dto.createdAt = toLocalNaiveIsoString(entity.createdAt) as string;
     dto.updatedAt = toLocalNaiveIsoString(entity.updatedAt) as string;
     dto.username = credential?.username;
@@ -51,6 +52,9 @@ export class GetUserResponseDto {
 
   @Field({ nullable: true })
   inactivatedAt?: string;
+
+  @Field({ nullable: true })
+  deletionRequestedAt?: string;
 
   @Field({ nullable: true })
   mustChangePassword?: boolean;

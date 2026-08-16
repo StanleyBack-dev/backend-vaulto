@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BillingModule } from "@/modules/billing/billing.module";
 import { CategoriesModule } from "@/modules/categories/categories.module";
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { CreditCardsModule } from "@/modules/credit-cards/credit-cards.module";
@@ -31,6 +32,7 @@ import "@/modules/debts/presentation/graphql/enums/debts-graphql.enums";
     CategoriesModule,
     CreditCardsModule,
     AuthModule,
+    BillingModule,
   ],
 
   providers: [
@@ -47,5 +49,6 @@ import "@/modules/debts/presentation/graphql/enums/debts-graphql.enums";
       useExisting: DebtTypeormRepository,
     },
   ],
+  exports: [DEBT_REPOSITORY],
 })
 export class DebtsModule {}

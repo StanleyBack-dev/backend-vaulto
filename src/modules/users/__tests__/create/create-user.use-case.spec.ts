@@ -13,11 +13,12 @@ import { UserExistsValidator } from "../../application/validators/user-exists.va
 import { CreateUserUseCase } from "../../application/use-cases/create/create-user.use-case";
 import { UserPageAccessUseCase } from "../../application/use-cases/permissions/user-page-access.use-case";
 import { SeedDefaultCategoriesUseCase } from "../../../categories/application/use-cases/create/seed-default-categories.use-case";
+import { CreateDefaultSubscriptionUseCase } from "../../../billing/application/use-cases/create/create-default-subscription.use-case";
 import { UserEntity } from "../../infrastructure/persistence/typeorm/entities/user.entity";
 
 describe("CreateUserUseCase", () => {
   let service: CreateUserUseCase;
-  let userRepository: { findOne: jest.Mock };
+  let userRepository: { findOne: jest.Mock; count: jest.Mock };
   let userExistsValidator: jest.Mocked<UserExistsValidator>;
   let authorizationService: jest.Mocked<AuthorizationService>;
   let passwordHasherService: jest.Mocked<PasswordHasherService>;
@@ -36,6 +37,7 @@ describe("CreateUserUseCase", () => {
         group: UserGroup.ADMIN,
         status: true,
       }),
+      count: jest.fn().mockResolvedValue(0),
     };
 
     dataSource = {
@@ -117,6 +119,12 @@ describe("CreateUserUseCase", () => {
         },
         {
           provide: SeedDefaultCategoriesUseCase,
+          useValue: {
+            execute: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: CreateDefaultSubscriptionUseCase,
           useValue: {
             execute: jest.fn().mockResolvedValue(undefined),
           },

@@ -8,6 +8,8 @@ import {
 import { CategoryType } from "@/modules/categories/domain/enums/category-type.enum";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
+import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
+import { PlanLimitedResource } from "@/modules/billing/domain/enums/plan-limited-resource.enum";
 import {
   INCOME_REPOSITORY,
   type CreateIncomeInstallmentPayload,
@@ -27,6 +29,7 @@ export class CreateIncomeUseCase {
     private readonly incomeRepository: IncomeRepositoryPort,
     @Inject(CATEGORY_REPOSITORY)
     private readonly categoryRepository: CategoryRepositoryPort,
+    private readonly planLimitsService: PlanLimitsService,
   ) {}
 
   async execute(
@@ -36,6 +39,14 @@ export class CreateIncomeUseCase {
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_OWN_DEBTS,
+    );
+
+    const { total: currentIncomesCount } =
+      await this.incomeRepository.listByUser(userId, { limit: 1 });
+    await this.planLimitsService.assertCanCreate(
+      userId,
+      PlanLimitedResource.INCOMES,
+      currentIncomesCount,
     );
 
     const category = await this.categoryRepository.findById(

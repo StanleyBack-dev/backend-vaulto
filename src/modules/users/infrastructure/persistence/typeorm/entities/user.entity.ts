@@ -31,7 +31,32 @@ export class UserEntity {
   group!: UserGroup;
 
   @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
-  inactivatedAt?: Date;
+  inactivatedAt?: Date | null;
+
+  @Column({
+    name: "deletion_requested_at",
+    type: "timestamptz",
+    nullable: true,
+  })
+  deletionRequestedAt?: Date | null;
+
+  @Column({
+    name: "referral_code",
+    type: "varchar",
+    nullable: true,
+    unique: true,
+  })
+  referralCode?: string | null;
+
+  @Column({ name: "referred_by_user_id", type: "uuid", nullable: true })
+  referredByUserId?: string | null;
+
+  @Column({
+    name: "referral_qualified_at",
+    type: "timestamptz",
+    nullable: true,
+  })
+  referralQualifiedAt?: Date | null;
 
   @Column({ name: "ip_address", nullable: true })
   ipAddress?: string;

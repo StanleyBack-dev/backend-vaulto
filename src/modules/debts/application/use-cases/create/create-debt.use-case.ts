@@ -12,6 +12,8 @@ import {
 import { CreditCardDueDateService } from "@/modules/credit-cards/domain/services/credit-card-due-date.service";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { AuthorizationService } from "@/modules/auth/application/use-cases/authorization.use-case";
+import { PlanLimitsService } from "@/modules/billing/application/use-cases/plan-limits.use-case";
+import { PlanLimitedResource } from "@/modules/billing/domain/enums/plan-limited-resource.enum";
 import {
   DEBT_REPOSITORY,
   type CreateDebtInstallmentPayload,
@@ -34,12 +36,23 @@ export class CreateDebtUseCase {
     private readonly categoryRepository: CategoryRepositoryPort,
     @Inject(CREDIT_CARD_REPOSITORY)
     private readonly creditCardRepository: CreditCardRepositoryPort,
+    private readonly planLimitsService: PlanLimitsService,
   ) {}
 
   async execute(userId: string, command: CreateDebtCommand): Promise<DebtView> {
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_OWN_DEBTS,
+    );
+
+    const { total: currentDebtsCount } = await this.debtRepository.listByUser(
+      userId,
+      { limit: 1 },
+    );
+    await this.planLimitsService.assertCanCreate(
+      userId,
+      PlanLimitedResource.DEBTS,
+      currentDebtsCount,
     );
 
     const category = await this.categoryRepository.findById(

@@ -59,20 +59,17 @@ export const envValidationSchema = Joi.object({
   BREVO_API_KEY: Joi.string().min(10).optional(),
   MAIL_FROM_EMAIL: Joi.string().email().required(),
   MAIL_FROM_NAME: Joi.string().min(2).required(),
+
+  // === PAYMENTS / ASAAS ===
+  ASAAS_API_KEY: Joi.string().min(10).optional(),
+  ASAAS_ENVIRONMENT: Joi.string()
+    .valid("sandbox", "production")
+    .default("sandbox"),
+  ASAAS_WEBHOOK_TOKEN: Joi.string().min(32).optional(),
+  CRON_SECRET: Joi.string().min(16).optional(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
-  ASSINAFY_BASE_URL: Joi.string()
-    .uri()
-    .default("https://api.assinafy.com.br/v1"),
-  ASSINAFY_API_KEY: Joi.string().min(10).optional(),
-  ASSINAFY_API_TOKEN: Joi.string().min(10).optional(),
-  ASSINAFY_ACCOUNT_ID: Joi.string().min(5).optional(),
-  ASSINAFY_WEBHOOK_SECRET: Joi.string().min(8).optional(),
-  ASSINAFY_TIMEOUT_MS: Joi.number().integer().min(1000).default(15000),
-  CONTRACT_COMPANY_SIGNER_NAME: Joi.string().min(2).optional(),
-  CONTRACT_COMPANY_SIGNER_EMAIL: Joi.string().email().optional(),
-  CONTRACT_COMPANY_SIGNER_IDENTIFIER: Joi.string().optional(),
-  CONTRACT_COMPANY_SIGNER_PHONE: Joi.string().optional(),
+  MAIL_COMPANY_NOTIFICATION_EMAIL: Joi.string().email().optional(),
   PASSWORD_RECOVERY_CODE_TTL_MINUTES: Joi.number().integer().min(1).default(10),
   PASSWORD_RECOVERY_RESET_TTL_MINUTES: Joi.number()
     .integer()

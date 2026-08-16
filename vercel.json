@@ -17,5 +17,23 @@
       "source": "/(.*)",
       "destination": "/api/index"
     }
+  ],
+  "crons": [
+    {
+      "path": "/internal/referrals/apply-rewards",
+      "schedule": "50 8 * * *"
+    },
+    {
+      "path": "/internal/billing/subscription-lifecycle",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/internal/reminders/due-tomorrow",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/internal/users/process-account-deletions",
+      "schedule": "0 9 * * *"
+    }
   ]
 }

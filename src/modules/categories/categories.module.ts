@@ -10,6 +10,7 @@ import { UpdateCategoryUseCase } from "@/modules/categories/application/use-case
 import { CategoryEntity } from "@/modules/categories/infrastructure/persistence/typeorm/entities/category.entity";
 import { CategoryTypeormRepository } from "@/modules/categories/infrastructure/persistence/typeorm/repositories/category-typeorm.repository";
 import { CategoriesResolver } from "@/modules/categories/presentation/graphql/resolvers/categories.resolver";
+import { CategoryOptionsResolver } from "@/modules/categories/presentation/graphql/resolvers/category-options.resolver";
 import "@/modules/categories/presentation/graphql/enums/categories-graphql.enums";
 
 @Module({
@@ -21,6 +22,7 @@ import "@/modules/categories/presentation/graphql/enums/categories-graphql.enums
     GetCategoryByIdUseCase,
     UpdateCategoryUseCase,
     CategoriesResolver,
+    CategoryOptionsResolver,
     CategoryTypeormRepository,
     {
       provide: CATEGORY_REPOSITORY,

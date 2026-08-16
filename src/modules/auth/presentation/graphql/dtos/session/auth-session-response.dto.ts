@@ -12,6 +12,9 @@ export class AuthSessionResponseDto {
   @Field()
   onboardingTourCompleted!: boolean;
 
+  @Field()
+  termsAccepted!: boolean;
+
   @Field(() => AuthUserDto)
   user!: AuthUserDto;
 }

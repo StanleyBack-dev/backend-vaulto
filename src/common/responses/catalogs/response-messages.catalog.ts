@@ -1,4 +1,18 @@
 export const RESPONSE_MESSAGES = {
+  accountLifecycle: {
+    deactivated: {
+      code: "ACCOUNT_DEACTIVATED",
+      message: "Conta inativada com sucesso.",
+    },
+    deletionRequested: {
+      code: "ACCOUNT_DELETION_REQUESTED",
+      message: "Solicitação de exclusão de conta registrada com sucesso.",
+    },
+    deletionCancelled: {
+      code: "ACCOUNT_DELETION_CANCELLED",
+      message: "Solicitação de exclusão de conta cancelada com sucesso.",
+    },
+  },
   auth: {
     logout: {
       code: "AUTH_LOGOUT_SUCCESS",
@@ -100,6 +114,36 @@ export const RESPONSE_MESSAGES = {
       message: "Receita excluída com sucesso.",
     },
   },
+  goals: {
+    created: {
+      code: "GOAL_CREATED",
+      message: "Meta criada com sucesso.",
+    },
+    listed: {
+      code: "GOALS_LISTED",
+      message: "Metas carregadas com sucesso.",
+    },
+    updated: {
+      code: "GOAL_UPDATED",
+      message: "Meta atualizada com sucesso.",
+    },
+    deleted: {
+      code: "GOAL_DELETED",
+      message: "Meta excluída com sucesso.",
+    },
+    contributionRegistered: {
+      code: "GOAL_CONTRIBUTION_REGISTERED",
+      message: "Contribuição registrada com sucesso.",
+    },
+    contributionUpdated: {
+      code: "GOAL_CONTRIBUTION_UPDATED",
+      message: "Contribuição atualizada com sucesso.",
+    },
+    contributionDeleted: {
+      code: "GOAL_CONTRIBUTION_DELETED",
+      message: "Contribuição excluída com sucesso.",
+    },
+  },
   payments: {
     registered: {
       code: "PAYMENT_REGISTERED",
@@ -168,6 +212,12 @@ export const RESPONSE_MESSAGES = {
     listed: {
       code: "CREDIT_CARDS_LISTED",
       message: "Cartoes de credito carregados com sucesso.",
+    },
+  },
+  legal: {
+    termsAccepted: {
+      code: "LEGAL_TERMS_ACCEPTED",
+      message: "Termos de Uso e Política de Privacidade aceitos com sucesso.",
     },
   },
 } as const;
