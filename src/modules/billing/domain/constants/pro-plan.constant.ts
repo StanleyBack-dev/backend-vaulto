@@ -1,10 +1,11 @@
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 
-// TEMP: prices dropped to R$1 to smoke-test the Pro checkout flow against
-// the real Asaas production gateway. Revert to 14.9 / 149.9 once confirmed.
+// TEMP: prices dropped to R$5 (Asaas' minimum charge for billingType
+// UNDEFINED) to smoke-test the Pro checkout flow. Revert to 14.9 / 149.9
+// once confirmed.
 export const PRO_PLAN_PRICES: Record<SubscriptionBillingCycle, number> = {
-  [SubscriptionBillingCycle.MONTHLY]: 1,
-  [SubscriptionBillingCycle.YEARLY]: 1,
+  [SubscriptionBillingCycle.MONTHLY]: 5,
+  [SubscriptionBillingCycle.YEARLY]: 5,
 };
 
 export const PRO_PLAN_TRIAL_DAYS = 7;
