@@ -100,7 +100,6 @@ type BillingPaymentsResponseDto {
 type SubscriptionResponseDto {
   plan: SubscriptionPlan!
   status: SubscriptionStatus!
-  trialEndsAt: DateTime
   currentPeriodEnd: DateTime
   billingCycle: SubscriptionBillingCycle
   cancelAtPeriodEnd: Boolean!

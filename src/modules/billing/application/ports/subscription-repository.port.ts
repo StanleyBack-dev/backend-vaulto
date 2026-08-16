@@ -7,7 +7,6 @@ export type SubscriptionView = {
   idUsers: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
-  trialEndsAt?: Date;
   proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
@@ -15,7 +14,6 @@ export type SubscriptionView = {
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
   gatewayPixAuthorizationId?: string;
-  trialEndingNotifiedAt?: Date;
   pastDueSince?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -30,7 +28,6 @@ export type CreateSubscriptionPayload = {
 export type UpdateSubscriptionPayload = {
   plan?: SubscriptionPlan;
   status?: SubscriptionStatus;
-  trialEndsAt?: Date;
   proStartedAt?: Date;
   currentPeriodEnd?: Date;
   billingCycle?: SubscriptionBillingCycle;
@@ -38,7 +35,6 @@ export type UpdateSubscriptionPayload = {
   gatewayCustomerId?: string;
   gatewaySubscriptionId?: string;
   gatewayPixAuthorizationId?: string;
-  trialEndingNotifiedAt?: Date | null;
   pastDueSince?: Date | null;
 };
 
