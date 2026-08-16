@@ -178,6 +178,60 @@ describe("AsaasPaymentGatewayProvider", () => {
     );
   });
 
+  it("includes a callback with autoRedirect when callbackSuccessUrl is provided", async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ id: "sub_123", status: "ACTIVE" }))
+      .mockResolvedValueOnce(jsonResponse({ data: [] }));
+    global.fetch = fetchMock as never;
+
+    const provider = new AsaasPaymentGatewayProvider(
+      buildConfigService() as never,
+    );
+
+    await provider.createSubscription({
+      gatewayCustomerId: "cus_123",
+      value: 14.9,
+      nextDueDate: "2026-08-15",
+      cycle: "MONTHLY",
+      description: "Vaulto Pro",
+      externalReference: "user-1",
+      callbackSuccessUrl: "https://app.vaulto.com.br/planos",
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    const body = JSON.parse(options.body);
+    expect(body.callback).toEqual({
+      successUrl: "https://app.vaulto.com.br/planos",
+      autoRedirect: true,
+    });
+  });
+
+  it("omits the callback field when callbackSuccessUrl is not provided", async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ id: "sub_123", status: "ACTIVE" }))
+      .mockResolvedValueOnce(jsonResponse({ data: [] }));
+    global.fetch = fetchMock as never;
+
+    const provider = new AsaasPaymentGatewayProvider(
+      buildConfigService() as never,
+    );
+
+    await provider.createSubscription({
+      gatewayCustomerId: "cus_123",
+      value: 14.9,
+      nextDueDate: "2026-08-15",
+      cycle: "MONTHLY",
+      description: "Vaulto Pro",
+      externalReference: "user-1",
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    const body = JSON.parse(options.body);
+    expect(body.callback).toBeUndefined();
+  });
+
   it("creates a Pix Automático authorization with an immediate QR Code and subscription mode", async () => {
     const fetchMock = jest.fn().mockResolvedValue(
       jsonResponse({

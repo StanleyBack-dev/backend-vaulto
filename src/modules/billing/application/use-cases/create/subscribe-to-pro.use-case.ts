@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
@@ -49,6 +50,7 @@ export class SubscribeToProUseCase {
     private readonly paymentGateway: PaymentGatewayPort,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(
@@ -129,6 +131,7 @@ export class SubscribeToProUseCase {
       cycle: command.billingCycle,
       description,
       externalReference: idUsers,
+      callbackSuccessUrl: this.buildCheckoutSuccessUrl(),
     });
 
     const updatedSubscription =
@@ -178,6 +181,13 @@ export class SubscribeToProUseCase {
         image: authorization.qrCodeImage,
       },
     };
+  }
+
+  private buildCheckoutSuccessUrl(): string {
+    const frontendUrl =
+      this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
+
+    return `${frontendUrl}/planos`;
   }
 
   private toDateOnly(date: Date): string {

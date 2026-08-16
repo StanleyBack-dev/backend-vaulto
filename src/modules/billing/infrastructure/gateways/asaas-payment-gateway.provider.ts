@@ -86,6 +86,14 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
           cycle: input.cycle,
           description: input.description,
           externalReference: input.externalReference,
+          ...(input.callbackSuccessUrl
+            ? {
+                callback: {
+                  successUrl: input.callbackSuccessUrl,
+                  autoRedirect: true,
+                },
+              }
+            : {}),
         },
       },
     );
