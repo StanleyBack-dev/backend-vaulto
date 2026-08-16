@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { timingSafeEqual } from "crypto";
 import type { Request } from "express";
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
@@ -20,10 +21,29 @@ export class CronAuthGuard implements CanActivate {
       "",
     );
 
-    if (!expectedToken || receivedToken !== expectedToken) {
+    if (
+      !expectedToken ||
+      !receivedToken ||
+      !this.tokensMatch(receivedToken, expectedToken)
+    ) {
       throw AppException.from(APP_ERRORS.internal.invalidCronToken, undefined);
     }
 
     return true;
+  }
+
+  // Same reasoning as the Asaas webhook token: a plain !== comparison leaks
+  // how many characters matched through response timing, and this token is
+  // the only thing standing between the public internet and triggering the
+  // internal cron endpoints (subscription lifecycle, account deletions,
+  // reminders, referral rewards) on demand.
+  private tokensMatch(received: string, expected: string): boolean {
+    const receivedBuffer = Buffer.from(received);
+    const expectedBuffer = Buffer.from(expected);
+
+    return (
+      receivedBuffer.length === expectedBuffer.length &&
+      timingSafeEqual(receivedBuffer, expectedBuffer)
+    );
   }
 }
