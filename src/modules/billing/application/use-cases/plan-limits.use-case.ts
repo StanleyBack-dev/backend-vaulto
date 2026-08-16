@@ -1,4 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
 import {
@@ -8,6 +10,8 @@ import {
 import { FREE_PLAN_LIMITS } from "@/modules/billing/domain/constants/free-plan-limits.constant";
 import { PlanLimitedResource } from "@/modules/billing/domain/enums/plan-limited-resource.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
+import { UserGroup } from "@/modules/users/domain/enums/user-group.enum";
+import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 const RESOURCE_LABELS: Record<PlanLimitedResource, string> = {
   [PlanLimitedResource.DEBTS]: "dividas",
@@ -20,7 +24,16 @@ export class PlanLimitsService {
   constructor(
     @Inject(SUBSCRIPTION_REPOSITORY)
     private readonly subscriptionRepository: SubscriptionRepositoryPort,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
+
+  // ADMIN_MASTER runs the whole system and must never be blocked by a plan
+  // limit or a Pro gate — it's not a subscriber, it's the operator.
+  private async isAdminMaster(idUsers: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { idUsers } });
+    return user?.group === UserGroup.ADMIN_MASTER;
+  }
 
   // `currentCount` is supplied by the calling module (e.g. DebtsModule
   // counts its own debts via debtRepository.listByUser) so billing never
@@ -31,6 +44,10 @@ export class PlanLimitsService {
     resource: PlanLimitedResource,
     currentCount: number,
   ): Promise<void> {
+    if (await this.isAdminMaster(idUsers)) {
+      return;
+    }
+
     const subscription =
       await this.subscriptionRepository.findByUserId(idUsers);
     const plan = subscription?.plan ?? SubscriptionPlan.FREE;
@@ -51,6 +68,10 @@ export class PlanLimitsService {
   // Gates a whole feature (not a per-resource count) behind the Pro plan,
   // e.g. the financial forecast.
   async assertProPlan(idUsers: string): Promise<void> {
+    if (await this.isAdminMaster(idUsers)) {
+      return;
+    }
+
     const subscription =
       await this.subscriptionRepository.findByUserId(idUsers);
     const plan = subscription?.plan ?? SubscriptionPlan.FREE;
