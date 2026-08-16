@@ -73,7 +73,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "debt",
         "CAST(debt.idDebt AS varchar) = installment.idDebt",
       )
-      .where("debt.idUsers = :idUsers", { idUsers });
+      .where("CAST(debt.idUsers AS varchar) = :idUsers", { idUsers });
 
     if (filters?.dueDateFrom) {
       qb.andWhere("installment.dueDate >= :dueDateFrom", {
@@ -161,7 +161,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "income",
         "CAST(income.idIncome AS varchar) = installment.idIncome",
       )
-      .where("income.idUsers = :idUsers", { idUsers });
+      .where("CAST(income.idUsers AS varchar) = :idUsers", { idUsers });
 
     if (filters?.dueDateFrom) {
       qb.andWhere("installment.dueDate >= :dueDateFrom", {
@@ -253,7 +253,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "debt",
         "CAST(debt.idDebt AS varchar) = installment.idDebt",
       )
-      .where("debt.idUsers = :idUsers", { idUsers })
+      .where("CAST(debt.idUsers AS varchar) = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -279,7 +279,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "income",
         "CAST(income.idIncome AS varchar) = installment.idIncome",
       )
-      .where("income.idUsers = :idUsers", { idUsers })
+      .where("CAST(income.idUsers AS varchar) = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -305,7 +305,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "debt",
         "CAST(debt.idDebt AS varchar) = installment.idDebt",
       )
-      .where("debt.idUsers = :idUsers", { idUsers })
+      .where("CAST(debt.idUsers AS varchar) = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -331,7 +331,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
         "income",
         "CAST(income.idIncome AS varchar) = installment.idIncome",
       )
-      .where("income.idUsers = :idUsers", { idUsers })
+      .where("CAST(income.idUsers AS varchar) = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
