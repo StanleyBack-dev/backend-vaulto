@@ -28,11 +28,15 @@ export class PlanLimitsService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  // ADMIN_MASTER runs the whole system and must never be blocked by a plan
-  // limit or a Pro gate — it's not a subscriber, it's the operator.
-  private async isAdminMaster(idUsers: string): Promise<boolean> {
+  // ADMIN and ADMIN_MASTER run the system and must never be blocked by a
+  // plan limit or a Pro gate — they're staff, not subscribers. The ADMIN
+  // menu itself stays restricted to ADMIN_MASTER via GROUP_DEFAULT_PAGE_ACCESS,
+  // this only bypasses billing.
+  private async isStaff(idUsers: string): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { idUsers } });
-    return user?.group === UserGroup.ADMIN_MASTER;
+    return (
+      user?.group === UserGroup.ADMIN || user?.group === UserGroup.ADMIN_MASTER
+    );
   }
 
   // `currentCount` is supplied by the calling module (e.g. DebtsModule
@@ -44,7 +48,7 @@ export class PlanLimitsService {
     resource: PlanLimitedResource,
     currentCount: number,
   ): Promise<void> {
-    if (await this.isAdminMaster(idUsers)) {
+    if (await this.isStaff(idUsers)) {
       return;
     }
 
@@ -68,7 +72,7 @@ export class PlanLimitsService {
   // Gates a whole feature (not a per-resource count) behind the Pro plan,
   // e.g. the financial forecast.
   async assertProPlan(idUsers: string): Promise<void> {
-    if (await this.isAdminMaster(idUsers)) {
+    if (await this.isStaff(idUsers)) {
       return;
     }
 
