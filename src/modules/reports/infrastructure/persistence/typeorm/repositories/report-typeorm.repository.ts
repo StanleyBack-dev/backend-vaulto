@@ -162,7 +162,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
       .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
         idUsers,
@@ -285,7 +285,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
       .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
         idUsers,
@@ -341,7 +341,7 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
       .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
         idUsers,
