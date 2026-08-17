@@ -159,29 +159,32 @@ describe("PlanLimitsService", () => {
       );
     });
 
-    it("should always allow an ADMIN_MASTER, regardless of subscription plan", async () => {
-      const { service } = buildService(
+    it.each([UserGroup.ADMIN, UserGroup.ADMIN_MASTER])(
+      "should always allow an %s, regardless of subscription plan",
+      async (group) => {
+        const { service } = buildService(freeSubscription(), group);
+
+        await expect(service.assertProPlan("user-1")).resolves.toBeUndefined();
+      },
+    );
+  });
+
+  it.each([UserGroup.ADMIN, UserGroup.ADMIN_MASTER])(
+    "should never block creation for an %s, regardless of count",
+    async (group) => {
+      const { service, subscriptionRepository } = buildService(
         freeSubscription(),
-        UserGroup.ADMIN_MASTER,
+        group,
       );
 
-      await expect(service.assertProPlan("user-1")).resolves.toBeUndefined();
-    });
-  });
-
-  it("should never block creation for an ADMIN_MASTER, regardless of count", async () => {
-    const { service, subscriptionRepository } = buildService(
-      freeSubscription(),
-      UserGroup.ADMIN_MASTER,
-    );
-
-    await expect(
-      service.assertCanCreate(
-        "user-1",
-        PlanLimitedResource.DEBTS,
-        FREE_PLAN_LIMITS[PlanLimitedResource.DEBTS] + 100,
-      ),
-    ).resolves.toBeUndefined();
-    expect(subscriptionRepository.findByUserId).not.toHaveBeenCalled();
-  });
+      await expect(
+        service.assertCanCreate(
+          "user-1",
+          PlanLimitedResource.DEBTS,
+          FREE_PLAN_LIMITS[PlanLimitedResource.DEBTS] + 100,
+        ),
+      ).resolves.toBeUndefined();
+      expect(subscriptionRepository.findByUserId).not.toHaveBeenCalled();
+    },
+  );
 });
