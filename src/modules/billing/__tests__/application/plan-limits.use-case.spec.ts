@@ -164,9 +164,7 @@ describe("PlanLimitsService", () => {
       async (group) => {
         const { service } = buildService(freeSubscription(), group);
 
-        await expect(
-          service.assertProPlan("user-1"),
-        ).resolves.toBeUndefined();
+        await expect(service.assertProPlan("user-1")).resolves.toBeUndefined();
       },
     );
   });
