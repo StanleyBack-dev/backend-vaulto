@@ -9,6 +9,10 @@ import type {
   CreateGatewaySubscriptionResult,
   CreatePixAutomaticAuthorizationInput,
   CreatePixAutomaticAuthorizationResult,
+  CreatePixTransferInput,
+  CreatePixTransferResult,
+  LookupPixKeyInput,
+  LookupPixKeyResult,
   PaymentGatewayPort,
 } from "@/modules/billing/application/ports/payment-gateway.port";
 
@@ -25,7 +29,7 @@ interface AsaasSubscriptionResponse {
 }
 
 interface AsaasPaymentListResponse {
-  data: Array<{ invoiceUrl?: string }>;
+  data: Array<{ id: string; invoiceUrl?: string }>;
 }
 
 interface AsaasPixAutomaticAuthorizationResponse {
@@ -33,6 +37,24 @@ interface AsaasPixAutomaticAuthorizationResponse {
   status: string;
   payload?: string;
   encodedImage?: string;
+}
+
+interface AsaasTransferResponse {
+  id: string;
+  status: string;
+  failReason?: string;
+}
+
+interface AsaasPixKeyLookupResponse {
+  ispbName?: string;
+  financialInstitution?: {
+    name?: string;
+    bank?: { name?: string };
+  };
+  owner?: {
+    name?: string;
+    cpfCnpj?: string;
+  };
 }
 
 @Injectable()
@@ -98,12 +120,13 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
       },
     );
 
-    const checkoutUrl = await this.findFirstPaymentInvoiceUrl(subscription.id);
+    const firstPayment = await this.findFirstPayment(subscription.id);
 
     return {
       gatewaySubscriptionId: subscription.id,
       status: subscription.status,
-      checkoutUrl,
+      checkoutUrl: firstPayment?.invoiceUrl,
+      firstPaymentId: firstPayment?.id,
     };
   }
 
@@ -136,7 +159,7 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
             description: input.description,
             paymentCreationMode: "SUBSCRIPTION",
             immediateQrCode: {
-              originalValue: input.value,
+              originalValue: input.firstChargeValue ?? input.value,
               expirationSeconds: 3600,
               description: input.description,
             },
@@ -161,20 +184,79 @@ export class AsaasPaymentGatewayProvider implements PaymentGatewayPort {
     );
   }
 
-  private async findFirstPaymentInvoiceUrl(
+  // Pix transfers to an external key move the exact `value` requested to
+  // the destination — Pix doesn't support skimming a fee off the amount in
+  // transit. Asaas' transferFee is charged separately against the sending
+  // account's own balance, so the recipient (our referrer) always receives
+  // the full amount; Vaulto absorbs the fee.
+  async createPixTransfer(
+    input: CreatePixTransferInput,
+  ): Promise<CreatePixTransferResult> {
+    const transfer = await this.request<AsaasTransferResponse>("/transfers", {
+      method: "POST",
+      body: {
+        value: input.value,
+        pixAddressKey: input.pixAddressKey,
+        pixAddressKeyType: input.pixAddressKeyType,
+        operationType: "PIX",
+        description: input.description,
+        externalReference: input.externalReference,
+      },
+    });
+
+    return {
+      gatewayTransferId: transfer.id,
+      status: transfer.status,
+      failReason: transfer.failReason,
+    };
+  }
+
+  private async findFirstPayment(
     gatewaySubscriptionId: string,
-  ): Promise<string | undefined> {
+  ): Promise<{ id: string; invoiceUrl?: string } | undefined> {
     const result = await this.request<AsaasPaymentListResponse>(
       `/payments?subscription=${gatewaySubscriptionId}&limit=1`,
       { method: "GET" },
     );
 
-    return result.data[0]?.invoiceUrl;
+    return result.data[0];
+  }
+
+  async updatePaymentValue(
+    gatewayPaymentId: string,
+    value: number,
+  ): Promise<void> {
+    await this.request(`/payments/${gatewayPaymentId}`, {
+      method: "PUT",
+      body: { value },
+    });
+  }
+
+  async lookupPixKey(input: LookupPixKeyInput): Promise<LookupPixKeyResult> {
+    const query = new URLSearchParams({
+      type: input.pixKeyType,
+      key: input.pixKey,
+    });
+
+    const result = await this.request<AsaasPixKeyLookupResponse>(
+      `/pix/addressKeys/external?${query.toString()}`,
+      { method: "GET" },
+    );
+
+    return {
+      bankName:
+        result.financialInstitution?.bank?.name ??
+        result.financialInstitution?.name ??
+        result.ispbName ??
+        "",
+      ownerName: result.owner?.name ?? "",
+      ownerDocument: result.owner?.cpfCnpj ?? "",
+    };
   }
 
   private async request<TResponse>(
     path: string,
-    options: { method: "GET" | "POST" | "DELETE"; body?: unknown },
+    options: { method: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown },
   ): Promise<TResponse> {
     if (!this.apiKey) {
       throw AppException.from(

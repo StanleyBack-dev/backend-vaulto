@@ -26,6 +26,11 @@ export interface CreateGatewaySubscriptionResult {
   gatewaySubscriptionId: string;
   status: string;
   checkoutUrl?: string;
+  // The gateway's own id for the first invoice this subscription generated
+  // — needed to override just that one payment's value for the first-month
+  // discount (see SubscribeToProUseCase). Every later invoice keeps the
+  // subscription's regular value.
+  firstPaymentId?: string;
 }
 
 export interface CreatePixAutomaticAuthorizationInput {
@@ -35,6 +40,10 @@ export interface CreatePixAutomaticAuthorizationInput {
   contractId: string;
   startDate: string;
   description: string;
+  // Overrides just the immediate/first charge's amount, independent of
+  // `value` (which governs every recurring charge after it) — used for the
+  // first-month discount. Falls back to `value` when omitted.
+  firstChargeValue?: number;
 }
 
 export interface CreatePixAutomaticAuthorizationResult {
@@ -42,6 +51,33 @@ export interface CreatePixAutomaticAuthorizationResult {
   status: string;
   qrCodePayload?: string;
   qrCodeImage?: string;
+}
+
+export interface CreatePixTransferInput {
+  // Reais, not cents — the gateway's own API works in decimal currency
+  // units, matching every other value field on this port.
+  value: number;
+  pixAddressKey: string;
+  pixAddressKeyType: string;
+  description: string;
+  externalReference: string;
+}
+
+export interface CreatePixTransferResult {
+  gatewayTransferId: string;
+  status: string;
+  failReason?: string;
+}
+
+export interface LookupPixKeyInput {
+  pixKeyType: string;
+  pixKey: string;
+}
+
+export interface LookupPixKeyResult {
+  bankName: string;
+  ownerName: string;
+  ownerDocument: string;
 }
 
 export interface PaymentGatewayPort {
@@ -58,6 +94,14 @@ export interface PaymentGatewayPort {
   cancelPixAutomaticAuthorization(
     pixAutomaticAuthorizationId: string,
   ): Promise<void>;
+  createPixTransfer(
+    input: CreatePixTransferInput,
+  ): Promise<CreatePixTransferResult>;
+  // Overrides the value of a single already-generated, still-pending
+  // payment — used to discount a checkout subscription's first invoice
+  // without touching the ones after it.
+  updatePaymentValue(gatewayPaymentId: string, value: number): Promise<void>;
+  lookupPixKey(input: LookupPixKeyInput): Promise<LookupPixKeyResult>;
 }
 
 export const PAYMENT_GATEWAY = Symbol("PAYMENT_GATEWAY");

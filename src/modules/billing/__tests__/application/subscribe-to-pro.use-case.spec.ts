@@ -1,7 +1,10 @@
 import { AppException } from "@/common/exceptions/app-exception";
 import { AuthPermission } from "@/modules/auth/domain/enums/auth-permission.enum";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
-import { PRO_PLAN_PRICES } from "@/modules/billing/domain/constants/pro-plan.constant";
+import {
+  PRO_PLAN_FIRST_MONTH_PRICE,
+  PRO_PLAN_PRICES,
+} from "@/modules/billing/domain/constants/pro-plan.constant";
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
@@ -57,6 +60,7 @@ function buildUseCase(
       gatewaySubscriptionId: "sub_123",
       status: "ACTIVE",
       checkoutUrl: "https://asaas.com/i/abc123",
+      firstPaymentId: "pay_123",
     }),
     createPixAutomaticAuthorization: jest.fn().mockResolvedValue({
       pixAutomaticAuthorizationId: "aut_123",
@@ -64,6 +68,7 @@ function buildUseCase(
       qrCodePayload: "00020126...",
       qrCodeImage: "data:image/png;base64,abc",
     }),
+    updatePaymentValue: jest.fn().mockResolvedValue(undefined),
   };
 
   const userRepository = {
@@ -318,6 +323,96 @@ describe("SubscribeToProUseCase", () => {
           contractId: "11111111222233334444555555555555",
         }),
       );
+    });
+  });
+
+  describe("first-month discount", () => {
+    it("overrides the first checkout invoice's value for an account that has never been Pro before", async () => {
+      const { useCase, paymentGateway } = buildUseCase();
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      });
+
+      expect(paymentGateway.updatePaymentValue).toHaveBeenCalledWith(
+        "pay_123",
+        PRO_PLAN_FIRST_MONTH_PRICE,
+      );
+    });
+
+    it("does not discount a checkout subscription for an account that was Pro before", async () => {
+      const { useCase, paymentGateway } = buildUseCase({
+        subscription: freeSubscription({ proStartedAt: new Date() }),
+      });
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      });
+
+      expect(paymentGateway.updatePaymentValue).not.toHaveBeenCalled();
+    });
+
+    it("does not discount a yearly checkout subscription", async () => {
+      const { useCase, paymentGateway } = buildUseCase();
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.YEARLY,
+      });
+
+      expect(paymentGateway.updatePaymentValue).not.toHaveBeenCalled();
+    });
+
+    it("skips the discount call when the gateway didn't return a first payment id", async () => {
+      const { useCase, paymentGateway } = buildUseCase();
+      paymentGateway.createSubscription.mockResolvedValue({
+        gatewaySubscriptionId: "sub_123",
+        status: "ACTIVE",
+        checkoutUrl: "https://asaas.com/i/abc123",
+      });
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+      });
+
+      expect(paymentGateway.updatePaymentValue).not.toHaveBeenCalled();
+    });
+
+    it("passes firstChargeValue to Pix Automático for an account that has never been Pro before", async () => {
+      const { useCase, paymentGateway } = buildUseCase();
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+        pixAutomatic: true,
+      });
+
+      expect(
+        paymentGateway.createPixAutomaticAuthorization,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          firstChargeValue: PRO_PLAN_FIRST_MONTH_PRICE,
+        }),
+      );
+    });
+
+    it("does not pass firstChargeValue to Pix Automático for an account that was Pro before", async () => {
+      const { useCase, paymentGateway } = buildUseCase({
+        subscription: freeSubscription({ proStartedAt: new Date() }),
+      });
+
+      await useCase.execute("user-1", {
+        cpfCnpj: "12345678900",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+        pixAutomatic: true,
+      });
+
+      const call = paymentGateway.createPixAutomaticAuthorization.mock
+        .calls[0][0] as Record<string, unknown>;
+      expect(call.firstChargeValue).toBeUndefined();
     });
   });
 });

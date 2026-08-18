@@ -34,6 +34,10 @@ export class AcceptTermsOfUseUseCase {
       acceptedAt,
     });
 
-    await this.authCredentialsService.acceptTermsOfUse(idUsers, acceptedAt);
+    await this.authCredentialsService.acceptTermsOfUse(
+      idUsers,
+      acceptedAt,
+      CURRENT_TERMS_VERSION,
+    );
   }
 }

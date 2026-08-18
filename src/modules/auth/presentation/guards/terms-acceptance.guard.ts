@@ -6,6 +6,7 @@ import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { ALLOW_BEFORE_TERMS_ACCEPTANCE_KEY } from "@/modules/auth/presentation/decorators/allow-before-terms-acceptance.decorator";
 import { AuthCredentialsService } from "@/modules/auth/application/use-cases/auth-credentials.use-case";
+import { CURRENT_TERMS_VERSION } from "@/modules/legal/domain/constants/terms-version.constant";
 
 // Server-side enforcement of terms acceptance: the frontend gate is a UX
 // affordance the user could bypass by tampering with the DOM, so this is the
@@ -46,7 +47,10 @@ export class TermsAcceptanceGuard implements CanActivate {
       currentUser.idUsers,
     );
 
-    if (credential?.termsAcceptedAt) {
+    if (
+      credential?.termsAcceptedAt &&
+      credential.termsAcceptedVersion === CURRENT_TERMS_VERSION
+    ) {
       return true;
     }
 

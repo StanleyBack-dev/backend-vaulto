@@ -74,6 +74,7 @@ describe("AcceptTermsOfUseUseCase", () => {
     expect(authCredentialsService.acceptTermsOfUse).toHaveBeenCalledWith(
       "user-1",
       acceptedAt,
+      CURRENT_TERMS_VERSION,
     );
   });
 

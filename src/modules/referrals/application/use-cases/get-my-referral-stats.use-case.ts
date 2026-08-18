@@ -3,18 +3,28 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Not, Repository } from "typeorm";
 import { generateUniqueReferralCode } from "@/common/utils/referral-code.util";
 import {
-  REFERRAL_REWARD_REPOSITORY,
-  type ReferralRewardRepositoryPort,
-} from "@/modules/referrals/application/ports/referral-reward-repository.port";
-import { REFERRAL_QUALIFIED_COUNT_THRESHOLD } from "@/modules/referrals/domain/constants/referral.constant";
-import { ReferralRewardStatus } from "@/modules/referrals/domain/enums/referral-reward-status.enum";
+  REFERRAL_CREDIT_REPOSITORY,
+  type ReferralCreditRepositoryPort,
+} from "@/modules/referrals/application/ports/referral-credit-repository.port";
+import {
+  REFERRAL_WITHDRAWAL_REPOSITORY,
+  type ReferralWithdrawalRepositoryPort,
+} from "@/modules/referrals/application/ports/referral-withdrawal-repository.port";
+import {
+  REFERRAL_CREDIT_AMOUNT_CENTS,
+  REFERRAL_CREDIT_HOLD_DAYS,
+  REFERRAL_MIN_WITHDRAWAL_CENTS,
+} from "@/modules/referrals/domain/constants/referral.constant";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 export interface ReferralStatsResult {
   referralCode: string;
   qualifiedReferralsCount: number;
-  thresholdCount: number;
-  rewardStatus: ReferralRewardStatus | null;
+  creditAmountCents: number;
+  minWithdrawalCents: number;
+  creditHoldDays: number;
+  availableBalanceCents: number;
+  pendingHoldBalanceCents: number;
 }
 
 @Injectable()
@@ -22,8 +32,10 @@ export class GetMyReferralStatsUseCase {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @Inject(REFERRAL_REWARD_REPOSITORY)
-    private readonly referralRewardRepository: ReferralRewardRepositoryPort,
+    @Inject(REFERRAL_CREDIT_REPOSITORY)
+    private readonly referralCreditRepository: ReferralCreditRepositoryPort,
+    @Inject(REFERRAL_WITHDRAWAL_REPOSITORY)
+    private readonly referralWithdrawalRepository: ReferralWithdrawalRepositoryPort,
   ) {}
 
   async execute(idUsers: string): Promise<ReferralStatsResult> {
@@ -38,13 +50,24 @@ export class GetMyReferralStatsUseCase {
       where: { referredByUserId: idUsers, referralQualifiedAt: Not(IsNull()) },
     });
 
-    const reward = await this.referralRewardRepository.findByUser(idUsers);
+    const [availableCredits, pendingHoldBalanceCents, reservedForWithdrawal] =
+      await Promise.all([
+        this.referralCreditRepository.sumAvailableForUser(idUsers),
+        this.referralCreditRepository.sumPendingHoldForUser(idUsers),
+        this.referralWithdrawalRepository.sumActiveForUser(idUsers),
+      ]);
 
     return {
       referralCode,
       qualifiedReferralsCount,
-      thresholdCount: REFERRAL_QUALIFIED_COUNT_THRESHOLD,
-      rewardStatus: reward?.status ?? null,
+      creditAmountCents: REFERRAL_CREDIT_AMOUNT_CENTS,
+      minWithdrawalCents: REFERRAL_MIN_WITHDRAWAL_CENTS,
+      creditHoldDays: REFERRAL_CREDIT_HOLD_DAYS,
+      availableBalanceCents: Math.max(
+        availableCredits - reservedForWithdrawal,
+        0,
+      ),
+      pendingHoldBalanceCents,
     };
   }
 

@@ -20,7 +20,7 @@
   ],
   "crons": [
     {
-      "path": "/internal/referrals/apply-rewards",
+      "path": "/internal/referrals/promote-credits",
       "schedule": "50 8 * * *"
     },
     {

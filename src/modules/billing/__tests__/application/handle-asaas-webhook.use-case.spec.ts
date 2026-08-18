@@ -69,6 +69,10 @@ function buildUseCase(
     execute: jest.fn().mockResolvedValue(undefined),
   };
 
+  const clawbackReferralCreditUseCase = {
+    execute: jest.fn().mockResolvedValue(undefined),
+  };
+
   const userRepository = {
     findOne: jest
       .fn()
@@ -87,6 +91,7 @@ function buildUseCase(
     subscriptionContractedNotificationEmailUseCase as never,
     paymentOverdueEmailUseCase as never,
     qualifyReferralUseCase as never,
+    clawbackReferralCreditUseCase as never,
     userRepository as never,
   );
 
@@ -98,6 +103,7 @@ function buildUseCase(
     subscriptionContractedNotificationEmailUseCase,
     paymentOverdueEmailUseCase,
     qualifyReferralUseCase,
+    clawbackReferralCreditUseCase,
     userRepository,
   };
 }
@@ -127,6 +133,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
+      { execute: jest.fn() } as never,
       { execute: jest.fn() } as never,
       { findOne: jest.fn() } as never,
     );

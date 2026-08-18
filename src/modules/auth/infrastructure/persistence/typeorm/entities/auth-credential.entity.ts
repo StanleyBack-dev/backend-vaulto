@@ -46,6 +46,16 @@ export class AuthCredentialEntity {
   @Column({ name: "terms_accepted_at", type: "timestamptz", nullable: true })
   termsAcceptedAt?: Date;
 
+  // The exact CURRENT_TERMS_VERSION accepted — compared against the live
+  // constant so a content update makes previously-accepted users re-accept,
+  // without needing a join to tb_terms_acceptances on every guarded request.
+  @Column({
+    name: "terms_accepted_version",
+    type: "varchar",
+    nullable: true,
+  })
+  termsAcceptedVersion?: string | null;
+
   @Column({
     name: "temporary_password_created_at",
     type: "timestamptz",

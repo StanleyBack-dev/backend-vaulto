@@ -29,6 +29,7 @@ type AuthSessionResponseDto {
   mustChangePassword: Boolean!
   onboardingTourCompleted: Boolean!
   termsAccepted: Boolean!
+  isTermsReacceptance: Boolean!
   user: AuthUserDto!
 }
 
@@ -540,16 +541,35 @@ type DeleteDebtPaymentMutationResponseDto {
   data: RegisterInstallmentPaymentResponseDto!
 }
 
+type PixKeyLookupResponseDto {
+  bankName: String!
+  ownerName: String!
+  ownerDocument: String!
+}
+
 type ReferralStatsResponseDto {
   referralCode: String!
   qualifiedReferralsCount: Int!
-  thresholdCount: Int!
-  rewardStatus: ReferralRewardStatus
+  creditAmountCents: Int!
+  minWithdrawalCents: Int!
+  creditHoldDays: Int!
+  availableBalanceCents: Int!
+  pendingHoldBalanceCents: Int!
 }
 
-enum ReferralRewardStatus {
-  PENDING
-  APPLIED
+type ReferralWithdrawalResponseDto {
+  idReferralWithdrawal: String!
+  amountCents: Int!
+  status: ReferralWithdrawalStatus!
+  requestedAt: DateTime!
+  processedAt: DateTime
+}
+
+enum ReferralWithdrawalStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 type CategoryAmountResponseDto {
@@ -854,6 +874,8 @@ type Query {
   myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
   adminDashboardStats: AdminDashboardStatsResponseDto!
   myReferralStats: ReferralStatsResponseDto!
+  myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
+  lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
 }
 
 input ListBillingPaymentsInputDto {
@@ -1028,6 +1050,19 @@ input ListSupportTicketsInputDto {
   category: SupportCategory
 }
 
+input LookupPixKeyInputDto {
+  pixKey: String!
+  pixKeyType: PixKeyType!
+}
+
+enum PixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  EVP
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -1076,6 +1111,7 @@ type Mutation {
   deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
   requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
   cancelAccountDeletion: CancelAccountDeletionResponseDto!
+  requestReferralWithdrawal(input: RequestReferralWithdrawalInputDto!): ReferralWithdrawalResponseDto!
 }
 
 input LoginInputDto {
@@ -1344,4 +1380,9 @@ enum AccountDeletionReason {
   HARD_TO_USE
   TECHNICAL_ISSUES
   OTHER
+}
+
+input RequestReferralWithdrawalInputDto {
+  pixKey: String!
+  pixKeyType: PixKeyType!
 }

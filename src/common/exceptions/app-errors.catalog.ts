@@ -16,6 +16,7 @@ import { paymentsErrors } from "@/common/exceptions/catalogs/payments-errors.cat
 import { pdfErrors } from "@/common/exceptions/catalogs/pdf-errors.catalog";
 import { profilesErrors } from "@/common/exceptions/catalogs/profiles-errors.catalog";
 import { rateLimitErrors } from "@/common/exceptions/catalogs/rate-limit-errors.catalog";
+import { referralsErrors } from "@/common/exceptions/catalogs/referrals-errors.catalog";
 import { supportErrors } from "@/common/exceptions/catalogs/support-errors.catalog";
 import { usersErrors } from "@/common/exceptions/catalogs/users-errors.catalog";
 import { validationErrors } from "@/common/exceptions/catalogs/validation-errors.catalog";
@@ -38,6 +39,7 @@ export const APP_ERRORS = {
   mails: mailsErrors,
   pdf: pdfErrors,
   support: supportErrors,
+  referrals: referralsErrors,
   validation: validationErrors,
   rateLimit: rateLimitErrors,
   internal: internalErrors,
