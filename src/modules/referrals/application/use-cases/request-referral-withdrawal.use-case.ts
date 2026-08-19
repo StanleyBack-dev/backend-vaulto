@@ -17,6 +17,7 @@ import {
 import { REFERRAL_MIN_WITHDRAWAL_CENTS } from "@/modules/referrals/domain/constants/referral.constant";
 import type { PixKeyType } from "@/modules/referrals/domain/enums/pix-key-type.enum";
 import { ReferralWithdrawalStatus } from "@/modules/referrals/domain/enums/referral-withdrawal-status.enum";
+import { mapAsaasTransferStatus } from "@/modules/referrals/domain/mappers/map-asaas-transfer-status";
 
 export interface RequestReferralWithdrawalCommand {
   pixKey: string;
@@ -94,7 +95,7 @@ export class RequestReferralWithdrawalUseCase {
       return this.referralWithdrawalRepository.update(
         withdrawal.idReferralWithdrawal,
         {
-          status: this.mapGatewayStatus(transfer.status),
+          status: mapAsaasTransferStatus(transfer.status),
           gatewayTransferId: transfer.gatewayTransferId,
           failReason: transfer.failReason,
           processedAt: new Date(),
@@ -120,21 +121,5 @@ export class RequestReferralWithdrawalUseCase {
         undefined,
       );
     }
-  }
-
-  // Asaas' PENDING/BANK_PROCESSING both mean "accepted, in flight" for a
-  // Pix transfer (which otherwise settles near-instantly) — treated as
-  // PROCESSING here rather than a distinct status, since the withdrawal
-  // history doesn't need to distinguish them.
-  private mapGatewayStatus(gatewayStatus: string): ReferralWithdrawalStatus {
-    if (gatewayStatus === "DONE") {
-      return ReferralWithdrawalStatus.COMPLETED;
-    }
-
-    if (gatewayStatus === "CANCELLED" || gatewayStatus === "FAILED") {
-      return ReferralWithdrawalStatus.FAILED;
-    }
-
-    return ReferralWithdrawalStatus.PROCESSING;
   }
 }

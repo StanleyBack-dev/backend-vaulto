@@ -32,9 +32,7 @@ function toView(entity: ReferralWithdrawalEntity): ReferralWithdrawalView {
 }
 
 @Injectable()
-export class ReferralWithdrawalTypeormRepository
-  implements ReferralWithdrawalRepositoryPort
-{
+export class ReferralWithdrawalTypeormRepository implements ReferralWithdrawalRepositoryPort {
   constructor(
     @InjectRepository(ReferralWithdrawalEntity)
     private readonly repository: Repository<ReferralWithdrawalEntity>,
@@ -68,6 +66,15 @@ export class ReferralWithdrawalTypeormRepository
       order: { requestedAt: "DESC" },
     });
     return entities.map(toView);
+  }
+
+  async findByGatewayTransferId(
+    gatewayTransferId: string,
+  ): Promise<ReferralWithdrawalView | null> {
+    const entity = await this.repository.findOne({
+      where: { gatewayTransferId },
+    });
+    return entity ? toView(entity) : null;
   }
 
   async sumActiveForUser(idUsers: string): Promise<number> {

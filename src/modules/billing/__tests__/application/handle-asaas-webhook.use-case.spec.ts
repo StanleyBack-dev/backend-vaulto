@@ -73,6 +73,10 @@ function buildUseCase(
     execute: jest.fn().mockResolvedValue(undefined),
   };
 
+  const syncReferralWithdrawalTransferStatusUseCase = {
+    execute: jest.fn().mockResolvedValue(undefined),
+  };
+
   const userRepository = {
     findOne: jest
       .fn()
@@ -92,6 +96,7 @@ function buildUseCase(
     paymentOverdueEmailUseCase as never,
     qualifyReferralUseCase as never,
     clawbackReferralCreditUseCase as never,
+    syncReferralWithdrawalTransferStatusUseCase as never,
     userRepository as never,
   );
 
@@ -104,6 +109,7 @@ function buildUseCase(
     paymentOverdueEmailUseCase,
     qualifyReferralUseCase,
     clawbackReferralCreditUseCase,
+    syncReferralWithdrawalTransferStatusUseCase,
     userRepository,
   };
 }
@@ -133,6 +139,7 @@ describe("HandleAsaasWebhookUseCase", () => {
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
       { send: jest.fn() } as never,
+      { execute: jest.fn() } as never,
       { execute: jest.fn() } as never,
       { execute: jest.fn() } as never,
       { findOne: jest.fn() } as never,
@@ -573,5 +580,27 @@ describe("HandleAsaasWebhookUseCase", () => {
         status: SubscriptionStatus.ACTIVE,
       }),
     );
+  });
+
+  it("forwards TRANSFER_DONE events to the referral withdrawal status sync use case", async () => {
+    const { useCase, syncReferralWithdrawalTransferStatusUseCase } =
+      buildUseCase();
+
+    await useCase.execute(WEBHOOK_TOKEN, {
+      event: "TRANSFER_DONE",
+      transfer: {
+        id: "transfer-1",
+        status: "DONE",
+        failReason: null,
+      },
+    });
+
+    expect(
+      syncReferralWithdrawalTransferStatusUseCase.execute,
+    ).toHaveBeenCalledWith({
+      gatewayTransferId: "transfer-1",
+      gatewayStatus: "DONE",
+      failReason: null,
+    });
   });
 });

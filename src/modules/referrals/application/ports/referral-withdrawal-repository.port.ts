@@ -38,6 +38,9 @@ export interface ReferralWithdrawalRepositoryPort {
     payload: UpdateReferralWithdrawalPayload,
   ): Promise<ReferralWithdrawalView>;
   findByUser(idUsers: string): Promise<ReferralWithdrawalView[]>;
+  findByGatewayTransferId(
+    gatewayTransferId: string,
+  ): Promise<ReferralWithdrawalView | null>;
   sumActiveForUser(idUsers: string): Promise<number>;
 }
 

@@ -26,10 +26,14 @@ import { SubscriptionLifecycleController } from "@/modules/billing/presentation/
 import { BillingResolver } from "@/modules/billing/presentation/graphql/resolvers/billing.resolver";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 import { REFERRAL_CREDIT_REPOSITORY } from "@/modules/referrals/application/ports/referral-credit-repository.port";
+import { REFERRAL_WITHDRAWAL_REPOSITORY } from "@/modules/referrals/application/ports/referral-withdrawal-repository.port";
 import { ClawbackReferralCreditUseCase } from "@/modules/referrals/application/use-cases/clawback-referral-credit.use-case";
 import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
+import { SyncReferralWithdrawalTransferStatusUseCase } from "@/modules/referrals/application/use-cases/sync-referral-withdrawal-transfer-status.use-case";
 import { ReferralCreditEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-credit.entity";
+import { ReferralWithdrawalEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-withdrawal.entity";
 import { ReferralCreditTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-credit-typeorm.repository";
+import { ReferralWithdrawalTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-withdrawal-typeorm.repository";
 import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
 
 @Module({
@@ -40,6 +44,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
       BillingPaymentEntity,
       UserEntity,
       ReferralCreditEntity,
+      ReferralWithdrawalEntity,
     ]),
     AuthModule,
     MailModule,
@@ -61,7 +66,9 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     AsaasPaymentGatewayProvider,
     QualifyReferralUseCase,
     ClawbackReferralCreditUseCase,
+    SyncReferralWithdrawalTransferStatusUseCase,
     ReferralCreditTypeormRepository,
+    ReferralWithdrawalTypeormRepository,
     {
       provide: SUBSCRIPTION_REPOSITORY,
       useExisting: SubscriptionTypeormRepository,
@@ -81,6 +88,10 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     {
       provide: REFERRAL_CREDIT_REPOSITORY,
       useExisting: ReferralCreditTypeormRepository,
+    },
+    {
+      provide: REFERRAL_WITHDRAWAL_REPOSITORY,
+      useExisting: ReferralWithdrawalTypeormRepository,
     },
   ],
   exports: [

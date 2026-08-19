@@ -6,6 +6,7 @@ import { MailModule } from "@/modules/mails/mail.module";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 import { REFERRAL_CREDIT_REPOSITORY } from "@/modules/referrals/application/ports/referral-credit-repository.port";
 import { REFERRAL_WITHDRAWAL_REPOSITORY } from "@/modules/referrals/application/ports/referral-withdrawal-repository.port";
+import { ApproveReferralWithdrawalTransferUseCase } from "@/modules/referrals/application/use-cases/approve-referral-withdrawal-transfer.use-case";
 import { ClawbackReferralCreditUseCase } from "@/modules/referrals/application/use-cases/clawback-referral-credit.use-case";
 import { GetMyReferralStatsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-stats.use-case";
 import { GetMyReferralWithdrawalsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-withdrawals.use-case";
@@ -13,10 +14,12 @@ import { LookupReferralWithdrawalPixKeyUseCase } from "@/modules/referrals/appli
 import { PromoteReferralCreditsUseCase } from "@/modules/referrals/application/use-cases/promote-referral-credits.use-case";
 import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
 import { RequestReferralWithdrawalUseCase } from "@/modules/referrals/application/use-cases/request-referral-withdrawal.use-case";
+import { SyncReferralWithdrawalTransferStatusUseCase } from "@/modules/referrals/application/use-cases/sync-referral-withdrawal-transfer-status.use-case";
 import { ReferralCreditEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-credit.entity";
 import { ReferralWithdrawalEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-withdrawal.entity";
 import { ReferralCreditTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-credit-typeorm.repository";
 import { ReferralWithdrawalTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-withdrawal-typeorm.repository";
+import { AsaasTransferApprovalWebhookController } from "@/modules/referrals/presentation/rest/controllers/asaas-transfer-approval-webhook.controller";
 import { ReferralCreditsController } from "@/modules/referrals/presentation/rest/controllers/referral-credits.controller";
 import { ReferralsResolver } from "@/modules/referrals/presentation/graphql/resolvers/referrals.resolver";
 
@@ -31,13 +34,18 @@ import { ReferralsResolver } from "@/modules/referrals/presentation/graphql/reso
     BillingModule,
     MailModule,
   ],
-  controllers: [ReferralCreditsController],
+  controllers: [
+    ReferralCreditsController,
+    AsaasTransferApprovalWebhookController,
+  ],
   providers: [
     QualifyReferralUseCase,
     ClawbackReferralCreditUseCase,
     PromoteReferralCreditsUseCase,
     RequestReferralWithdrawalUseCase,
     LookupReferralWithdrawalPixKeyUseCase,
+    ApproveReferralWithdrawalTransferUseCase,
+    SyncReferralWithdrawalTransferStatusUseCase,
     GetMyReferralStatsUseCase,
     GetMyReferralWithdrawalsUseCase,
     ReferralsResolver,
