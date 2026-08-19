@@ -5,6 +5,7 @@ import { ValidateSessionUseCase } from "@/modules/sessions/application/use-cases
 import { AppException } from "@/common/exceptions/app-exception";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AuthSessionResponseDto } from "@/modules/auth/presentation/graphql/dtos/session/auth-session-response.dto";
+import { CURRENT_TERMS_VERSION } from "@/modules/legal/domain/constants/terms-version.constant";
 import { AuthCredentialsService } from "./auth-credentials.use-case";
 import { AuthTokensService } from "./auth-tokens.use-case";
 
@@ -72,7 +73,12 @@ export class RefreshAuthSessionService {
         authenticated: true,
         mustChangePassword: credential.mustChangePassword,
         onboardingTourCompleted: credential.onboardingTourCompleted,
-        termsAccepted: Boolean(credential.termsAcceptedAt),
+        termsAccepted:
+          Boolean(credential.termsAcceptedAt) &&
+          credential.termsAcceptedVersion === CURRENT_TERMS_VERSION,
+        isTermsReacceptance:
+          Boolean(credential.termsAcceptedAt) &&
+          credential.termsAcceptedVersion !== CURRENT_TERMS_VERSION,
         user: {
           idUsers: credential.user.idUsers,
           name: credential.user.name,

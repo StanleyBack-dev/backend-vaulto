@@ -67,8 +67,15 @@ export const envValidationSchema = Joi.object({
     .default("sandbox"),
   ASAAS_WEBHOOK_TOKEN: Joi.string().min(32).optional(),
   CRON_SECRET: Joi.string().min(16).optional(),
-  PRO_PLAN_PRICE_MONTHLY: Joi.number().positive().default(14.9),
-  PRO_PLAN_PRICE_YEARLY: Joi.number().positive().default(149.9),
+  PRO_PLAN_PRICE_MONTHLY: Joi.number().positive().default(29.9),
+  PRO_PLAN_PRICE_YEARLY: Joi.number().positive().default(299.9),
+  PRO_PLAN_PRICE_FIRST_MONTH: Joi.number().positive().default(19.9),
+  REFERRAL_CREDIT_AMOUNT_CENTS: Joi.number().integer().positive().default(500),
+  REFERRAL_MIN_WITHDRAWAL_CENTS: Joi.number()
+    .integer()
+    .positive()
+    .default(2000),
+  REFERRAL_CREDIT_HOLD_DAYS: Joi.number().integer().positive().default(7),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
   MAIL_COMPANY_NOTIFICATION_EMAIL: Joi.string().email().optional(),

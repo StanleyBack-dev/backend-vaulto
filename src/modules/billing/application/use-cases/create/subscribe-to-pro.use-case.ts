@@ -17,7 +17,10 @@ import {
   type SubscriptionView,
 } from "@/modules/billing/application/ports/subscription-repository.port";
 import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
-import { PRO_PLAN_PRICES } from "@/modules/billing/domain/constants/pro-plan.constant";
+import {
+  PRO_PLAN_FIRST_MONTH_PRICE,
+  PRO_PLAN_PRICES,
+} from "@/modules/billing/domain/constants/pro-plan.constant";
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
@@ -100,6 +103,15 @@ export class SubscribeToProUseCase {
     }
 
     const description = `Vaulto Pro - assinatura ${command.billingCycle === SubscriptionBillingCycle.YEARLY ? "anual" : "mensal"}`;
+    // A monthly discount on the very first Pro charge, for accounts that
+    // have never been Pro before — proStartedAt is only ever set once a
+    // subscription actually starts (see the two branches below), so its
+    // absence here means this account has never paid for Pro. Doesn't apply
+    // to yearly: that's a single upfront charge, no separate "first month"
+    // to discount.
+    const isFirstMonthDiscountEligible =
+      !subscription.proStartedAt &&
+      command.billingCycle === SubscriptionBillingCycle.MONTHLY;
 
     if (command.pixAutomatic) {
       return this.subscribeWithPixAutomatic(
@@ -107,6 +119,7 @@ export class SubscribeToProUseCase {
         command,
         gatewayCustomerId,
         description,
+        isFirstMonthDiscountEligible,
       );
     }
 
@@ -115,6 +128,7 @@ export class SubscribeToProUseCase {
       command,
       gatewayCustomerId,
       description,
+      isFirstMonthDiscountEligible,
     );
   }
 
@@ -123,6 +137,7 @@ export class SubscribeToProUseCase {
     command: SubscribeToProCommand,
     gatewayCustomerId: string,
     description: string,
+    isFirstMonthDiscountEligible: boolean,
   ): Promise<SubscribeToProResult> {
     const gatewaySubscription = await this.paymentGateway.createSubscription({
       gatewayCustomerId,
@@ -133,6 +148,13 @@ export class SubscribeToProUseCase {
       externalReference: idUsers,
       callbackSuccessUrl: this.buildCheckoutSuccessUrl(),
     });
+
+    if (isFirstMonthDiscountEligible && gatewaySubscription.firstPaymentId) {
+      await this.paymentGateway.updatePaymentValue(
+        gatewaySubscription.firstPaymentId,
+        PRO_PLAN_FIRST_MONTH_PRICE,
+      );
+    }
 
     const updatedSubscription =
       await this.subscriptionRepository.updateByUserId(idUsers, {
@@ -153,6 +175,7 @@ export class SubscribeToProUseCase {
     command: SubscribeToProCommand,
     gatewayCustomerId: string,
     description: string,
+    isFirstMonthDiscountEligible: boolean,
   ): Promise<SubscribeToProResult> {
     const authorization =
       await this.paymentGateway.createPixAutomaticAuthorization({
@@ -164,6 +187,9 @@ export class SubscribeToProUseCase {
         contractId: idUsers.replace(/-/g, ""),
         startDate: this.toDateOnly(new Date()),
         description,
+        ...(isFirstMonthDiscountEligible
+          ? { firstChargeValue: PRO_PLAN_FIRST_MONTH_PRICE }
+          : {}),
       });
 
     const updatedSubscription =

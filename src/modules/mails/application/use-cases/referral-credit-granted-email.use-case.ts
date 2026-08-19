@@ -2,17 +2,18 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { MailProviderPort } from "@/modules/mails/application/ports/mail-provider.port";
 import { MAIL_PROVIDER } from "@/modules/mails/application/ports/mail-provider.token";
-import { buildReferralRewardGrantedEmail } from "@/modules/mails/presentation/templates/referrals/referral-reward-granted-email.template";
+import { buildReferralCreditGrantedEmail } from "@/modules/mails/presentation/templates/referrals/referral-credit-granted-email.template";
 
-interface SendReferralRewardGrantedEmailInput {
+interface SendReferralCreditGrantedEmailInput {
   to: string;
   name: string;
-  appliedImmediately: boolean;
+  amountCents: number;
+  holdDays: number;
 }
 
 @Injectable()
-export class ReferralRewardGrantedEmailUseCase {
-  private readonly logger = new Logger(ReferralRewardGrantedEmailUseCase.name);
+export class ReferralCreditGrantedEmailUseCase {
+  private readonly logger = new Logger(ReferralCreditGrantedEmailUseCase.name);
 
   constructor(
     @Inject(MAIL_PROVIDER)
@@ -20,14 +21,15 @@ export class ReferralRewardGrantedEmailUseCase {
     private readonly configService: ConfigService,
   ) {}
 
-  async send(input: SendReferralRewardGrantedEmailInput): Promise<void> {
+  async send(input: SendReferralCreditGrantedEmailInput): Promise<void> {
     const appUrl =
       this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
 
-    const emailTemplate = buildReferralRewardGrantedEmail({
+    const emailTemplate = buildReferralCreditGrantedEmail({
       appUrl,
       name: input.name,
-      appliedImmediately: input.appliedImmediately,
+      amountCents: input.amountCents,
+      holdDays: input.holdDays,
     });
 
     await this.mailProvider.send({
@@ -37,8 +39,6 @@ export class ReferralRewardGrantedEmailUseCase {
       text: emailTemplate.text,
     });
 
-    this.logger.log(
-      `Email de recompensa de indicação enviado para ${input.to}`,
-    );
+    this.logger.log(`Email de crédito de indicação enviado para ${input.to}`);
   }
 }

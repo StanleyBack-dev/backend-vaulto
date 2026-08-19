@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CreateSessionUseCase } from "@/modules/sessions/application/use-cases/create/create-session.use-case";
 import { AuthCredentialEntity } from "@/modules/auth/infrastructure/persistence/typeorm/entities/auth-credential.entity";
 import { AuthSessionResponseDto } from "@/modules/auth/presentation/graphql/dtos/session/auth-session-response.dto";
+import { CURRENT_TERMS_VERSION } from "@/modules/legal/domain/constants/terms-version.constant";
 import { AuthCredentialsService } from "./auth-credentials.use-case";
 import { AuthTokensService } from "./auth-tokens.use-case";
 
@@ -56,7 +57,12 @@ export class IssueAuthSessionService {
         authenticated: true,
         mustChangePassword: credential.mustChangePassword,
         onboardingTourCompleted: credential.onboardingTourCompleted,
-        termsAccepted: Boolean(credential.termsAcceptedAt),
+        termsAccepted:
+          Boolean(credential.termsAcceptedAt) &&
+          credential.termsAcceptedVersion === CURRENT_TERMS_VERSION,
+        isTermsReacceptance:
+          Boolean(credential.termsAcceptedAt) &&
+          credential.termsAcceptedVersion !== CURRENT_TERMS_VERSION,
         user: {
           idUsers: credential.user.idUsers,
           name: credential.user.name,

@@ -15,6 +15,11 @@ export class AuthSessionResponseDto {
   @Field()
   termsAccepted!: boolean;
 
+  // True when the user accepted an OLDER version before — lets the frontend
+  // gate say "we updated our terms" instead of the generic first-time copy.
+  @Field()
+  isTermsReacceptance!: boolean;
+
   @Field(() => AuthUserDto)
   user!: AuthUserDto;
 }

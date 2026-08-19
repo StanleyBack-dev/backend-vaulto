@@ -238,10 +238,14 @@ export class AuthCredentialsService {
     );
   }
 
-  async acceptTermsOfUse(idUsers: string, acceptedAt: Date): Promise<void> {
+  async acceptTermsOfUse(
+    idUsers: string,
+    acceptedAt: Date,
+    termsVersion: string,
+  ): Promise<void> {
     await this.authCredentialRepository.update(
       { idUsers },
-      { termsAcceptedAt: acceptedAt },
+      { termsAcceptedAt: acceptedAt, termsAcceptedVersion: termsVersion },
     );
   }
 

@@ -1,10 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
-import { timingSafeEqual } from "crypto";
 import { Repository } from "typeorm";
 import { APP_ERRORS } from "@/common/exceptions/app-errors.catalog";
 import { AppException } from "@/common/exceptions/app-exception";
+import { verifyWebhookToken } from "@/common/utils/verify-webhook-token.util";
 import type {
   AsaasWebhookPaymentPayload,
   AsaasWebhookPayload,
@@ -27,7 +27,9 @@ import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
 import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
 import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-contracted-notification-email.use-case";
+import { ClawbackReferralCreditUseCase } from "@/modules/referrals/application/use-cases/clawback-referral-credit.use-case";
 import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
+import { SyncReferralWithdrawalTransferStatusUseCase } from "@/modules/referrals/application/use-cases/sync-referral-withdrawal-transfer-status.use-case";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
 
 const SETTLED_PAYMENT_EVENTS = new Set([
@@ -66,6 +68,8 @@ export class HandleAsaasWebhookUseCase {
     private readonly subscriptionContractedNotificationEmailUseCase: SubscriptionContractedNotificationEmailUseCase,
     private readonly paymentOverdueEmailUseCase: PaymentOverdueEmailUseCase,
     private readonly qualifyReferralUseCase: QualifyReferralUseCase,
+    private readonly clawbackReferralCreditUseCase: ClawbackReferralCreditUseCase,
+    private readonly syncReferralWithdrawalTransferStatusUseCase: SyncReferralWithdrawalTransferStatusUseCase,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
   ) {}
@@ -91,32 +95,27 @@ export class HandleAsaasWebhookUseCase {
         payload.event,
         payload.pixAutomaticAuthorization,
       );
+      return;
+    }
+
+    if (payload.transfer) {
+      await this.syncReferralWithdrawalTransferStatusUseCase.execute({
+        gatewayTransferId: payload.transfer.id,
+        gatewayStatus: payload.transfer.status,
+        failReason: payload.transfer.failReason,
+      });
     }
   }
 
   private assertValidToken(receivedToken?: string): void {
     const expectedToken = this.configService.get<string>("ASAAS_WEBHOOK_TOKEN");
 
-    if (
-      !expectedToken ||
-      !receivedToken ||
-      !this.tokensMatch(receivedToken, expectedToken)
-    ) {
+    if (!verifyWebhookToken(receivedToken, expectedToken)) {
       throw AppException.from(
         APP_ERRORS.billing.invalidWebhookToken,
         undefined,
       );
     }
-  }
-
-  private tokensMatch(received: string, expected: string): boolean {
-    const receivedBuffer = Buffer.from(received);
-    const expectedBuffer = Buffer.from(expected);
-
-    return (
-      receivedBuffer.length === expectedBuffer.length &&
-      timingSafeEqual(receivedBuffer, expectedBuffer)
-    );
   }
 
   private async handlePaymentEvent(
@@ -159,6 +158,7 @@ export class HandleAsaasWebhookUseCase {
 
     if (event === "PAYMENT_DELETED" || event === "PAYMENT_REFUNDED") {
       await this.downgradeToFree(subscription.idUsers);
+      await this.clawbackReferralCreditUseCase.execute(subscription.idUsers);
     }
   }
 

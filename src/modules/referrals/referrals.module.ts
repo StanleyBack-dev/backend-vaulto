@@ -4,32 +4,60 @@ import { AuthModule } from "@/modules/auth/auth.module";
 import { BillingModule } from "@/modules/billing/billing.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/entities/user.entity";
-import { REFERRAL_REWARD_REPOSITORY } from "@/modules/referrals/application/ports/referral-reward-repository.port";
-import { ApplyReferralRewardsUseCase } from "@/modules/referrals/application/use-cases/apply-referral-rewards.use-case";
+import { REFERRAL_CREDIT_REPOSITORY } from "@/modules/referrals/application/ports/referral-credit-repository.port";
+import { REFERRAL_WITHDRAWAL_REPOSITORY } from "@/modules/referrals/application/ports/referral-withdrawal-repository.port";
+import { ApproveReferralWithdrawalTransferUseCase } from "@/modules/referrals/application/use-cases/approve-referral-withdrawal-transfer.use-case";
+import { ClawbackReferralCreditUseCase } from "@/modules/referrals/application/use-cases/clawback-referral-credit.use-case";
 import { GetMyReferralStatsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-stats.use-case";
+import { GetMyReferralWithdrawalsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-withdrawals.use-case";
+import { LookupReferralWithdrawalPixKeyUseCase } from "@/modules/referrals/application/use-cases/lookup-referral-withdrawal-pix-key.use-case";
+import { PromoteReferralCreditsUseCase } from "@/modules/referrals/application/use-cases/promote-referral-credits.use-case";
 import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
-import { ReferralRewardEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-reward.entity";
-import { ReferralRewardTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-reward-typeorm.repository";
-import { ReferralRewardsController } from "@/modules/referrals/presentation/rest/controllers/referral-rewards.controller";
+import { RequestReferralWithdrawalUseCase } from "@/modules/referrals/application/use-cases/request-referral-withdrawal.use-case";
+import { SyncReferralWithdrawalTransferStatusUseCase } from "@/modules/referrals/application/use-cases/sync-referral-withdrawal-transfer-status.use-case";
+import { ReferralCreditEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-credit.entity";
+import { ReferralWithdrawalEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-withdrawal.entity";
+import { ReferralCreditTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-credit-typeorm.repository";
+import { ReferralWithdrawalTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-withdrawal-typeorm.repository";
+import { AsaasTransferApprovalWebhookController } from "@/modules/referrals/presentation/rest/controllers/asaas-transfer-approval-webhook.controller";
+import { ReferralCreditsController } from "@/modules/referrals/presentation/rest/controllers/referral-credits.controller";
 import { ReferralsResolver } from "@/modules/referrals/presentation/graphql/resolvers/referrals.resolver";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ReferralRewardEntity, UserEntity]),
+    TypeOrmModule.forFeature([
+      ReferralCreditEntity,
+      ReferralWithdrawalEntity,
+      UserEntity,
+    ]),
     AuthModule,
     BillingModule,
     MailModule,
   ],
-  controllers: [ReferralRewardsController],
+  controllers: [
+    ReferralCreditsController,
+    AsaasTransferApprovalWebhookController,
+  ],
   providers: [
     QualifyReferralUseCase,
-    ApplyReferralRewardsUseCase,
+    ClawbackReferralCreditUseCase,
+    PromoteReferralCreditsUseCase,
+    RequestReferralWithdrawalUseCase,
+    LookupReferralWithdrawalPixKeyUseCase,
+    ApproveReferralWithdrawalTransferUseCase,
+    SyncReferralWithdrawalTransferStatusUseCase,
     GetMyReferralStatsUseCase,
+    GetMyReferralWithdrawalsUseCase,
     ReferralsResolver,
-    ReferralRewardTypeormRepository,
+    ReferralCreditTypeormRepository,
+    ReferralWithdrawalTypeormRepository,
     {
-      provide: REFERRAL_REWARD_REPOSITORY,
-      useExisting: ReferralRewardTypeormRepository,
+      provide: REFERRAL_CREDIT_REPOSITORY,
+      useExisting: ReferralCreditTypeormRepository,
+    },
+    {
+      provide: REFERRAL_WITHDRAWAL_REPOSITORY,
+      useExisting: ReferralWithdrawalTypeormRepository,
     },
   ],
 })
