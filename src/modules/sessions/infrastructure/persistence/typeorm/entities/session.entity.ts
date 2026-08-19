@@ -35,18 +35,18 @@ export class SessionEntity {
   @Column({ name: "session_active", type: "boolean", default: true })
   sessionActive!: boolean;
 
-  @Column({ name: "refresh_token_expires_at", type: "timestamp" })
+  @Column({ name: "refresh_token_expires_at", type: "timestamptz" })
   refreshTokenExpiresAt!: Date;
 
-  @Column({ name: "revoked_at", type: "timestamp", nullable: true })
+  @Column({ name: "revoked_at", type: "timestamptz", nullable: true })
   revokedAt?: Date;
 
-  @Column({ name: "last_used_at", type: "timestamp", nullable: true })
+  @Column({ name: "last_used_at", type: "timestamptz", nullable: true })
   lastUsedAt?: Date;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }
