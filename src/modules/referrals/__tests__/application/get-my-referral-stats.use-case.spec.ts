@@ -14,8 +14,7 @@ function buildUseCase(
     reservedCents?: number;
   } = {},
 ) {
-  const user =
-    overrides.user ?? { idUsers: "user-1", referralCode: "ABC123" };
+  const user = overrides.user ?? { idUsers: "user-1", referralCode: "ABC123" };
 
   const userRepository = {
     findOneOrFail: jest.fn().mockResolvedValue(user),
@@ -33,9 +32,7 @@ function buildUseCase(
   };
 
   const referralWithdrawalRepository = {
-    sumActiveForUser: jest
-      .fn()
-      .mockResolvedValue(overrides.reservedCents ?? 0),
+    sumActiveForUser: jest.fn().mockResolvedValue(overrides.reservedCents ?? 0),
   };
 
   const useCase = new GetMyReferralStatsUseCase(

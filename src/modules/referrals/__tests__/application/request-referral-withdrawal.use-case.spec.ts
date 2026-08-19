@@ -32,13 +32,13 @@ function buildUseCase(
   };
 
   const referralWithdrawalRepository = {
-    sumActiveForUser: jest
-      .fn()
-      .mockResolvedValue(overrides.reservedCents ?? 0),
+    sumActiveForUser: jest.fn().mockResolvedValue(overrides.reservedCents ?? 0),
     create: jest.fn().mockResolvedValue(createdWithdrawal),
-    update: jest.fn().mockImplementation((id, patch) =>
-      Promise.resolve({ ...createdWithdrawal, ...patch }),
-    ),
+    update: jest
+      .fn()
+      .mockImplementation((id, patch) =>
+        Promise.resolve({ ...createdWithdrawal, ...patch }),
+      ),
   };
 
   const paymentGateway = {

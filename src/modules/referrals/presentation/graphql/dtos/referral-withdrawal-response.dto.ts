@@ -4,9 +4,7 @@ import { ReferralWithdrawalStatus } from "@/modules/referrals/domain/enums/refer
 
 @ObjectType()
 export class ReferralWithdrawalResponseDto {
-  static fromView(
-    view: ReferralWithdrawalView,
-  ): ReferralWithdrawalResponseDto {
+  static fromView(view: ReferralWithdrawalView): ReferralWithdrawalResponseDto {
     const dto = new ReferralWithdrawalResponseDto();
     dto.idReferralWithdrawal = view.idReferralWithdrawal;
     dto.amountCents = view.amountCents;

@@ -102,15 +102,13 @@ describe("QualifyReferralUseCase", () => {
   });
 
   it("does nothing when the referred user has no referrer", async () => {
-    const { useCase, referralCreditRepository, userRepository } = buildUseCase(
-      {
-        referredUser: {
-          idUsers: "referred-1",
-          referredByUserId: null,
-          referralQualifiedAt: null,
-        },
+    const { useCase, referralCreditRepository, userRepository } = buildUseCase({
+      referredUser: {
+        idUsers: "referred-1",
+        referredByUserId: null,
+        referralQualifiedAt: null,
       },
-    );
+    });
 
     await useCase.execute("referred-1");
 
@@ -119,15 +117,13 @@ describe("QualifyReferralUseCase", () => {
   });
 
   it("does nothing when the referred user already qualified before (idempotent)", async () => {
-    const { useCase, referralCreditRepository, userRepository } = buildUseCase(
-      {
-        referredUser: {
-          idUsers: "referred-1",
-          referredByUserId: "referrer-1",
-          referralQualifiedAt: new Date(),
-        },
+    const { useCase, referralCreditRepository, userRepository } = buildUseCase({
+      referredUser: {
+        idUsers: "referred-1",
+        referredByUserId: "referrer-1",
+        referralQualifiedAt: new Date(),
       },
-    );
+    });
 
     await useCase.execute("referred-1");
 

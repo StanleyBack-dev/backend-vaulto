@@ -7,9 +7,7 @@ import { Table } from "typeorm";
 // request log. tb_referral_rewards is left in place (unused, harmless) —
 // not dropped, to avoid a destructive migration for a table that may still
 // have historical rows.
-export class CreateReferralCreditsAndWithdrawals1787600000000
-  implements MigrationInterface
-{
+export class CreateReferralCreditsAndWithdrawals1787600000000 implements MigrationInterface {
   name = "CreateReferralCreditsAndWithdrawals1787600000000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

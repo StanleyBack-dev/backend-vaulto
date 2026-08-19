@@ -66,8 +66,7 @@ com banco Neon próprio) conforme cada parte é testada.
       **infra**
 - [x] Correções encontradas testando em beta: crash de boot por env var
       (`NODE_ENV`/`TYPEORM_LOGGING`), URL de backend errada no BFF, proteção
-      da Vercel bloqueando chamadas servidor-a-servidor (bypass por header
-      + query param), exibição de horário mostrando UTC em vez de horário
+      da Vercel bloqueando chamadas servidor-a-servidor (bypass por header + query param), exibição de horário mostrando UTC em vez de horário
       de Brasília, lista de usuários admin quebrando com usuários de
       indicação sem credenciais — **backend + frontend**
 

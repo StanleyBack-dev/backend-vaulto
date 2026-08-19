@@ -23,9 +23,7 @@ function toView(entity: ReferralCreditEntity): ReferralCreditView {
 }
 
 @Injectable()
-export class ReferralCreditTypeormRepository
-  implements ReferralCreditRepositoryPort
-{
+export class ReferralCreditTypeormRepository implements ReferralCreditRepositoryPort {
   constructor(
     @InjectRepository(ReferralCreditEntity)
     private readonly repository: Repository<ReferralCreditEntity>,
@@ -86,10 +84,7 @@ export class ReferralCreditTypeormRepository
   }
 
   async sumPendingHoldForUser(idUsers: string): Promise<number> {
-    return this.sumForUserByStatus(
-      idUsers,
-      ReferralCreditStatus.PENDING_HOLD,
-    );
+    return this.sumForUserByStatus(idUsers, ReferralCreditStatus.PENDING_HOLD);
   }
 
   private async sumForUserByStatus(
