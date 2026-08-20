@@ -10,12 +10,15 @@ import { ApproveReferralWithdrawalTransferUseCase } from "@/modules/referrals/ap
 import { ClawbackReferralCreditUseCase } from "@/modules/referrals/application/use-cases/clawback-referral-credit.use-case";
 import { GetMyReferralStatsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-stats.use-case";
 import { GetMyReferralWithdrawalsUseCase } from "@/modules/referrals/application/use-cases/get-my-referral-withdrawals.use-case";
+import { GetMyReferralsUseCase } from "@/modules/referrals/application/use-cases/get-my-referrals.use-case";
 import { LookupReferralWithdrawalPixKeyUseCase } from "@/modules/referrals/application/use-cases/lookup-referral-withdrawal-pix-key.use-case";
 import { PromoteReferralCreditsUseCase } from "@/modules/referrals/application/use-cases/promote-referral-credits.use-case";
 import { QualifyReferralUseCase } from "@/modules/referrals/application/use-cases/qualify-referral.use-case";
 import { RequestReferralWithdrawalUseCase } from "@/modules/referrals/application/use-cases/request-referral-withdrawal.use-case";
+import { SendReferralInviteUseCase } from "@/modules/referrals/application/use-cases/send-referral-invite.use-case";
 import { SyncReferralWithdrawalTransferStatusUseCase } from "@/modules/referrals/application/use-cases/sync-referral-withdrawal-transfer-status.use-case";
 import { ReferralCreditEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-credit.entity";
+import { ReferralInviteEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-invite.entity";
 import { ReferralWithdrawalEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-withdrawal.entity";
 import { ReferralCreditTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-credit-typeorm.repository";
 import { ReferralWithdrawalTypeormRepository } from "@/modules/referrals/infrastructure/persistence/typeorm/repositories/referral-withdrawal-typeorm.repository";
@@ -28,6 +31,7 @@ import { ReferralsResolver } from "@/modules/referrals/presentation/graphql/reso
     TypeOrmModule.forFeature([
       ReferralCreditEntity,
       ReferralWithdrawalEntity,
+      ReferralInviteEntity,
       UserEntity,
     ]),
     AuthModule,
@@ -48,6 +52,8 @@ import { ReferralsResolver } from "@/modules/referrals/presentation/graphql/reso
     SyncReferralWithdrawalTransferStatusUseCase,
     GetMyReferralStatsUseCase,
     GetMyReferralWithdrawalsUseCase,
+    GetMyReferralsUseCase,
+    SendReferralInviteUseCase,
     ReferralsResolver,
     ReferralCreditTypeormRepository,
     ReferralWithdrawalTypeormRepository,
