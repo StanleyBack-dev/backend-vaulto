@@ -1,17 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, IsNull, Not, Repository } from "typeorm";
+import type { PaginatedResult } from "@/common/responses/interfaces/response.interface";
+import {
+  calculateHasNextPage,
+  calculateTotalPages,
+  resolvePagination,
+} from "@/common/responses/helpers/pagination.helper";
 import type {
   AdminDashboardStatsView,
+  AdminProLeadRow,
+  AdminProLeadsFilter,
+  AdminProLeadStatsView,
   AdminRepositoryPort,
   AdminReferralLeaderboardRow,
   AdminReferralMonthlyPoint,
   AdminReferralStatsView,
 } from "@/modules/admin/application/ports/admin-repository.port";
 import { PRO_PLAN_PRICES } from "@/modules/billing/domain/constants/pro-plan.constant";
+import { ProLeadEvent } from "@/modules/billing/domain/enums/pro-lead-event.enum";
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
+import { ProLeadEventEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/pro-lead-event.entity";
 import { SubscriptionEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/subscription.entity";
 import { REFERRAL_CREDIT_AMOUNT_CENTS } from "@/modules/referrals/domain/constants/referral.constant";
 import { ReferralCreditStatus } from "@/modules/referrals/domain/enums/referral-credit-status.enum";
@@ -49,6 +60,8 @@ export class AdminTypeormRepository implements AdminRepositoryPort {
     private readonly referralCreditRepository: Repository<ReferralCreditEntity>,
     @InjectRepository(ReferralWithdrawalEntity)
     private readonly referralWithdrawalRepository: Repository<ReferralWithdrawalEntity>,
+    @InjectRepository(ProLeadEventEntity)
+    private readonly proLeadEventRepository: Repository<ProLeadEventEntity>,
   ) {}
 
   async getDashboardStats(): Promise<AdminDashboardStatsView> {
@@ -342,6 +355,96 @@ export class AdminTypeormRepository implements AdminRepositoryPort {
       })
       .filter((row): row is AdminReferralLeaderboardRow => row !== null)
       .sort((a, b) => b.qualifiedReferralsCount - a.qualifiedReferralsCount);
+  }
+
+  async getProLeadStats(): Promise<AdminProLeadStatsView> {
+    const [
+      totalPlanClicks,
+      totalCheckoutReached,
+      uniqueClickersRaw,
+      uniqueCheckoutRaw,
+    ] = await Promise.all([
+      this.proLeadEventRepository.count({
+        where: { event: ProLeadEvent.PLAN_CLICKED },
+      }),
+      this.proLeadEventRepository.count({
+        where: { event: ProLeadEvent.CHECKOUT_REACHED },
+      }),
+      this.proLeadEventRepository
+        .createQueryBuilder("lead")
+        .select("DISTINCT lead.idUsers", "idUsers")
+        .where("lead.event = :event", { event: ProLeadEvent.PLAN_CLICKED })
+        .getRawMany<{ idUsers: string }>(),
+      this.proLeadEventRepository
+        .createQueryBuilder("lead")
+        .select("DISTINCT lead.idUsers", "idUsers")
+        .where("lead.event = :event", { event: ProLeadEvent.CHECKOUT_REACHED })
+        .getRawMany<{ idUsers: string }>(),
+    ]);
+
+    const checkoutUserIds = uniqueCheckoutRaw.map((row) => row.idUsers);
+    const convertedToProCount = checkoutUserIds.length
+      ? await this.subscriptionRepository.count({
+          where: {
+            idUsers: In(checkoutUserIds),
+            plan: SubscriptionPlan.PRO,
+            status: In(ACTIVE_PRO_STATUSES),
+          },
+        })
+      : 0;
+
+    return {
+      totalPlanClicks,
+      totalCheckoutReached,
+      uniqueUsersClicked: uniqueClickersRaw.length,
+      uniqueUsersReachedCheckout: uniqueCheckoutRaw.length,
+      convertedToProCount,
+    };
+  }
+
+  async listProLeads(
+    filter: AdminProLeadsFilter,
+  ): Promise<PaginatedResult<AdminProLeadRow>> {
+    const { page, limit, skip } = resolvePagination(filter.page, filter.limit);
+
+    const [records, total] = await this.proLeadEventRepository.findAndCount({
+      where: filter.eventType ? { event: filter.eventType } : {},
+      order: { createdAt: "DESC" },
+      skip,
+      take: limit,
+    });
+
+    const userIds = records.map((record) => record.idUsers);
+    const subscriptions = userIds.length
+      ? await this.subscriptionRepository.findBy({ idUsers: In(userIds) })
+      : [];
+    const subscriptionByUser = new Map(
+      subscriptions.map((subscription) => [subscription.idUsers, subscription]),
+    );
+
+    return {
+      items: records.map((record): AdminProLeadRow => {
+        const subscription = subscriptionByUser.get(record.idUsers);
+
+        return {
+          idProLeadEvent: record.idProLeadEvent,
+          idUsers: record.idUsers,
+          name: record.name,
+          email: record.email,
+          eventType: record.event,
+          billingCycle: record.billingCycle,
+          checkoutUrl: record.checkoutUrl,
+          createdAt: record.createdAt,
+          currentPlan: subscription?.plan ?? SubscriptionPlan.FREE,
+          currentSubscriptionStatus: subscription?.status,
+        };
+      }),
+      total,
+      currentPage: page,
+      limit,
+      totalPages: calculateTotalPages(limit, total),
+      hasNextPage: calculateHasNextPage(page, limit, total),
+    };
   }
 
   // Every month between dateFrom and dateTo, inclusive, even ones with no

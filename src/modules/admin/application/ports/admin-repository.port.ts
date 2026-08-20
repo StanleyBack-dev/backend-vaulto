@@ -1,3 +1,6 @@
+import type { PaginatedResult } from "@/common/responses/interfaces/response.interface";
+import type { ProLeadEvent } from "@/modules/billing/domain/enums/pro-lead-event.enum";
+import type { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import type { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
 import type { UserGroup } from "@/modules/users/domain/enums/user-group.enum";
 
@@ -51,6 +54,33 @@ export type AdminReferralLeaderboardRow = {
   availableBalanceCents: number;
 };
 
+export type AdminProLeadStatsView = {
+  totalPlanClicks: number;
+  totalCheckoutReached: number;
+  uniqueUsersClicked: number;
+  uniqueUsersReachedCheckout: number;
+  convertedToProCount: number;
+};
+
+export type AdminProLeadRow = {
+  idProLeadEvent: string;
+  idUsers: string;
+  name: string;
+  email: string;
+  eventType: ProLeadEvent;
+  billingCycle?: string | null;
+  checkoutUrl?: string | null;
+  createdAt: Date;
+  currentPlan: SubscriptionPlan;
+  currentSubscriptionStatus?: SubscriptionStatus;
+};
+
+export type AdminProLeadsFilter = {
+  page?: number;
+  limit?: number;
+  eventType?: ProLeadEvent;
+};
+
 export interface AdminRepositoryPort {
   getDashboardStats(): Promise<AdminDashboardStatsView>;
   getReferralStats(): Promise<AdminReferralStatsView>;
@@ -59,6 +89,10 @@ export interface AdminRepositoryPort {
     dateTo: Date,
   ): Promise<AdminReferralMonthlyPoint[]>;
   getReferralLeaderboard(): Promise<AdminReferralLeaderboardRow[]>;
+  getProLeadStats(): Promise<AdminProLeadStatsView>;
+  listProLeads(
+    filter: AdminProLeadsFilter,
+  ): Promise<PaginatedResult<AdminProLeadRow>>;
 }
 
 export const ADMIN_REPOSITORY = Symbol("ADMIN_REPOSITORY");
