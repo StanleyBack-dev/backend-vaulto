@@ -5,6 +5,7 @@ import { RequirePermissions } from "@/modules/auth/presentation/decorators/requi
 import type { AuthenticatedUser } from "@/modules/auth/domain/interfaces/auth-token-payload.interface";
 import { GetMySubscriptionUseCase } from "@/modules/billing/application/use-cases/get/get-my-subscription.use-case";
 import { ListMyBillingPaymentsUseCase } from "@/modules/billing/application/use-cases/get/list-my-billing-payments.use-case";
+import { RecordProLeadClickUseCase } from "@/modules/billing/application/use-cases/create/record-pro-lead-click.use-case";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
 import { CancelSubscriptionUseCase } from "@/modules/billing/application/use-cases/update/cancel-subscription.use-case";
 import { BillingPaymentsResponseDto } from "@/modules/billing/presentation/graphql/dtos/billing-payments-response.dto";
@@ -21,6 +22,7 @@ export class BillingResolver {
     private readonly listMyBillingPaymentsUseCase: ListMyBillingPaymentsUseCase,
     private readonly subscribeToProUseCase: SubscribeToProUseCase,
     private readonly cancelSubscriptionUseCase: CancelSubscriptionUseCase,
+    private readonly recordProLeadClickUseCase: RecordProLeadClickUseCase,
   ) {}
 
   @Query(() => SubscriptionResponseDto, { name: "mySubscription" })
@@ -77,5 +79,12 @@ export class BillingResolver {
     );
 
     return SubscriptionResponseDto.fromView(subscription);
+  }
+
+  @Mutation(() => Boolean, { name: "trackProLeadClick" })
+  @RequirePermissions(AuthPermission.MANAGE_OWN_PROFILE)
+  async trackProLeadClick(@CurrentUser() user: AuthenticatedUser) {
+    await this.recordProLeadClickUseCase.execute(user.idUsers);
+    return true;
   }
 }

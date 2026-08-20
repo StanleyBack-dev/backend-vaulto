@@ -71,6 +71,10 @@ function buildUseCase(
     updatePaymentValue: jest.fn().mockResolvedValue(undefined),
   };
 
+  const proLeadEventRepository = {
+    record: jest.fn().mockResolvedValue(undefined),
+  };
+
   const userRepository = {
     findOne: jest.fn().mockResolvedValue({
       idUsers: "user-1",
@@ -88,6 +92,7 @@ function buildUseCase(
     createDefaultSubscriptionUseCase as never,
     subscriptionRepository as never,
     paymentGateway as never,
+    proLeadEventRepository as never,
     userRepository as never,
     configService as never,
   );
@@ -98,6 +103,7 @@ function buildUseCase(
     createDefaultSubscriptionUseCase,
     subscriptionRepository,
     paymentGateway,
+    proLeadEventRepository,
     userRepository,
     configService,
   };
@@ -232,6 +238,39 @@ describe("SubscribeToProUseCase", () => {
       "user-1",
       { gatewayCustomerId: "cus_123" },
     );
+  });
+
+  it("records a CHECKOUT_REACHED lead event after a checkout subscription is created", async () => {
+    const { useCase, proLeadEventRepository } = buildUseCase();
+
+    await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.MONTHLY,
+    });
+
+    expect(proLeadEventRepository.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idUsers: "user-1",
+        email: "jane@example.com",
+        name: "Jane Doe",
+        event: "CHECKOUT_REACHED",
+        billingCycle: SubscriptionBillingCycle.MONTHLY,
+        checkoutUrl: "https://asaas.com/i/abc123",
+        gatewaySubscriptionId: "sub_123",
+      }),
+    );
+  });
+
+  it("does not let a lead-tracking failure block the checkout subscription", async () => {
+    const { useCase, proLeadEventRepository } = buildUseCase();
+    proLeadEventRepository.record.mockRejectedValue(new Error("db down"));
+
+    const result = await useCase.execute("user-1", {
+      cpfCnpj: "12345678900",
+      billingCycle: SubscriptionBillingCycle.MONTHLY,
+    });
+
+    expect(result.checkoutUrl).toBe("https://asaas.com/i/abc123");
   });
 
   it("rejects when the authenticated user cannot be found", async () => {

@@ -3,11 +3,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { ADMIN_REPOSITORY } from "@/modules/admin/application/ports/admin-repository.port";
 import { GetAdminDashboardStatsUseCase } from "@/modules/admin/application/use-cases/get-admin-dashboard-stats.use-case";
+import { GetAdminProLeadStatsUseCase } from "@/modules/admin/application/use-cases/get-admin-pro-lead-stats.use-case";
+import { GetAdminProLeadsUseCase } from "@/modules/admin/application/use-cases/get-admin-pro-leads.use-case";
 import { GetAdminReferralLeaderboardUseCase } from "@/modules/admin/application/use-cases/get-admin-referral-leaderboard.use-case";
 import { GetAdminReferralStatsUseCase } from "@/modules/admin/application/use-cases/get-admin-referral-stats.use-case";
 import { GetAdminReferralTrendUseCase } from "@/modules/admin/application/use-cases/get-admin-referral-trend.use-case";
 import { AdminTypeormRepository } from "@/modules/admin/infrastructure/persistence/typeorm/repositories/admin-typeorm.repository";
 import { AdminResolver } from "@/modules/admin/presentation/graphql/resolvers/admin.resolver";
+import { ProLeadEventEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/pro-lead-event.entity";
 import { SubscriptionEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/subscription.entity";
 import { ReferralCreditEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-credit.entity";
 import { ReferralWithdrawalEntity } from "@/modules/referrals/infrastructure/persistence/typeorm/entities/referral-withdrawal.entity";
@@ -22,6 +25,7 @@ import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/e
       SupportMessageEntity,
       ReferralCreditEntity,
       ReferralWithdrawalEntity,
+      ProLeadEventEntity,
     ]),
     AuthModule,
   ],
@@ -30,6 +34,8 @@ import { UserEntity } from "@/modules/users/infrastructure/persistence/typeorm/e
     GetAdminReferralStatsUseCase,
     GetAdminReferralTrendUseCase,
     GetAdminReferralLeaderboardUseCase,
+    GetAdminProLeadStatsUseCase,
+    GetAdminProLeadsUseCase,
     AdminResolver,
     AdminTypeormRepository,
     {

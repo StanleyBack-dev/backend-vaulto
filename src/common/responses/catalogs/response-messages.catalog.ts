@@ -1,4 +1,10 @@
 export const RESPONSE_MESSAGES = {
+  admin: {
+    proLeadsListed: {
+      code: "ADMIN_PRO_LEADS_LISTED",
+      message: "Leads carregados com sucesso.",
+    },
+  },
   accountLifecycle: {
     deactivated: {
       code: "ACCOUNT_DEACTIVATED",

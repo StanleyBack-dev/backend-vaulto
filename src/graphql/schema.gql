@@ -172,6 +172,44 @@ type AdminDashboardStatsResponseDto {
   resolvedSupportTickets: Int!
 }
 
+type AdminProLeadRowDto {
+  idProLeadEvent: String!
+  idUsers: String!
+  name: String!
+  email: String!
+  eventType: ProLeadEvent!
+  billingCycle: SubscriptionBillingCycle
+  checkoutUrl: String
+  createdAt: DateTime!
+  currentPlan: SubscriptionPlan!
+  currentSubscriptionStatus: SubscriptionStatus
+}
+
+enum ProLeadEvent {
+  PLAN_CLICKED
+  CHECKOUT_REACHED
+}
+
+type AdminProLeadStatsResponseDto {
+  totalPlanClicks: Int!
+  totalCheckoutReached: Int!
+  uniqueUsersClicked: Int!
+  uniqueUsersReachedCheckout: Int!
+  convertedToProCount: Int!
+}
+
+type AdminProLeadsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [AdminProLeadRowDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type AdminReferralLeaderboardRowDto {
   idUsers: String!
   name: String!
@@ -909,6 +947,8 @@ type Query {
   adminReferralStats: AdminReferralStatsResponseDto!
   adminReferralTrend(input: AdminReferralTrendInputDto!): [AdminReferralMonthlyPointDto!]!
   adminReferralLeaderboard: [AdminReferralLeaderboardRowDto!]!
+  adminProLeadStats: AdminProLeadStatsResponseDto!
+  adminProLeads(input: AdminProLeadsInputDto): AdminProLeadsListResponseDto!
   myReferralStats: ReferralStatsResponseDto!
   myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
   lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
@@ -1092,6 +1132,12 @@ input AdminReferralTrendInputDto {
   dateTo: DateTime!
 }
 
+input AdminProLeadsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  eventType: ProLeadEvent
+}
+
 input LookupPixKeyInputDto {
   pixKey: String!
   pixKeyType: PixKeyType!
@@ -1116,6 +1162,7 @@ type Mutation {
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
   cancelSubscription(input: CancelSubscriptionInputDto!): SubscriptionResponseDto!
+  trackProLeadClick: Boolean!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!

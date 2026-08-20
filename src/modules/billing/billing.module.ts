@@ -4,9 +4,11 @@ import { AuthModule } from "@/modules/auth/auth.module";
 import { MailModule } from "@/modules/mails/mail.module";
 import { BILLING_PAYMENT_REPOSITORY } from "@/modules/billing/application/ports/billing-payment-repository.port";
 import { PAYMENT_GATEWAY } from "@/modules/billing/application/ports/payment-gateway.port";
+import { PRO_LEAD_EVENT_REPOSITORY } from "@/modules/billing/application/ports/pro-lead-event-repository.port";
 import { SUBSCRIPTION_CANCELLATION_REPOSITORY } from "@/modules/billing/application/ports/subscription-cancellation-repository.port";
 import { SUBSCRIPTION_REPOSITORY } from "@/modules/billing/application/ports/subscription-repository.port";
 import { CreateDefaultSubscriptionUseCase } from "@/modules/billing/application/use-cases/create/create-default-subscription.use-case";
+import { RecordProLeadClickUseCase } from "@/modules/billing/application/use-cases/create/record-pro-lead-click.use-case";
 import { SubscribeToProUseCase } from "@/modules/billing/application/use-cases/create/subscribe-to-pro.use-case";
 import { GetMySubscriptionUseCase } from "@/modules/billing/application/use-cases/get/get-my-subscription.use-case";
 import { ListMyBillingPaymentsUseCase } from "@/modules/billing/application/use-cases/get/list-my-billing-payments.use-case";
@@ -16,9 +18,11 @@ import { CancelSubscriptionUseCase } from "@/modules/billing/application/use-cas
 import { HandleAsaasWebhookUseCase } from "@/modules/billing/application/use-cases/webhook/handle-asaas-webhook.use-case";
 import { AsaasPaymentGatewayProvider } from "@/modules/billing/infrastructure/gateways/asaas-payment-gateway.provider";
 import { BillingPaymentEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/billing-payment.entity";
+import { ProLeadEventEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/pro-lead-event.entity";
 import { SubscriptionEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/subscription.entity";
 import { SubscriptionCancellationEntity } from "@/modules/billing/infrastructure/persistence/typeorm/entities/subscription-cancellation.entity";
 import { BillingPaymentTypeormRepository } from "@/modules/billing/infrastructure/persistence/typeorm/repositories/billing-payment-typeorm.repository";
+import { ProLeadEventTypeormRepository } from "@/modules/billing/infrastructure/persistence/typeorm/repositories/pro-lead-event-typeorm.repository";
 import { SubscriptionCancellationTypeormRepository } from "@/modules/billing/infrastructure/persistence/typeorm/repositories/subscription-cancellation-typeorm.repository";
 import { SubscriptionTypeormRepository } from "@/modules/billing/infrastructure/persistence/typeorm/repositories/subscription-typeorm.repository";
 import { AsaasWebhookController } from "@/modules/billing/presentation/rest/controllers/asaas-webhook.controller";
@@ -42,6 +46,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
       SubscriptionEntity,
       SubscriptionCancellationEntity,
       BillingPaymentEntity,
+      ProLeadEventEntity,
       UserEntity,
       ReferralCreditEntity,
       ReferralWithdrawalEntity,
@@ -56,6 +61,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     ListMyBillingPaymentsUseCase,
     PlanLimitsService,
     SubscribeToProUseCase,
+    RecordProLeadClickUseCase,
     CancelSubscriptionUseCase,
     HandleAsaasWebhookUseCase,
     RunSubscriptionLifecycleUseCase,
@@ -63,6 +69,7 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     SubscriptionTypeormRepository,
     SubscriptionCancellationTypeormRepository,
     BillingPaymentTypeormRepository,
+    ProLeadEventTypeormRepository,
     AsaasPaymentGatewayProvider,
     QualifyReferralUseCase,
     ClawbackReferralCreditUseCase,
@@ -80,6 +87,10 @@ import "@/modules/billing/presentation/graphql/enums/billing-graphql.enums";
     {
       provide: BILLING_PAYMENT_REPOSITORY,
       useExisting: BillingPaymentTypeormRepository,
+    },
+    {
+      provide: PRO_LEAD_EVENT_REPOSITORY,
+      useExisting: ProLeadEventTypeormRepository,
     },
     {
       provide: PAYMENT_GATEWAY,

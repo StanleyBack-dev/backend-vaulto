@@ -1,0 +1,4 @@
+export enum ProLeadEvent {
+  PLAN_CLICKED = "PLAN_CLICKED",
+  CHECKOUT_REACHED = "CHECKOUT_REACHED",
+}
