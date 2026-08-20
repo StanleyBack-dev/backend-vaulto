@@ -30,7 +30,7 @@ export class UserEntity {
   })
   group!: UserGroup;
 
-  @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
+  @Column({ name: "inactivated_at", type: "timestamptz", nullable: true })
   inactivatedAt?: Date | null;
 
   @Column({
@@ -66,11 +66,11 @@ export class UserEntity {
 
   @Column({
     name: "created_at",
-    type: "timestamp",
+    type: "timestamptz",
     default: () => "CURRENT_TIMESTAMP",
   })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }

@@ -40,9 +40,9 @@ export class DebtInstallmentEntity {
   @Column({ type: "enum", enum: DebtStatus, default: DebtStatus.OPEN })
   status!: DebtStatus;
 
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }

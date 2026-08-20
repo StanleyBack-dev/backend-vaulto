@@ -28,12 +28,12 @@ export class CategoryEntity {
   @Column({ default: true })
   status!: boolean;
 
-  @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
+  @Column({ name: "inactivated_at", type: "timestamptz", nullable: true })
   inactivatedAt?: Date;
 
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }

@@ -43,27 +43,31 @@ export class AuthVerificationCodeEntity {
   @Column({ name: "max_attempts", type: "int", default: 5 })
   maxAttempts!: number;
 
-  @Column({ name: "expires_at", type: "timestamp" })
+  @Column({ name: "expires_at", type: "timestamptz" })
   expiresAt!: Date;
 
-  @Column({ name: "verified_at", type: "timestamp", nullable: true })
+  @Column({ name: "verified_at", type: "timestamptz", nullable: true })
   verifiedAt?: Date | null;
 
   @Column({ name: "reset_token", type: "varchar", nullable: true })
   resetToken?: string | null;
 
-  @Column({ name: "reset_token_expires_at", type: "timestamp", nullable: true })
+  @Column({
+    name: "reset_token_expires_at",
+    type: "timestamptz",
+    nullable: true,
+  })
   resetTokenExpiresAt?: Date | null;
 
-  @Column({ name: "consumed_at", type: "timestamp", nullable: true })
+  @Column({ name: "consumed_at", type: "timestamptz", nullable: true })
   consumedAt?: Date | null;
 
-  @Column({ name: "invalidated_at", type: "timestamp", nullable: true })
+  @Column({ name: "invalidated_at", type: "timestamptz", nullable: true })
   invalidatedAt?: Date | null;
 
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
   updatedAt!: Date;
 }
