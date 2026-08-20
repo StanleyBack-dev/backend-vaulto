@@ -572,6 +572,12 @@ enum ReferralWithdrawalStatus {
   FAILED
 }
 
+type ReferredUserResponseDto {
+  name: String!
+  email: String!
+  qualifiedAt: DateTime
+}
+
 type CategoryAmountResponseDto {
   idCategory: String!
   categoryName: String!
@@ -876,6 +882,7 @@ type Query {
   myReferralStats: ReferralStatsResponseDto!
   myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
   lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
+  myReferrals: [ReferredUserResponseDto!]!
 }
 
 input ListBillingPaymentsInputDto {
@@ -1111,6 +1118,7 @@ type Mutation {
   deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
   requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
   cancelAccountDeletion: CancelAccountDeletionResponseDto!
+  sendReferralInvite(input: SendReferralInviteInputDto!): Boolean!
   requestReferralWithdrawal(input: RequestReferralWithdrawalInputDto!): ReferralWithdrawalResponseDto!
 }
 
@@ -1380,6 +1388,10 @@ enum AccountDeletionReason {
   HARD_TO_USE
   TECHNICAL_ISSUES
   OTHER
+}
+
+input SendReferralInviteInputDto {
+  email: String!
 }
 
 input RequestReferralWithdrawalInputDto {
