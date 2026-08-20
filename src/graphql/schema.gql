@@ -172,6 +172,33 @@ type AdminDashboardStatsResponseDto {
   resolvedSupportTickets: Int!
 }
 
+type AdminReferralLeaderboardRowDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  qualifiedReferralsCount: Int!
+  totalCreditsGrantedCents: Int!
+  availableBalanceCents: Int!
+}
+
+type AdminReferralMonthlyPointDto {
+  month: String!
+  qualifiedReferrals: Int!
+  creditsGrantedCents: Int!
+}
+
+type AdminReferralStatsResponseDto {
+  totalReferredUsers: Int!
+  totalQualifiedReferrals: Int!
+  creditAmountCents: Int!
+  totalCreditsGrantedCents: Int!
+  totalClawedBackCents: Int!
+  totalWithdrawnCents: Int!
+  totalPendingWithdrawalCents: Int!
+  totalFailedWithdrawalCents: Int!
+  totalOutstandingLiabilityCents: Int!
+}
+
 type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
@@ -879,6 +906,9 @@ type Query {
   getSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
   adminDashboardStats: AdminDashboardStatsResponseDto!
+  adminReferralStats: AdminReferralStatsResponseDto!
+  adminReferralTrend(input: AdminReferralTrendInputDto!): [AdminReferralMonthlyPointDto!]!
+  adminReferralLeaderboard: [AdminReferralLeaderboardRowDto!]!
   myReferralStats: ReferralStatsResponseDto!
   myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
   lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
@@ -1055,6 +1085,11 @@ input ListSupportTicketsInputDto {
   limit: Int
   status: SupportTicketStatus
   category: SupportCategory
+}
+
+input AdminReferralTrendInputDto {
+  dateFrom: DateTime!
+  dateTo: DateTime!
 }
 
 input LookupPixKeyInputDto {
