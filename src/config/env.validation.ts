@@ -134,4 +134,10 @@ export const envValidationSchema = Joi.object({
 
   RATE_LIMIT_QUERY_WINDOW_SECONDS: Joi.number().integer().min(1).default(60),
   RATE_LIMIT_QUERY_MAX: Joi.number().integer().min(1).default(120),
+
+  // === SENTRY / MONITORING ===
+  SENTRY_DSN: Joi.string().uri().optional(),
+  SENTRY_ENVIRONMENT: Joi.string()
+    .valid("development", "beta", "production")
+    .optional(),
 });

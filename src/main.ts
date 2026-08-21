@@ -1,3 +1,7 @@
+// Must run before any other import so Sentry is active from the very
+// first line of the bootstrap (mirrors serverless.ts).
+import "./instrument";
+
 // LIBS
 import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
@@ -7,9 +11,12 @@ import type { Request } from "express";
 
 // MODULES
 import { AppModule } from "./app.module";
+import { SentryLoggerService } from "./common/observability/sentry-logger.service";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new SentryLoggerService(),
+  });
   // Attach raw body buffer to request for HMAC webhook verification
   app.use(
     bodyParser.json({
