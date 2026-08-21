@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -12,6 +12,10 @@ import {
   type PaymentGatewayPort,
 } from "@/modules/billing/application/ports/payment-gateway.port";
 import {
+  PRO_LEAD_EVENT_REPOSITORY,
+  type ProLeadEventRepositoryPort,
+} from "@/modules/billing/application/ports/pro-lead-event-repository.port";
+import {
   SUBSCRIPTION_REPOSITORY,
   type SubscriptionRepositoryPort,
   type SubscriptionView,
@@ -21,6 +25,7 @@ import {
   PRO_PLAN_FIRST_MONTH_PRICE,
   PRO_PLAN_PRICES,
 } from "@/modules/billing/domain/constants/pro-plan.constant";
+import { ProLeadEvent } from "@/modules/billing/domain/enums/pro-lead-event.enum";
 import { SubscriptionBillingCycle } from "@/modules/billing/domain/enums/subscription-billing-cycle.enum";
 import { SubscriptionPlan } from "@/modules/billing/domain/enums/subscription-plan.enum";
 import { SubscriptionStatus } from "@/modules/billing/domain/enums/subscription-status.enum";
@@ -44,6 +49,8 @@ const PIX_FREQUENCY_BY_CYCLE: Record<SubscriptionBillingCycle, string> = {
 
 @Injectable()
 export class SubscribeToProUseCase {
+  private readonly logger = new Logger(SubscribeToProUseCase.name);
+
   constructor(
     private readonly authorizationService: AuthorizationService,
     private readonly createDefaultSubscriptionUseCase: CreateDefaultSubscriptionUseCase,
@@ -51,6 +58,8 @@ export class SubscribeToProUseCase {
     private readonly subscriptionRepository: SubscriptionRepositoryPort,
     @Inject(PAYMENT_GATEWAY)
     private readonly paymentGateway: PaymentGatewayPort,
+    @Inject(PRO_LEAD_EVENT_REPOSITORY)
+    private readonly proLeadEventRepository: ProLeadEventRepositoryPort,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly configService: ConfigService,
@@ -129,6 +138,7 @@ export class SubscribeToProUseCase {
       gatewayCustomerId,
       description,
       isFirstMonthDiscountEligible,
+      user,
     );
   }
 
@@ -138,6 +148,7 @@ export class SubscribeToProUseCase {
     gatewayCustomerId: string,
     description: string,
     isFirstMonthDiscountEligible: boolean,
+    user: UserEntity,
   ): Promise<SubscribeToProResult> {
     const gatewaySubscription = await this.paymentGateway.createSubscription({
       gatewayCustomerId,
@@ -148,6 +159,23 @@ export class SubscribeToProUseCase {
       externalReference: idUsers,
       callbackSuccessUrl: this.buildCheckoutSuccessUrl(),
     });
+
+    // Best-effort: a lead-tracking failure must never block a real checkout.
+    try {
+      await this.proLeadEventRepository.record({
+        idUsers,
+        email: user.email,
+        name: user.name,
+        event: ProLeadEvent.CHECKOUT_REACHED,
+        billingCycle: command.billingCycle,
+        checkoutUrl: gatewaySubscription.checkoutUrl,
+        gatewaySubscriptionId: gatewaySubscription.gatewaySubscriptionId,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to record CHECKOUT_REACHED lead event for user ${idUsers}: ${error}`,
+      );
+    }
 
     if (isFirstMonthDiscountEligible && gatewaySubscription.firstPaymentId) {
       await this.paymentGateway.updatePaymentValue(

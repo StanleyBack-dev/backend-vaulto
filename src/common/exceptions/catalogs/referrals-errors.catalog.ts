@@ -18,4 +18,15 @@ export const referralsErrors = {
     message:
       "Não foi possível verificar essa chave Pix agora. Confira os dados com atenção antes de continuar.",
   },
+  inviteAlreadySent: {
+    code: "REFERRALS_INVITE_ALREADY_SENT",
+    status: HttpStatus.CONFLICT,
+    message: "Você já enviou um convite de indicação para esse email.",
+  },
+  inviteEmailFailed: {
+    code: "REFERRALS_INVITE_EMAIL_FAILED",
+    status: HttpStatus.BAD_GATEWAY,
+    message:
+      "Não foi possível enviar o convite agora. Tente novamente em instantes.",
+  },
 };

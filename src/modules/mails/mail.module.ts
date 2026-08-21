@@ -9,6 +9,7 @@ import { PasswordChangedEmailUseCase } from "@/modules/mails/application/use-cas
 import { PasswordRecoveryEmailUseCase } from "@/modules/mails/application/use-cases/password-recovery-email.use-case";
 import { PaymentOverdueEmailUseCase } from "@/modules/mails/application/use-cases/payment-overdue-email.use-case";
 import { ReferralCreditGrantedEmailUseCase } from "@/modules/mails/application/use-cases/referral-credit-granted-email.use-case";
+import { ReferralInviteEmailUseCase } from "@/modules/mails/application/use-cases/referral-invite-email.use-case";
 import { SubscriptionActivatedEmailUseCase } from "@/modules/mails/application/use-cases/subscription-activated-email.use-case";
 import { SubscriptionCanceledNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-canceled-notification-email.use-case";
 import { SubscriptionContractedNotificationEmailUseCase } from "@/modules/mails/application/use-cases/subscription-contracted-notification-email.use-case";
@@ -44,6 +45,7 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     AccountDeletionRequestedEmailUseCase,
     AccountDeletionCancelledEmailUseCase,
     ReferralCreditGrantedEmailUseCase,
+    ReferralInviteEmailUseCase,
   ],
   exports: [
     MAIL_PROVIDER,
@@ -65,6 +67,7 @@ import { BrevoMailProvider } from "@/modules/mails/infrastructure/providers/brev
     AccountDeletionRequestedEmailUseCase,
     AccountDeletionCancelledEmailUseCase,
     ReferralCreditGrantedEmailUseCase,
+    ReferralInviteEmailUseCase,
   ],
 })
 export class MailModule {}

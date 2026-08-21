@@ -172,6 +172,71 @@ type AdminDashboardStatsResponseDto {
   resolvedSupportTickets: Int!
 }
 
+type AdminProLeadRowDto {
+  idProLeadEvent: String!
+  idUsers: String!
+  name: String!
+  email: String!
+  eventType: ProLeadEvent!
+  billingCycle: SubscriptionBillingCycle
+  checkoutUrl: String
+  createdAt: DateTime!
+  currentPlan: SubscriptionPlan!
+  currentSubscriptionStatus: SubscriptionStatus
+}
+
+enum ProLeadEvent {
+  PLAN_CLICKED
+  CHECKOUT_REACHED
+}
+
+type AdminProLeadStatsResponseDto {
+  totalPlanClicks: Int!
+  totalCheckoutReached: Int!
+  uniqueUsersClicked: Int!
+  uniqueUsersReachedCheckout: Int!
+  convertedToProCount: Int!
+}
+
+type AdminProLeadsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [AdminProLeadRowDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type AdminReferralLeaderboardRowDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  qualifiedReferralsCount: Int!
+  totalCreditsGrantedCents: Int!
+  availableBalanceCents: Int!
+}
+
+type AdminReferralMonthlyPointDto {
+  month: String!
+  qualifiedReferrals: Int!
+  creditsGrantedCents: Int!
+}
+
+type AdminReferralStatsResponseDto {
+  totalReferredUsers: Int!
+  totalQualifiedReferrals: Int!
+  creditAmountCents: Int!
+  totalCreditsGrantedCents: Int!
+  totalClawedBackCents: Int!
+  totalWithdrawnCents: Int!
+  totalPendingWithdrawalCents: Int!
+  totalFailedWithdrawalCents: Int!
+  totalOutstandingLiabilityCents: Int!
+}
+
 type CategoryResponseDto {
   idCategory: String!
   idUsers: String!
@@ -572,6 +637,12 @@ enum ReferralWithdrawalStatus {
   FAILED
 }
 
+type ReferredUserResponseDto {
+  name: String!
+  email: String!
+  qualifiedAt: DateTime
+}
+
 type CategoryAmountResponseDto {
   idCategory: String!
   categoryName: String!
@@ -873,9 +944,15 @@ type Query {
   getSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   myTermsAcceptanceStatus: TermsAcceptanceStatusResponseDto!
   adminDashboardStats: AdminDashboardStatsResponseDto!
+  adminReferralStats: AdminReferralStatsResponseDto!
+  adminReferralTrend(input: AdminReferralTrendInputDto!): [AdminReferralMonthlyPointDto!]!
+  adminReferralLeaderboard: [AdminReferralLeaderboardRowDto!]!
+  adminProLeadStats: AdminProLeadStatsResponseDto!
+  adminProLeads(input: AdminProLeadsInputDto): AdminProLeadsListResponseDto!
   myReferralStats: ReferralStatsResponseDto!
   myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
   lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
+  myReferrals: [ReferredUserResponseDto!]!
 }
 
 input ListBillingPaymentsInputDto {
@@ -1050,6 +1127,17 @@ input ListSupportTicketsInputDto {
   category: SupportCategory
 }
 
+input AdminReferralTrendInputDto {
+  dateFrom: DateTime!
+  dateTo: DateTime!
+}
+
+input AdminProLeadsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  eventType: ProLeadEvent
+}
+
 input LookupPixKeyInputDto {
   pixKey: String!
   pixKeyType: PixKeyType!
@@ -1074,6 +1162,7 @@ type Mutation {
   resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   subscribeToPro(input: SubscribeToProInputDto!): SubscribeToProResponseDto!
   cancelSubscription(input: CancelSubscriptionInputDto!): SubscriptionResponseDto!
+  trackProLeadClick: Boolean!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
   adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
@@ -1111,6 +1200,7 @@ type Mutation {
   deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
   requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
   cancelAccountDeletion: CancelAccountDeletionResponseDto!
+  sendReferralInvite(input: SendReferralInviteInputDto!): Boolean!
   requestReferralWithdrawal(input: RequestReferralWithdrawalInputDto!): ReferralWithdrawalResponseDto!
 }
 
@@ -1380,6 +1470,10 @@ enum AccountDeletionReason {
   HARD_TO_USE
   TECHNICAL_ISSUES
   OTHER
+}
+
+input SendReferralInviteInputDto {
+  email: String!
 }
 
 input RequestReferralWithdrawalInputDto {

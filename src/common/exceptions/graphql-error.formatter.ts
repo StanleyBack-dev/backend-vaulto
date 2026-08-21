@@ -1,7 +1,32 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import type { GraphQLFormattedError } from "graphql";
 import { GraphQLError } from "graphql";
+import * as Sentry from "@sentry/nestjs";
 import { sanitizeSensitiveData } from "../security/sanitize-sensitive-data";
+
+const CATEGORY_BY_CODE_KEYWORD: Array<{
+  keywords: string[];
+  category: string;
+}> = [
+  {
+    keywords: ["gateway", "asaas", "mail", "payment"],
+    category: "external-gateway",
+  },
+  { keywords: ["database", "db_"], category: "database" },
+  {
+    keywords: ["timeout", "network", "econnrefused", "unreachable"],
+    category: "network",
+  },
+];
+
+function inferCategory(code: string): string {
+  const normalized = code.toLowerCase();
+  const match = CATEGORY_BY_CODE_KEYWORD.find(({ keywords }) =>
+    keywords.some((keyword) => normalized.includes(keyword)),
+  );
+
+  return match?.category ?? "graphql";
+}
 
 type ExceptionBody = {
   code?: string;
@@ -36,6 +61,15 @@ export function formatGraphqlError(
   if (originalError instanceof HttpException) {
     const normalized = normalizeHttpException(originalError);
 
+    // Only >=500 is an actual bug/infra failure worth alerting on — 4xx
+    // AppExceptions (validation, "already subscribed", etc.) are expected
+    // business flow, not something to burn the error quota reporting.
+    if (normalized.statusCode >= 500) {
+      Sentry.captureException(originalError, {
+        tags: { category: inferCategory(normalized.code) },
+      });
+    }
+
     return {
       message: normalized.message,
       extensions: {
@@ -45,6 +79,10 @@ export function formatGraphqlError(
       },
     };
   }
+
+  Sentry.captureException(originalError ?? error, {
+    tags: { category: "graphql" },
+  });
 
   return {
     message: sanitizeSensitiveData(formattedError.message),
