@@ -41,9 +41,7 @@ function buildRenderer(): RendererObject {
 
     list(token: Tokens.List): string {
       const tag = token.ordered ? "ol" : "ul";
-      const items = token.items
-        .map((item) => this.listitem(item))
-        .join("");
+      const items = token.items.map((item) => this.listitem(item)).join("");
 
       return `<${tag} style="margin:0 0 14px 0;padding-left:22px;">${items}</${tag}>`;
     },

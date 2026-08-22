@@ -84,9 +84,9 @@ describe("SendMarketingEmailUseCase", () => {
       mostRecentSend: { createdAt: threeDaysAgo },
     });
 
-    await expect(useCase.execute("admin-1", baseCommand)).rejects.toBeInstanceOf(
-      AppException,
-    );
+    await expect(
+      useCase.execute("admin-1", baseCommand),
+    ).rejects.toBeInstanceOf(AppException);
     expect(mailProvider.send).not.toHaveBeenCalled();
     expect(marketingEmailRepository.create).not.toHaveBeenCalled();
   });
@@ -148,9 +148,9 @@ describe("SendMarketingEmailUseCase", () => {
     const { useCase, marketingEmailRepository, mailProvider } = buildUseCase();
     mailProvider.send.mockRejectedValueOnce(new Error("provider down"));
 
-    await expect(useCase.execute("admin-1", baseCommand)).rejects.toBeInstanceOf(
-      AppException,
-    );
+    await expect(
+      useCase.execute("admin-1", baseCommand),
+    ).rejects.toBeInstanceOf(AppException);
     expect(marketingEmailRepository.create).not.toHaveBeenCalled();
   });
 });

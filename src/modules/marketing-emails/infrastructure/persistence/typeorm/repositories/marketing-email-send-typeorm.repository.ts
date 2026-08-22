@@ -12,9 +12,7 @@ import type {
 import { MarketingEmailSendEntity } from "@/modules/marketing-emails/infrastructure/persistence/typeorm/entities/marketing-email-send.entity";
 
 @Injectable()
-export class MarketingEmailSendTypeormRepository
-  implements MarketingEmailRepositoryPort
-{
+export class MarketingEmailSendTypeormRepository implements MarketingEmailRepositoryPort {
   constructor(
     @InjectRepository(MarketingEmailSendEntity)
     private readonly repository: Repository<MarketingEmailSendEntity>,
@@ -78,9 +76,7 @@ export class MarketingEmailSendTypeormRepository
     };
   }
 
-  private mapToView(
-    entity: MarketingEmailSendEntity,
-  ): MarketingEmailSendView {
+  private mapToView(entity: MarketingEmailSendEntity): MarketingEmailSendView {
     return {
       idMarketingEmailSend: entity.idMarketingEmailSend,
       category: entity.category,

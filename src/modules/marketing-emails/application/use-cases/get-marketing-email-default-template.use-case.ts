@@ -15,9 +15,7 @@ export type MarketingEmailDefaultTemplateResult = {
 export class GetMarketingEmailDefaultTemplateUseCase {
   constructor(private readonly authorizationService: AuthorizationService) {}
 
-  async execute(
-    adminId: string,
-  ): Promise<MarketingEmailDefaultTemplateResult> {
+  async execute(adminId: string): Promise<MarketingEmailDefaultTemplateResult> {
     await this.authorizationService.assertPermissionForUserId(
       adminId,
       AuthPermission.READ_MARKETING_EMAILS,

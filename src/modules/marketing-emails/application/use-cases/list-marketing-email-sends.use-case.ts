@@ -39,14 +39,16 @@ export class ListMarketingEmailSendsUseCase {
 
     const { page, limit } = resolvePagination(query.page, query.limit);
 
-    const { records, total } = await this.marketingEmailRepository.listPaginated({
-      page,
-      limit,
-      filters: {
-        category: query.category,
-        recipientEmail: query.recipientEmail?.trim().toLowerCase() || undefined,
-      },
-    });
+    const { records, total } =
+      await this.marketingEmailRepository.listPaginated({
+        page,
+        limit,
+        filters: {
+          category: query.category,
+          recipientEmail:
+            query.recipientEmail?.trim().toLowerCase() || undefined,
+        },
+      });
 
     const items = await this.attachAdminNames(records);
 
@@ -67,7 +69,9 @@ export class ListMarketingEmailSendsUseCase {
       ...new Set(records.map((record) => record.sentByAdminId)),
     ];
     const admins = uniqueAdminIds.length
-      ? await this.userRepository.find({ where: { idUsers: In(uniqueAdminIds) } })
+      ? await this.userRepository.find({
+          where: { idUsers: In(uniqueAdminIds) },
+        })
       : [];
     const adminsById = new Map(admins.map((admin) => [admin.idUsers, admin]));
 

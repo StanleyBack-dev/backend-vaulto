@@ -51,7 +51,9 @@ export class ExportMarketingEmailSendsUseCase {
 
     const uniqueAdminIds = [...new Set(records.map((r) => r.sentByAdminId))];
     const admins = uniqueAdminIds.length
-      ? await this.userRepository.find({ where: { idUsers: In(uniqueAdminIds) } })
+      ? await this.userRepository.find({
+          where: { idUsers: In(uniqueAdminIds) },
+        })
       : [];
     const adminsById = new Map(admins.map((admin) => [admin.idUsers, admin]));
 

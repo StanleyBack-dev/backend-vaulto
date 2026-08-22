@@ -5,9 +5,7 @@ import { Table, TableIndex } from "typeorm";
 // (recipient_email, created_at) index backs SendMarketingEmailUseCase's
 // 7-day cooldown lookup (find the most recent send for that address) and
 // the admin history list's default sort.
-export class CreateMarketingEmailSends1788100000000
-  implements MigrationInterface
-{
+export class CreateMarketingEmailSends1788100000000 implements MigrationInterface {
   name = "CreateMarketingEmailSends1788100000000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

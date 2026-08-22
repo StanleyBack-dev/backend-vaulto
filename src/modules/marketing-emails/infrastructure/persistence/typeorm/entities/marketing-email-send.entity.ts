@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { MarketingEmailCategory } from "@/modules/marketing-emails/domain/enums/marketing-email-category.enum";
 
 @Entity("tb_marketing_email_sends")

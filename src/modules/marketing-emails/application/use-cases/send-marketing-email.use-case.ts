@@ -46,12 +46,18 @@ export class SendMarketingEmailUseCase {
 
     const subject = command.subject.trim();
     if (!subject) {
-      throw AppException.from(APP_ERRORS.marketingEmails.subjectRequired, undefined);
+      throw AppException.from(
+        APP_ERRORS.marketingEmails.subjectRequired,
+        undefined,
+      );
     }
 
     const bodyMarkdown = command.bodyMarkdown.trim();
     if (!bodyMarkdown) {
-      throw AppException.from(APP_ERRORS.marketingEmails.bodyRequired, undefined);
+      throw AppException.from(
+        APP_ERRORS.marketingEmails.bodyRequired,
+        undefined,
+      );
     }
 
     const recipientEmail = command.recipientEmail.trim().toLowerCase();

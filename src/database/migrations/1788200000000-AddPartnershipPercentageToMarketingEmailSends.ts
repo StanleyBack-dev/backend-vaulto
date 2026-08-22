@@ -1,9 +1,7 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
 import { TableColumn } from "typeorm";
 
-export class AddPartnershipPercentageToMarketingEmailSends1788200000000
-  implements MigrationInterface
-{
+export class AddPartnershipPercentageToMarketingEmailSends1788200000000 implements MigrationInterface {
   name = "AddPartnershipPercentageToMarketingEmailSends1788200000000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {

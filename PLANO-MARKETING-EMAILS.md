@@ -71,19 +71,19 @@ Migration `CreateMarketingEmailSends` (nome de arquivo seguindo o padrão
 `178XXXXXXXXXX-CreateMarketingEmailSends.ts`), tabela
 `tb_marketing_email_sends`:
 
-| coluna | tipo | obs |
-|---|---|---|
-| `idtb_marketing_email_sends` | uuid, PK | `uuid_generate_v4()` |
-| `category` | varchar | enum `MarketingEmailCategory` |
-| `recipient_email` | varchar | normalizado (trim + lowercase) |
-| `recipient_name` | varchar | obrigatório |
-| `recipient_phone` | varchar, nullable | opcional, sem máscara fixa |
-| `subject` | varchar | assunto efetivamente enviado |
-| `body_markdown` | text | corpo (markdown) efetivamente enviado — guarda
-o texto real editado pelo admin, não só o padrão, pra auditoria/reabertura |
-| `sent_by_admin_id` | uuid | FK lógica pra `tb_users` (mesmo padrão de
-`repliedByAdminId` em support, sem FK física) |
-| `created_at` | timestamptz | `now()` |
+| coluna                                                                     | tipo              | obs                                            |
+| -------------------------------------------------------------------------- | ----------------- | ---------------------------------------------- |
+| `idtb_marketing_email_sends`                                               | uuid, PK          | `uuid_generate_v4()`                           |
+| `category`                                                                 | varchar           | enum `MarketingEmailCategory`                  |
+| `recipient_email`                                                          | varchar           | normalizado (trim + lowercase)                 |
+| `recipient_name`                                                           | varchar           | obrigatório                                    |
+| `recipient_phone`                                                          | varchar, nullable | opcional, sem máscara fixa                     |
+| `subject`                                                                  | varchar           | assunto efetivamente enviado                   |
+| `body_markdown`                                                            | text              | corpo (markdown) efetivamente enviado — guarda |
+| o texto real editado pelo admin, não só o padrão, pra auditoria/reabertura |
+| `sent_by_admin_id`                                                         | uuid              | FK lógica pra `tb_users` (mesmo padrão de      |
+| `repliedByAdminId` em support, sem FK física)                              |
+| `created_at`                                                               | timestamptz       | `now()`                                        |
 
 Índice: `(recipient_email, created_at)` — usado tanto pela checagem dos 7
 dias quanto por uma eventual busca no histórico por e-mail.
@@ -110,17 +110,17 @@ Em `SendMarketingEmailUseCase`, mesmo espírito do
 
 Além da checagem na hora de enviar, uma query separada
 `marketingEmailRecipientCooldown(email)` deixa o frontend avisar o admin
-*antes* de ele preencher o formulário inteiro (mesmo padrão do
+_antes_ de ele preencher o formulário inteiro (mesmo padrão do
 `mySupportMessageStatus`).
 
 ### 3.4 Categorias propostas (a validar com o usuário)
 
 ```ts
 enum MarketingEmailCategory {
-  INFLUENCER = "INFLUENCER",           // Influenciador / Criador de Conteúdo
+  INFLUENCER = "INFLUENCER", // Influenciador / Criador de Conteúdo
   BUSINESS_PARTNER = "BUSINESS_PARTNER", // Parceiro Comercial
-  PRESS = "PRESS",                      // Imprensa / Mídia
-  OTHER = "OTHER",                      // Outro
+  PRESS = "PRESS", // Imprensa / Mídia
+  OTHER = "OTHER", // Outro
 }
 ```
 
@@ -157,11 +157,11 @@ real), a estratégia é:
   roda exatamente esse mesmo pipeline e devolve o HTML final. O frontend
   não reimplementa nenhuma regra de renderização — só manda o texto digitado
   (debounced ~400ms) e mostra o HTML retornado dentro de um `<iframe
-  srcDoc=...>`. Isso também é o que garante o "preview em tempo real"
+srcDoc=...>`. Isso também é o que garante o "preview em tempo real"
   pedido, sem duplicar lógica de markdown em TypeScript de frontend.
 - Query `marketingEmailDefaultTemplate` devolve `{ subject, bodyMarkdown }`
   fixos (constante no backend, com o texto que você enviou) — o frontend
-  carrega isso ao abrir a aba pra pré-preencher a caixa de texto. Fica *uma*
+  carrega isso ao abrir a aba pra pré-preencher a caixa de texto. Fica _uma_
   fonte de verdade pro texto padrão (backend), em vez de colar o texto
   gigante duas vezes.
 - Placeholders `[INSERIR LINK DO APP]` / `[INSERIR LINK DO INSTAGRAM]`
@@ -188,11 +188,24 @@ pra terceiros):
 ### 3.7 GraphQL (novo, adicionado ao schema)
 
 ```graphql
-enum MarketingEmailCategory { INFLUENCER BUSINESS_PARTNER PRESS OTHER }
+enum MarketingEmailCategory {
+  INFLUENCER
+  BUSINESS_PARTNER
+  PRESS
+  OTHER
+}
 
-type MarketingEmailDefaultTemplateDto { subject: String! bodyMarkdown: String! }
-type MarketingEmailPreviewDto { html: String! }
-type MarketingEmailCooldownDto { blocked: Boolean! nextAllowedAt: DateTime }
+type MarketingEmailDefaultTemplateDto {
+  subject: String!
+  bodyMarkdown: String!
+}
+type MarketingEmailPreviewDto {
+  html: String!
+}
+type MarketingEmailCooldownDto {
+  blocked: Boolean!
+  nextAllowedAt: DateTime
+}
 type MarketingEmailSendDto {
   idMarketingEmailSend: ID!
   category: MarketingEmailCategory!
@@ -205,10 +218,17 @@ type MarketingEmailSendDto {
 }
 type MarketingEmailSendsResponseDto {
   items: [MarketingEmailSendDto!]!
-  total: Int! currentPage: Int! limit: Int! totalPages: Int! hasNextPage: Boolean!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
 }
 
-input PreviewMarketingEmailInputDto { subject: String! bodyMarkdown: String! }
+input PreviewMarketingEmailInputDto {
+  subject: String!
+  bodyMarkdown: String!
+}
 input SendMarketingEmailInputDto {
   category: MarketingEmailCategory!
   recipientEmail: String!
@@ -218,14 +238,21 @@ input SendMarketingEmailInputDto {
   bodyMarkdown: String!
 }
 input ListMarketingEmailSendsInputDto {
-  page: Int limit: Int category: MarketingEmailCategory recipientEmail: String
+  page: Int
+  limit: Int
+  category: MarketingEmailCategory
+  recipientEmail: String
 }
 
 type Query {
   marketingEmailDefaultTemplate: MarketingEmailDefaultTemplateDto!
-  previewMarketingEmail(input: PreviewMarketingEmailInputDto!): MarketingEmailPreviewDto!
+  previewMarketingEmail(
+    input: PreviewMarketingEmailInputDto!
+  ): MarketingEmailPreviewDto!
   marketingEmailRecipientCooldown(email: String!): MarketingEmailCooldownDto!
-  listMarketingEmailSends(input: ListMarketingEmailSendsInputDto): MarketingEmailSendsResponseDto!
+  listMarketingEmailSends(
+    input: ListMarketingEmailSendsInputDto
+  ): MarketingEmailSendsResponseDto!
 }
 type Mutation {
   sendMarketingEmail(input: SendMarketingEmailInputDto!): MarketingEmailSendDto!
@@ -282,6 +309,7 @@ Estrutura da aba (layout em duas colunas dentro de um `SectionCard`, igual
 ao restante do admin):
 
 **Coluna esquerda — formulário de envio**
+
 - `Select` de categoria (`atoms/Select`).
 - `Input` nome do destinatário, `Input` e-mail do destinatário, `Input`
   celular (opcional, sem obrigatoriedade, como pedido).
@@ -302,12 +330,14 @@ ao restante do admin):
 - Toast de sucesso/erro via `useToast` (mesmo hook usado em `Support.tsx`).
 
 **Coluna direita — preview em tempo real**
+
 - `<iframe>` com `srcDoc` recebendo o HTML de `previewMarketingEmail`,
   atualizado com debounce (~400ms) toda vez que assunto ou corpo mudam.
   Escala/${'largura'} fixa em ~620px (mesma largura do layout de e-mail) pra
   já mostrar como fica no cliente de e-mail real.
 
 **Abaixo — histórico**
+
 - `DataTable` (mesmo componente de `AdminSupportTicketsTab`) com colunas:
   destinatário (nome + e-mail), celular, categoria, assunto, enviado em,
   enviado por.
