@@ -28,3 +28,7 @@ export type PlanLimitParams = {
   resource: string;
   limit: number;
 };
+
+export type MarketingEmailCooldownParams = {
+  nextAllowedAt: Date;
+};

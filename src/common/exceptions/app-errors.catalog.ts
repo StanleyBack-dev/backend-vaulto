@@ -12,6 +12,7 @@ import { incomeReceiptsErrors } from "@/common/exceptions/catalogs/income-receip
 import { incomesErrors } from "@/common/exceptions/catalogs/incomes-errors.catalog";
 import { internalErrors } from "@/common/exceptions/catalogs/internal-errors.catalog";
 import { mailsErrors } from "@/common/exceptions/catalogs/mails-errors.catalog";
+import { marketingEmailsErrors } from "@/common/exceptions/catalogs/marketing-emails-errors.catalog";
 import { paymentsErrors } from "@/common/exceptions/catalogs/payments-errors.catalog";
 import { pdfErrors } from "@/common/exceptions/catalogs/pdf-errors.catalog";
 import { profilesErrors } from "@/common/exceptions/catalogs/profiles-errors.catalog";
@@ -37,6 +38,7 @@ export const APP_ERRORS = {
   incomeReceipts: incomeReceiptsErrors,
   payments: paymentsErrors,
   mails: mailsErrors,
+  marketingEmails: marketingEmailsErrors,
   pdf: pdfErrors,
   support: supportErrors,
   referrals: referralsErrors,

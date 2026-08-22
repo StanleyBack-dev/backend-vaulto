@@ -28,6 +28,7 @@ import { IncomeReceiptsModule } from "@/modules/income-receipts/income-receipts.
 import { IncomesModule } from "@/modules/incomes/incomes.module";
 import { LegalModule } from "@/modules/legal/legal.module";
 import { MailModule } from "@/modules/mails/mail.module";
+import { MarketingEmailsModule } from "@/modules/marketing-emails/marketing-emails.module";
 import { PaymentsModule } from "@/modules/payments/payments.module";
 import { PdfGeneratorModule } from "@/modules/pdf-generator/pdf-generator.module";
 import { ReferralsModule } from "@/modules/referrals/referrals.module";
@@ -70,6 +71,7 @@ import { UsersModule } from "@/modules/users/users.module";
     SupportModule,
     LegalModule,
     AdminModule,
+    MarketingEmailsModule,
     AccountLifecycleModule,
     ReferralsModule,
   ],

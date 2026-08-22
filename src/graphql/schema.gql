@@ -578,6 +578,54 @@ type TermsAcceptanceStatusResponseDto {
   termsVersion: String
 }
 
+type MarketingEmailCooldownResponseDto {
+  blocked: Boolean!
+  nextAllowedAt: DateTime
+}
+
+type MarketingEmailDefaultTemplateResponseDto {
+  subject: String!
+  bodyMarkdown: String!
+}
+
+type MarketingEmailPreviewResponseDto {
+  html: String!
+}
+
+type MarketingEmailSendResponseDto {
+  idMarketingEmailSend: String!
+  category: MarketingEmailCategory!
+  recipientEmail: String!
+  recipientName: String!
+  recipientPhone: String
+  subject: String!
+  partnershipPercentage: Float
+  sentByAdminName: String!
+  createdAt: DateTime!
+}
+
+enum MarketingEmailCategory {
+  INFLUENCER
+  BUSINESS_PARTNER
+  PRESS
+  OTHER
+}
+
+type MarketingEmailSendsExportResponseDto {
+  filename: String!
+  mimeType: String!
+  base64: String!
+}
+
+type MarketingEmailSendsResponseDto {
+  items: [MarketingEmailSendResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type RegisterInstallmentPaymentResponseDto {
   idDebt: String!
   debtStatus: DebtStatus!
@@ -949,6 +997,11 @@ type Query {
   adminReferralLeaderboard: [AdminReferralLeaderboardRowDto!]!
   adminProLeadStats: AdminProLeadStatsResponseDto!
   adminProLeads(input: AdminProLeadsInputDto): AdminProLeadsListResponseDto!
+  marketingEmailDefaultTemplate: MarketingEmailDefaultTemplateResponseDto!
+  previewMarketingEmail(input: PreviewMarketingEmailInputDto!): MarketingEmailPreviewResponseDto!
+  marketingEmailRecipientCooldown(email: String!): MarketingEmailCooldownResponseDto!
+  listMarketingEmailSends(input: ListMarketingEmailSendsInputDto): MarketingEmailSendsResponseDto!
+  exportMarketingEmailSends(input: ListMarketingEmailSendsInputDto): MarketingEmailSendsExportResponseDto!
   myReferralStats: ReferralStatsResponseDto!
   myReferralWithdrawals: [ReferralWithdrawalResponseDto!]!
   lookupReferralWithdrawalPixKey(input: LookupPixKeyInputDto!): PixKeyLookupResponseDto!
@@ -1138,6 +1191,20 @@ input AdminProLeadsInputDto {
   eventType: ProLeadEvent
 }
 
+input PreviewMarketingEmailInputDto {
+  subject: String!
+  bodyMarkdown: String!
+  recipientName: String
+  partnershipPercentage: Float
+}
+
+input ListMarketingEmailSendsInputDto {
+  page: Int
+  limit: Int
+  category: MarketingEmailCategory
+  recipientEmail: String
+}
+
 input LookupPixKeyInputDto {
   pixKey: String!
   pixKeyType: PixKeyType!
@@ -1197,6 +1264,7 @@ type Mutation {
   replyToSupportTicket(input: ReplyToSupportTicketInputDto!): SupportTicketResponseDto!
   finalizeSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   acceptTermsOfUse: LogoutResponseDto!
+  sendMarketingEmail(input: SendMarketingEmailInputDto!): MarketingEmailSendResponseDto!
   deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
   requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
   cancelAccountDeletion: CancelAccountDeletionResponseDto!
@@ -1442,6 +1510,16 @@ input SendSupportMessageInputDto {
 input ReplyToSupportTicketInputDto {
   idSupportMessage: String!
   reply: String!
+}
+
+input SendMarketingEmailInputDto {
+  category: MarketingEmailCategory!
+  recipientEmail: String!
+  recipientName: String!
+  recipientPhone: String
+  subject: String!
+  bodyMarkdown: String!
+  partnershipPercentage: Float
 }
 
 input DeactivateAccountInputDto {
