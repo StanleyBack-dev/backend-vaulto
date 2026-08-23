@@ -144,6 +144,21 @@ describe("SendMarketingEmailUseCase", () => {
     );
   });
 
+  it("carries the social media link through to the persisted record", async () => {
+    const { useCase, marketingEmailRepository } = buildUseCase();
+
+    await useCase.execute("admin-1", {
+      ...baseCommand,
+      socialMediaLink: "https://instagram.com/parceiro",
+    });
+
+    expect(marketingEmailRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        socialMediaLink: "https://instagram.com/parceiro",
+      }),
+    );
+  });
+
   it("does not persist the send when the mail provider throws", async () => {
     const { useCase, marketingEmailRepository, mailProvider } = buildUseCase();
     mailProvider.send.mockRejectedValueOnce(new Error("provider down"));

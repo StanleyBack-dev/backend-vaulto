@@ -21,7 +21,10 @@ export class MarketingEmailSendEntity {
   recipientName!: string;
 
   @Column({ name: "recipient_phone", type: "varchar", nullable: true })
-  recipientPhone?: string;
+  recipientPhone?: string | null;
+
+  @Column({ name: "social_media_link", type: "varchar", nullable: true })
+  socialMediaLink?: string | null;
 
   @Column({ type: "varchar" })
   subject!: string;

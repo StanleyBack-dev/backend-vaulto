@@ -4,7 +4,8 @@ export type CreateMarketingEmailSendPayload = {
   category: MarketingEmailCategory;
   recipientEmail: string;
   recipientName: string;
-  recipientPhone?: string;
+  recipientPhone?: string | null;
+  socialMediaLink?: string | null;
   subject: string;
   bodyMarkdown: string;
   partnershipPercentage?: number;
@@ -17,12 +18,20 @@ export type MarketingEmailSendView = {
   category: MarketingEmailCategory;
   recipientEmail: string;
   recipientName: string;
-  recipientPhone?: string;
+  recipientPhone?: string | null;
+  socialMediaLink?: string | null;
   subject: string;
   bodyMarkdown: string;
   partnershipPercentage?: number;
   sentByAdminId: string;
   createdAt: Date;
+};
+
+export type UpdateMarketingEmailSendContactPayload = {
+  recipientName?: string;
+  category?: MarketingEmailCategory;
+  recipientPhone?: string | null;
+  socialMediaLink?: string | null;
 };
 
 export type ListMarketingEmailSendsFilters = {
@@ -47,6 +56,10 @@ export interface MarketingEmailRepositoryPort {
   ): Promise<MarketingEmailSendView>;
   findMostRecentSendForEmail(
     recipientEmail: string,
+  ): Promise<MarketingEmailSendView | null>;
+  updateContactInfo(
+    idMarketingEmailSend: string,
+    payload: UpdateMarketingEmailSendContactPayload,
   ): Promise<MarketingEmailSendView | null>;
   listPaginated(
     params: ListMarketingEmailSendsParams,

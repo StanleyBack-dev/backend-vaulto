@@ -8,6 +8,7 @@ import type {
   ListMarketingEmailSendsResult,
   MarketingEmailRepositoryPort,
   MarketingEmailSendView,
+  UpdateMarketingEmailSendContactPayload,
 } from "@/modules/marketing-emails/application/ports/marketing-email-repository.port";
 import { MarketingEmailSendEntity } from "@/modules/marketing-emails/infrastructure/persistence/typeorm/entities/marketing-email-send.entity";
 
@@ -33,6 +34,27 @@ export class MarketingEmailSendTypeormRepository implements MarketingEmailReposi
     const entity = await this.repository.findOne({
       where: { recipientEmail },
       order: { createdAt: "DESC" },
+    });
+
+    return entity ? this.mapToView(entity) : null;
+  }
+
+  async updateContactInfo(
+    idMarketingEmailSend: string,
+    payload: UpdateMarketingEmailSendContactPayload,
+  ): Promise<MarketingEmailSendView | null> {
+    await this.repository.update(
+      { idMarketingEmailSend },
+      {
+        recipientName: payload.recipientName,
+        category: payload.category,
+        recipientPhone: payload.recipientPhone,
+        socialMediaLink: payload.socialMediaLink,
+      },
+    );
+
+    const entity = await this.repository.findOne({
+      where: { idMarketingEmailSend },
     });
 
     return entity ? this.mapToView(entity) : null;
@@ -83,6 +105,7 @@ export class MarketingEmailSendTypeormRepository implements MarketingEmailReposi
       recipientEmail: entity.recipientEmail,
       recipientName: entity.recipientName,
       recipientPhone: entity.recipientPhone,
+      socialMediaLink: entity.socialMediaLink,
       subject: entity.subject,
       bodyMarkdown: entity.bodyMarkdown,
       partnershipPercentage: entity.partnershipPercentage,

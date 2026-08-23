@@ -99,6 +99,7 @@ export class SendMarketingEmailUseCase {
       recipientEmail,
       recipientName: command.recipientName.trim(),
       recipientPhone: command.recipientPhone?.trim() || undefined,
+      socialMediaLink: command.socialMediaLink?.trim() || undefined,
       subject,
       bodyMarkdown,
       partnershipPercentage: command.partnershipPercentage,

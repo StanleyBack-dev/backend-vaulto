@@ -13,6 +13,7 @@ export class MarketingEmailSendResponseDto {
     dto.recipientEmail = view.recipientEmail;
     dto.recipientName = view.recipientName;
     dto.recipientPhone = view.recipientPhone;
+    dto.socialMediaLink = view.socialMediaLink;
     dto.subject = view.subject;
     dto.partnershipPercentage = view.partnershipPercentage;
     dto.sentByAdminName = view.sentByAdminName;
@@ -32,8 +33,11 @@ export class MarketingEmailSendResponseDto {
   @Field()
   recipientName!: string;
 
-  @Field({ nullable: true })
-  recipientPhone?: string;
+  @Field(() => String, { nullable: true })
+  recipientPhone?: string | null;
+
+  @Field(() => String, { nullable: true })
+  socialMediaLink?: string | null;
 
   @Field()
   subject!: string;

@@ -24,4 +24,9 @@ export const marketingEmailsErrors = {
     status: HttpStatus.BAD_GATEWAY,
     message: "Não foi possível enviar o e-mail. Tente novamente.",
   },
+  sendNotFound: {
+    code: "MARKETING_EMAIL_SEND_NOT_FOUND",
+    status: HttpStatus.NOT_FOUND,
+    message: "Envio não encontrado.",
+  },
 } as const;

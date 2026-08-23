@@ -598,6 +598,7 @@ type MarketingEmailSendResponseDto {
   recipientEmail: String!
   recipientName: String!
   recipientPhone: String
+  socialMediaLink: String
   subject: String!
   partnershipPercentage: Float
   sentByAdminName: String!
@@ -1265,6 +1266,7 @@ type Mutation {
   finalizeSupportTicket(idSupportMessage: String!): SupportTicketResponseDto!
   acceptTermsOfUse: LogoutResponseDto!
   sendMarketingEmail(input: SendMarketingEmailInputDto!): MarketingEmailSendResponseDto!
+  updateMarketingEmailSendContact(input: UpdateMarketingEmailSendContactInputDto!): MarketingEmailSendResponseDto!
   deactivateAccount(input: DeactivateAccountInputDto!): DeactivateAccountResponseDto!
   requestAccountDeletion(input: RequestAccountDeletionInputDto!): RequestAccountDeletionResponseDto!
   cancelAccountDeletion: CancelAccountDeletionResponseDto!
@@ -1517,9 +1519,18 @@ input SendMarketingEmailInputDto {
   recipientEmail: String!
   recipientName: String!
   recipientPhone: String
+  socialMediaLink: String
   subject: String!
   bodyMarkdown: String!
   partnershipPercentage: Float
+}
+
+input UpdateMarketingEmailSendContactInputDto {
+  idMarketingEmailSend: String!
+  recipientName: String
+  category: MarketingEmailCategory
+  recipientPhone: String
+  socialMediaLink: String
 }
 
 input DeactivateAccountInputDto {
