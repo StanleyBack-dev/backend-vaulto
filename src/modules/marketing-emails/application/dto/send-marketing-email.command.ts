@@ -5,6 +5,7 @@ export type SendMarketingEmailCommand = {
   recipientEmail: string;
   recipientName: string;
   recipientPhone?: string;
+  socialMediaLink?: string;
   subject: string;
   bodyMarkdown: string;
   partnershipPercentage?: number;

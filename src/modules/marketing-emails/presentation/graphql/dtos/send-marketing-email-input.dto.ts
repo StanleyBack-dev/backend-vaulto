@@ -17,6 +17,9 @@ export class SendMarketingEmailInputDto {
   @Field({ nullable: true })
   recipientPhone?: string;
 
+  @Field({ nullable: true })
+  socialMediaLink?: string;
+
   @Field()
   subject!: string;
 

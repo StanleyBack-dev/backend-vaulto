@@ -11,6 +11,7 @@ import { GetMarketingEmailRecipientCooldownUseCase } from "@/modules/marketing-e
 import { ListMarketingEmailSendsUseCase } from "@/modules/marketing-emails/application/use-cases/list-marketing-email-sends.use-case";
 import { PreviewMarketingEmailUseCase } from "@/modules/marketing-emails/application/use-cases/preview-marketing-email.use-case";
 import { SendMarketingEmailUseCase } from "@/modules/marketing-emails/application/use-cases/send-marketing-email.use-case";
+import { UpdateMarketingEmailSendContactUseCase } from "@/modules/marketing-emails/application/use-cases/update-marketing-email-send-contact.use-case";
 import { ListMarketingEmailSendsInputDto } from "@/modules/marketing-emails/presentation/graphql/dtos/list-marketing-email-sends-input.dto";
 import { MarketingEmailCooldownResponseDto } from "@/modules/marketing-emails/presentation/graphql/dtos/marketing-email-cooldown-response.dto";
 import { MarketingEmailDefaultTemplateResponseDto } from "@/modules/marketing-emails/presentation/graphql/dtos/marketing-email-default-template-response.dto";
@@ -20,6 +21,7 @@ import { MarketingEmailSendsExportResponseDto } from "@/modules/marketing-emails
 import { MarketingEmailSendsResponseDto } from "@/modules/marketing-emails/presentation/graphql/dtos/marketing-email-sends-response.dto";
 import { PreviewMarketingEmailInputDto } from "@/modules/marketing-emails/presentation/graphql/dtos/preview-marketing-email-input.dto";
 import { SendMarketingEmailInputDto } from "@/modules/marketing-emails/presentation/graphql/dtos/send-marketing-email-input.dto";
+import { UpdateMarketingEmailSendContactInputDto } from "@/modules/marketing-emails/presentation/graphql/dtos/update-marketing-email-send-contact-input.dto";
 import "@/modules/marketing-emails/presentation/graphql/enums/marketing-email-graphql.enums";
 
 @Resolver()
@@ -32,6 +34,7 @@ export class MarketingEmailResolver {
     private readonly listMarketingEmailSendsUseCase: ListMarketingEmailSendsUseCase,
     private readonly sendMarketingEmailUseCase: SendMarketingEmailUseCase,
     private readonly exportMarketingEmailSendsUseCase: ExportMarketingEmailSendsUseCase,
+    private readonly updateMarketingEmailSendContactUseCase: UpdateMarketingEmailSendContactUseCase,
   ) {}
 
   @Query(() => MarketingEmailDefaultTemplateResponseDto, {
@@ -131,10 +134,33 @@ export class MarketingEmailResolver {
       recipientEmail: input.recipientEmail,
       recipientName: input.recipientName,
       recipientPhone: input.recipientPhone,
+      socialMediaLink: input.socialMediaLink,
       subject: input.subject,
       bodyMarkdown: input.bodyMarkdown,
       partnershipPercentage: input.partnershipPercentage,
     });
+
+    return MarketingEmailSendResponseDto.fromView(result);
+  }
+
+  @Mutation(() => MarketingEmailSendResponseDto, {
+    name: "updateMarketingEmailSendContact",
+  })
+  @RequirePermissions(AuthPermission.MANAGE_MARKETING_EMAILS)
+  async updateMarketingEmailSendContact(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args("input") input: UpdateMarketingEmailSendContactInputDto,
+  ) {
+    const result = await this.updateMarketingEmailSendContactUseCase.execute(
+      user.idUsers,
+      {
+        idMarketingEmailSend: input.idMarketingEmailSend,
+        recipientName: input.recipientName,
+        category: input.category,
+        recipientPhone: input.recipientPhone,
+        socialMediaLink: input.socialMediaLink,
+      },
+    );
 
     return MarketingEmailSendResponseDto.fromView(result);
   }

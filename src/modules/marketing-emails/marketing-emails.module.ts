@@ -10,6 +10,7 @@ import { GetMarketingEmailRecipientCooldownUseCase } from "@/modules/marketing-e
 import { ListMarketingEmailSendsUseCase } from "@/modules/marketing-emails/application/use-cases/list-marketing-email-sends.use-case";
 import { PreviewMarketingEmailUseCase } from "@/modules/marketing-emails/application/use-cases/preview-marketing-email.use-case";
 import { SendMarketingEmailUseCase } from "@/modules/marketing-emails/application/use-cases/send-marketing-email.use-case";
+import { UpdateMarketingEmailSendContactUseCase } from "@/modules/marketing-emails/application/use-cases/update-marketing-email-send-contact.use-case";
 import { MarketingEmailSendEntity } from "@/modules/marketing-emails/infrastructure/persistence/typeorm/entities/marketing-email-send.entity";
 import { MarketingEmailSendTypeormRepository } from "@/modules/marketing-emails/infrastructure/persistence/typeorm/repositories/marketing-email-send-typeorm.repository";
 import { MarketingEmailResolver } from "@/modules/marketing-emails/presentation/graphql/resolvers/marketing-email.resolver";
@@ -30,6 +31,7 @@ import "@/modules/marketing-emails/presentation/graphql/enums/marketing-email-gr
     ListMarketingEmailSendsUseCase,
     SendMarketingEmailUseCase,
     ExportMarketingEmailSendsUseCase,
+    UpdateMarketingEmailSendContactUseCase,
     MarketingEmailResolver,
     MarketingEmailSendTypeormRepository,
     {

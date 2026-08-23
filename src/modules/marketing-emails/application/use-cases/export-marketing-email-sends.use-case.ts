@@ -61,6 +61,7 @@ export class ExportMarketingEmailSendsUseCase {
       record.recipientName,
       record.recipientEmail,
       record.recipientPhone ?? "—",
+      record.socialMediaLink ?? "—",
       MARKETING_EMAIL_CATEGORY_LABELS[record.category],
       record.subject,
       typeof record.partnershipPercentage === "number"
@@ -78,6 +79,7 @@ export class ExportMarketingEmailSendsUseCase {
         { label: "Nome", weight: 2 },
         { label: "E-mail", weight: 3 },
         { label: "Celular", weight: 2 },
+        { label: "Rede Social", weight: 3 },
         { label: "Categoria", weight: 2 },
         { label: "Assunto", weight: 3 },
         { label: "% Parceria", weight: 1, align: "center" },
