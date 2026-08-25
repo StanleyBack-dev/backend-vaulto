@@ -81,7 +81,10 @@ export class ReferralWithdrawalTypeormRepository implements ReferralWithdrawalRe
     const result = await this.repository
       .createQueryBuilder("withdrawal")
       .select("COALESCE(SUM(withdrawal.amountCents), 0)", "total")
-      .where("withdrawal.idUsers = :idUsers", { idUsers })
+      .where(
+        "CAST(withdrawal.idUsers AS varchar) = CAST(:idUsers AS varchar)",
+        { idUsers },
+      )
       .andWhere("withdrawal.status IN (:...statuses)", {
         statuses: ACTIVE_STATUSES,
       })

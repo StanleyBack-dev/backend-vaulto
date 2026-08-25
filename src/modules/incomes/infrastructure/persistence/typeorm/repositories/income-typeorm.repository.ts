@@ -266,7 +266,9 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
 
     const qb = this.incomeRepository
       .createQueryBuilder("income")
-      .where("income.idUsers = :idUsers", { idUsers })
+      .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
+        idUsers,
+      })
       .orderBy("income.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit);
@@ -282,9 +284,10 @@ export class IncomeTypeormRepository implements IncomeRepositoryPort {
     }
 
     if (filters?.idCategory) {
-      qb.andWhere("income.idCategory = :idCategory", {
-        idCategory: filters.idCategory,
-      });
+      qb.andWhere(
+        "CAST(income.idCategory AS varchar) = CAST(:idCategory AS varchar)",
+        { idCategory: filters.idCategory },
+      );
     }
 
     if (filters?.dueDateFrom || filters?.dueDateTo) {
