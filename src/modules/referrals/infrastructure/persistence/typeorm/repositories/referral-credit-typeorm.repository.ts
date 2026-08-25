@@ -94,7 +94,9 @@ export class ReferralCreditTypeormRepository implements ReferralCreditRepository
     const result = await this.repository
       .createQueryBuilder("credit")
       .select("COALESCE(SUM(credit.amountCents), 0)", "total")
-      .where("credit.idUsers = :idUsers", { idUsers })
+      .where("CAST(credit.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
+        idUsers,
+      })
       .andWhere("credit.status = :status", { status })
       .getRawOne<{ total: string }>();
 

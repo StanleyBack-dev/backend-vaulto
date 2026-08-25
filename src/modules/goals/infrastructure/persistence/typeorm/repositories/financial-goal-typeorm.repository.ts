@@ -51,7 +51,9 @@ export class FinancialGoalTypeormRepository implements FinancialGoalRepositoryPo
 
     const [rows, total] = await this.goalRepository
       .createQueryBuilder("goal")
-      .where("goal.idUsers = :idUsers", { idUsers })
+      .where("CAST(goal.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
+        idUsers,
+      })
       .orderBy("goal.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit)
