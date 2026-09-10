@@ -10,13 +10,13 @@ export class DebtPaymentEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_debt_payments" })
   idDebtPayment!: string;
 
-  @Column({ name: "idtb_debts" })
+  @Column({ name: "idtb_debts", type: "uuid" })
   idDebt!: string;
 
-  @Column({ name: "idtb_debt_installments", nullable: true })
+  @Column({ name: "idtb_debt_installments", type: "uuid", nullable: true })
   idDebtInstallment?: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ name: "amount_paid", type: "numeric", precision: 12, scale: 2 })

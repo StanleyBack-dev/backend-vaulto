@@ -11,7 +11,7 @@ export class GoalContributionEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_goal_contributions" })
   idGoalContribution!: string;
 
-  @Column({ name: "idtb_financial_goals" })
+  @Column({ name: "idtb_financial_goals", type: "uuid" })
   idFinancialGoal!: string;
 
   @Column({ type: "numeric", precision: 12, scale: 2 })

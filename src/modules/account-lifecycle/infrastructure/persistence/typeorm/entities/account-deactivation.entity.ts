@@ -14,7 +14,7 @@ export class AccountDeactivationEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_account_deactivations" })
   idAccountDeactivation!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ type: "varchar", array: true })

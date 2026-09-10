@@ -14,16 +14,16 @@ export class DebtEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_debts" })
   idDebt!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ length: 120 })
   title!: string;
 
-  @Column({ name: "idtb_categories" })
+  @Column({ name: "idtb_categories", type: "uuid" })
   idCategory!: string;
 
-  @Column({ name: "idtb_credit_cards", nullable: true })
+  @Column({ name: "idtb_credit_cards", type: "uuid", nullable: true })
   idCreditCard?: string;
 
   @Column({ type: "text", nullable: true })

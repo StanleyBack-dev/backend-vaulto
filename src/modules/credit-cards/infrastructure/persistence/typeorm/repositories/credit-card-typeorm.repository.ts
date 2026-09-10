@@ -141,11 +141,7 @@ export class CreditCardTypeormRepository implements CreditCardRepositoryPort {
 
     const rows = await this.installmentRepository
       .createQueryBuilder("installment")
-      .innerJoin(
-        DebtEntity,
-        "debt",
-        "CAST(debt.idDebt AS varchar) = installment.idDebt",
-      )
+      .innerJoin(DebtEntity, "debt", "debt.idDebt = installment.idDebt")
       .where("debt.idCreditCard IN (:...ids)", { ids })
       .select("debt.idCreditCard", "idCreditCard")
       .addSelect("SUM(installment.amountDue - installment.amountPaid)", "used")

@@ -15,7 +15,7 @@ export class SubscriptionEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_subscriptions" })
   idSubscription!: string;
 
-  @Column({ name: "idtb_users", unique: true })
+  @Column({ name: "idtb_users", type: "uuid", unique: true })
   @Index()
   idUsers!: string;
 

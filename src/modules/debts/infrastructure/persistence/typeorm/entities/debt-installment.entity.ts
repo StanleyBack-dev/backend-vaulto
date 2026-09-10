@@ -13,7 +13,7 @@ export class DebtInstallmentEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_debt_installments" })
   idDebtInstallment!: string;
 
-  @Column({ name: "idtb_debts" })
+  @Column({ name: "idtb_debts", type: "uuid" })
   idDebt!: string;
 
   @Column({ name: "installment_number", type: "int" })

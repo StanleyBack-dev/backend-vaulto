@@ -12,7 +12,7 @@ export class FinancialGoalEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_financial_goals" })
   idFinancialGoal!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ length: 120 })

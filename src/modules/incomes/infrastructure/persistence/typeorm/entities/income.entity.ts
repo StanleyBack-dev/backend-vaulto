@@ -14,13 +14,13 @@ export class IncomeEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_incomes" })
   idIncome!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ length: 120 })
   title!: string;
 
-  @Column({ name: "idtb_categories" })
+  @Column({ name: "idtb_categories", type: "uuid" })
   idCategory!: string;
 
   @Column({ type: "text", nullable: true })

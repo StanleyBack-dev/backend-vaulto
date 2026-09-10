@@ -16,7 +16,7 @@ export class AccountAuditLogEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_account_audit_log" })
   idAccountAuditLog!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column()
