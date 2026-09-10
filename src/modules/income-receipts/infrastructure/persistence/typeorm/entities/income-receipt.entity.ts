@@ -10,13 +10,13 @@ export class IncomeReceiptEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_income_receipts" })
   idIncomeReceipt!: string;
 
-  @Column({ name: "idtb_incomes" })
+  @Column({ name: "idtb_incomes", type: "uuid" })
   idIncome!: string;
 
-  @Column({ name: "idtb_income_installments", nullable: true })
+  @Column({ name: "idtb_income_installments", type: "uuid", nullable: true })
   idIncomeInstallment?: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ name: "amount_received", type: "numeric", precision: 12, scale: 2 })

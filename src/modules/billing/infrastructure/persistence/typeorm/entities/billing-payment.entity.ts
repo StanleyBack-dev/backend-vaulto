@@ -12,7 +12,7 @@ export class BillingPaymentEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_billing_payments" })
   idBillingPayment!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ name: "gateway_payment_id", unique: true })

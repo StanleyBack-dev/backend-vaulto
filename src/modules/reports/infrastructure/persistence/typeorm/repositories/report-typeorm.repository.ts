@@ -68,14 +68,8 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
   ): Promise<DebtsReportView> {
     const qb = this.installmentRepository
       .createQueryBuilder("installment")
-      .innerJoin(
-        DebtEntity,
-        "debt",
-        "CAST(debt.idDebt AS varchar) = installment.idDebt",
-      )
-      .where("CAST(debt.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      });
+      .innerJoin(DebtEntity, "debt", "debt.idDebt = installment.idDebt")
+      .where("debt.idUsers = :idUsers", { idUsers });
 
     if (filters?.dueDateFrom) {
       qb.andWhere("installment.dueDate >= :dueDateFrom", {
@@ -94,10 +88,9 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
     }
 
     if (filters?.idCategory) {
-      qb.andWhere(
-        "CAST(debt.idCategory AS varchar) = CAST(:idCategory AS varchar)",
-        { idCategory: filters.idCategory },
-      );
+      qb.andWhere("debt.idCategory = :idCategory", {
+        idCategory: filters.idCategory,
+      });
     }
 
     const rows = await qb
@@ -162,11 +155,9 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
-      .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      });
+      .where("income.idUsers = :idUsers", { idUsers });
 
     if (filters?.dueDateFrom) {
       qb.andWhere("installment.dueDate >= :dueDateFrom", {
@@ -187,10 +178,9 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
     }
 
     if (filters?.idCategory) {
-      qb.andWhere(
-        "CAST(income.idCategory AS varchar) = CAST(:idCategory AS varchar)",
-        { idCategory: filters.idCategory },
-      );
+      qb.andWhere("income.idCategory = :idCategory", {
+        idCategory: filters.idCategory,
+      });
     }
 
     const rows = await qb
@@ -254,14 +244,8 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
   ): Promise<CategoryAmountRow[]> {
     const rows = await this.installmentRepository
       .createQueryBuilder("installment")
-      .innerJoin(
-        DebtEntity,
-        "debt",
-        "CAST(debt.idDebt AS varchar) = installment.idDebt",
-      )
-      .where("CAST(debt.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      })
+      .innerJoin(DebtEntity, "debt", "debt.idDebt = installment.idDebt")
+      .where("debt.idUsers = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -285,11 +269,9 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
-      .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      })
+      .where("income.idUsers = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -310,14 +292,8 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
   ): Promise<MonthlyAmountRow[]> {
     const rows = await this.installmentRepository
       .createQueryBuilder("installment")
-      .innerJoin(
-        DebtEntity,
-        "debt",
-        "CAST(debt.idDebt AS varchar) = installment.idDebt",
-      )
-      .where("CAST(debt.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      })
+      .innerJoin(DebtEntity, "debt", "debt.idDebt = installment.idDebt")
+      .where("debt.idUsers = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })
@@ -341,11 +317,9 @@ export class ReportTypeormRepository implements ReportRepositoryPort {
       .innerJoin(
         IncomeEntity,
         "income",
-        "CAST(income.idIncome AS varchar) = installment.idIncome",
+        "income.idIncome = installment.idIncome",
       )
-      .where("CAST(income.idUsers AS varchar) = CAST(:idUsers AS varchar)", {
-        idUsers,
-      })
+      .where("income.idUsers = :idUsers", { idUsers })
       .andWhere("installment.dueDate >= :dueDateFrom", {
         dueDateFrom: toDateOnlyString(filters.dueDateFrom),
       })

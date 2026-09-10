@@ -41,20 +41,12 @@ export class RemindersTypeormRepository implements RemindersRepositoryPort {
     const [debtRows, incomeRows] = await Promise.all([
       this.debtInstallmentRepository
         .createQueryBuilder("installment")
-        .innerJoin(
-          DebtEntity,
-          "debt",
-          "CAST(debt.idDebt AS varchar) = installment.idDebt",
-        )
-        .innerJoin(
-          UserEntity,
-          "user",
-          "CAST(user.idUsers AS varchar) = debt.idUsers",
-        )
+        .innerJoin(DebtEntity, "debt", "debt.idDebt = installment.idDebt")
+        .innerJoin(UserEntity, "user", "user.idUsers = debt.idUsers")
         .innerJoin(
           SubscriptionEntity,
           "subscription",
-          "CAST(subscription.idUsers AS varchar) = debt.idUsers",
+          "subscription.idUsers = debt.idUsers",
         )
         .where("installment.dueDate = :dueDateOnly", { dueDateOnly })
         .andWhere("installment.status != :paidStatus", {
@@ -73,17 +65,13 @@ export class RemindersTypeormRepository implements RemindersRepositoryPort {
         .innerJoin(
           IncomeEntity,
           "income",
-          "CAST(income.idIncome AS varchar) = installment.idIncome",
+          "income.idIncome = installment.idIncome",
         )
-        .innerJoin(
-          UserEntity,
-          "user",
-          "CAST(user.idUsers AS varchar) = income.idUsers",
-        )
+        .innerJoin(UserEntity, "user", "user.idUsers = income.idUsers")
         .innerJoin(
           SubscriptionEntity,
           "subscription",
-          "CAST(subscription.idUsers AS varchar) = income.idUsers",
+          "subscription.idUsers = income.idUsers",
         )
         .where("installment.dueDate = :dueDateOnly", { dueDateOnly })
         .andWhere("installment.status != :receivedStatus", {

@@ -13,7 +13,7 @@ export class SupportMessageEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_support_messages" })
   idSupportMessage!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ type: "varchar" })

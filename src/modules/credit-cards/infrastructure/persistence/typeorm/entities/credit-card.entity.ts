@@ -11,7 +11,7 @@ export class CreditCardEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_credit_cards" })
   idCreditCard!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ length: 80 })

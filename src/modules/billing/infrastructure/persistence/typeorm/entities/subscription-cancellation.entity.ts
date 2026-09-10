@@ -12,7 +12,7 @@ export class SubscriptionCancellationEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_subscription_cancellations" })
   idSubscriptionCancellation!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ nullable: true })

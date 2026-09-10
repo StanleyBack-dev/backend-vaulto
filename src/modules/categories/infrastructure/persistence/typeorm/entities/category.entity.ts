@@ -12,7 +12,7 @@ export class CategoryEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_categories" })
   idCategory!: string;
 
-  @Column({ name: "idtb_users" })
+  @Column({ name: "idtb_users", type: "uuid" })
   idUsers!: string;
 
   @Column({ length: 80 })

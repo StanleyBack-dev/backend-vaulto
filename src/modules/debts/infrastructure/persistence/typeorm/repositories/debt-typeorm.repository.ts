@@ -357,7 +357,7 @@ export class DebtTypeormRepository implements DebtRepositoryPort {
       const existsInstallmentInRange = this.installmentRepository
         .createQueryBuilder("di")
         .select("1")
-        .where("di.idDebt = CAST(debt.idDebt AS varchar)");
+        .where("di.idDebt = debt.idDebt");
 
       if (filters.dueDateFrom) {
         existsInstallmentInRange.andWhere("di.dueDate >= :dueDateFrom", {
